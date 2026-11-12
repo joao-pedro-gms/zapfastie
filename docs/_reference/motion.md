@@ -32,10 +32,16 @@ settles, so nothing spins:
 - The sticky date at the top of the transcript fades out a second after the
   reader stops scrolling.
 
-**The rest of the window**
+**Every change of view**
 
-- Another page (Chats, Calls, Settings) arrives under a wash of the pane's own
-  background, which fades out: a cut becomes a change of view.
+One wash of the interface's own background covers the list and the pane, and
+fades out in the Motion time. It plays on any change of view, not only on a
+page: another page (Chats, Calls, Settings), another chat list filter or label,
+the archive, the locked folder, and another conversation. Typing in search does
+not play it: a keystroke is not a change of screen.
+
+The key is `view_stamp` in `src/ui/mod.rs`, a hash of exactly those fields, and
+`every_change_of_view_moves_the_stamp` fails if one of them stops moving it.
 - The emoji, GIF and sticker panel rises the last ten points into place.
 - Dragging files over the window washes the whole window in the accent colour
   and draws a border on it, not only the card in the middle.
