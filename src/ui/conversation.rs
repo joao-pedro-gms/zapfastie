@@ -38,13 +38,13 @@ const MESSAGES_WIDTH_SHARE: f32 = 0.65;
 const WHATSAPP_WIDTH_SHARE: f32 = 0.72;
 /// The transcript's side margin in the Messages style: Messages' 11 points
 /// (`CKUIBehaviorMac.minTranscriptMarginInsets`) plus the 5 points beside
-/// each balloon's body that its tail curls into, at ZapFast's text size.
+/// each balloon's body that its tail curls into, at ZapFastie's text size.
 const MESSAGES_SIDE_MARGIN: i8 = 17;
 /// The transcript's side margin in WhatsApp's style.
 const WHATSAPP_SIDE_MARGIN: i8 = 18;
 /// Room around a Messages bubble's contents: Messages' 12 points beside its
 /// text and 7 above and below (`CKUIBehaviorMac.textBalloonPillContentInsets`)
-/// at ZapFast's text size, 13.4 and 7.8, rounded.
+/// at ZapFastie's text size, 13.4 and 7.8, rounded.
 const MESSAGES_BUBBLE_MARGIN: Margin = Margin {
     left: 13,
     right: 13,
@@ -57,7 +57,7 @@ const SELECT_GUTTER: f32 = SELECT_BOX + 14.0;
 /// Footer label on an outgoing message that failed to send.
 const NOT_SENT: &str = "Not sent";
 const NOT_SENT_HINT: &str =
-    "This message could not be sent, and ZapFast will not retry it. Send it again yourself.";
+    "This message could not be sent, and ZapFastie will not retry it. Send it again yourself.";
 
 pub fn show(app: &mut App, ui: &mut egui::Ui) {
     let Some(chat) = app.current_chat().cloned() else {
@@ -297,7 +297,7 @@ fn empty(app: &mut App, ui: &mut egui::Ui) {
     ui.painter().text(
         center,
         Align2::CENTER_CENTER,
-        "ZapFast",
+        "ZapFastie",
         theme::bold(24.0),
         palette.text,
     );
@@ -399,7 +399,7 @@ fn caption_gap(room: f32) -> f32 {
 
 /// The space between two of a vibrant header's buttons, beyond their glass.
 const BUTTON_GAP: f32 = 10.0;
-/// What the chat header needs beside the caption buttons ZapFast draws: its
+/// What the chat header needs beside the caption buttons ZapFastie draws: its
 /// most buttons (Back, two calls, Search and More), the avatar, and a name.
 const HEADER_MIN_CONTENT: f32 = 320.0;
 
@@ -448,7 +448,7 @@ fn header(app: &mut App, ui: &mut egui::Ui, chat: &Chat) -> Rect {
             if theme::chrome_in_headers(ui.ctx()) {
                 super::titlebar_drag(ui, ui.max_rect());
             }
-            // The caption buttons ZapFast draws over a corner the header
+            // The caption buttons ZapFastie draws over a corner the header
             // reaches: beside its own buttons, or above them when narrow.
             let room = super::caption_room(ui.ctx(), ui.max_rect(), HEADER_MIN_CONTENT);
             ui.add_space(room.top);
@@ -1559,7 +1559,7 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                             } else {
                                 crate::i18n::gettext(
                                     app.locale,
-                                    "Channels are read-only in ZapFast",
+                                    "Channels are read-only in ZapFastie",
                                 )
                             }
                             .as_ref(),
@@ -2152,6 +2152,28 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
             theme::focus_outline(ui, id, pill.response.rect, f32::from(COMPOSER_RADIUS));
             ui.ctx()
                 .data_mut(|data| data.insert_temp(composer_pill_id(), pill.response.rect));
+            // A send pops the field once: a ring that widens and fades, so the
+            // message going out is felt in the place it was written.
+            let pop_time = app.settings.motion.time();
+            if pop_time > 0.0 && app.composer_pops > 0.0 {
+                let now = ui.ctx().animate_value_with_time(
+                    egui::Id::new("composer-pop"),
+                    app.composer_pops,
+                    pop_time,
+                );
+                let remaining = (app.composer_pops - now).clamp(0.0, 1.0);
+                if remaining > 0.0 {
+                    ui.painter().rect_stroke(
+                        pill.response.rect.expand(4.0 * (1.0 - remaining)),
+                        egui::CornerRadius::same(COMPOSER_RADIUS.saturating_add(2)),
+                        egui::Stroke::new(
+                            1.5,
+                            palette.accent.gamma_multiply(0.55 * remaining),
+                        ),
+                        egui::StrokeKind::Outside,
+                    );
+                }
+            }
             if (send_key || send_click)
                 && (!app.composer.trim().is_empty() || !app.pending.is_empty())
             {
@@ -4308,6 +4330,24 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
             data.remove::<TextSelectionRows>(text_selection_id);
         }
     });
+    // A chat that has just opened fades its messages in over the chat's own
+    // background, so switching conversations reads as a change rather than a
+    // cut. It is a veil painted after the rows: nothing moves, no id changes.
+    let reveal_time = app.settings.motion.time();
+    if reveal_time > 0.0 {
+        let reveal = ui.ctx().animate_bool_with_time(
+            egui::Id::new(("chat-reveal", &chat.id, app.chat_opens)),
+            true,
+            reveal_time,
+        );
+        if reveal < 1.0 {
+            ui.painter().rect_filled(
+                output.inner_rect,
+                0.0,
+                palette.chat.gamma_multiply(0.92 * (1.0 - reveal)),
+            );
+        }
+    }
     sticky_date(ui, &palette, app.locale, chat, &output, visible_day);
     let at_bottom =
         output.state.offset.y + output.inner_rect.height() >= output.content_size.y - 24.0;
@@ -4923,7 +4963,7 @@ struct RunPlace {
 }
 
 /// The message the unread divider sits before: the `count`-th incoming row
-/// from the end. Rows ZapFast filed for itself (a call entry, a timer notice)
+/// from the end. Rows ZapFastie filed for itself (a call entry, a timer notice)
 /// are never counted as unread, so counting one here would put the divider on
 /// the wrong row.
 fn unread_divider_message(messages: &[Message], count: u32) -> Option<&Message> {
@@ -10681,7 +10721,7 @@ fn video(
 ) -> f32 {
     use crate::video::State;
     let palette = view.palette;
-    // A video sent before ZapFast made thumbnails has none; its file is
+    // A video sent before ZapFastie made thumbnails has none; its file is
     // here, so its first frame stands in. Without either, it is a file card.
     let thumbnail = message.thumbnail.as_deref();
     if thumbnail.is_none() && media.path.is_none() {

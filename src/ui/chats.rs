@@ -142,7 +142,7 @@ fn header(app: &mut App, ui: &mut egui::Ui) {
             bottom: 8,
         })
         .show(ui, |ui| {
-            // Where ZapFast draws the title bar, the header's top drags the
+            // Where ZapFastie draws the title bar, the header's top drags the
             // window and keeps clear of the caption buttons over a corner it
             // reaches: the left one, or both while it fills a narrow window.
             let top = ui.max_rect();
@@ -348,7 +348,7 @@ enum HeaderButton {
 const HEADER_ICON: f32 = 18.0;
 
 /// What the list header's first row needs beside the caption buttons
-/// ZapFast draws: the title and its buttons.
+/// ZapFastie draws: the title and its buttons.
 const LIST_HEADER_MIN_CONTENT: f32 = 230.0;
 
 /// The buttons on the right of the chat list header, rightmost first, as
@@ -1653,11 +1653,12 @@ fn row(app: &mut App, ui: &mut egui::Ui, chat: &Chat) -> egui::Response {
                 crate::i18n::gettext(app.locale, "{name} is recording audio…")
                     .replace("{name}", typing[0].1.trim_start_matches('~'))
             } else if chat.is_group() {
-                format!("{} is typing…", typing[0].1.trim_start_matches('~'))
+                crate::i18n::gettext(app.locale, "{name} is typing…")
+                    .replace("{name}", typing[0].1.trim_start_matches('~'))
             } else if recording {
                 crate::i18n::gettext(app.locale, "recording audio…").into_owned()
             } else {
-                "typing…".to_owned()
+                crate::i18n::gettext(app.locale, "typing…").into_owned()
             };
             widgets::line(
                 ui,
@@ -1787,8 +1788,8 @@ fn row(app: &mut App, ui: &mut egui::Ui, chat: &Chat) -> egui::Response {
             ui,
             &[
                 &crate::i18n::gettext(app.locale, "Mute"),
-                "Notification sound",
-                "Voice message speed",
+                &crate::i18n::gettext(app.locale, "Notification sound"),
+                &crate::i18n::gettext(app.locale, "Voice message speed"),
                 &crate::i18n::gettext(app.locale, "Labels"),
             ],
             true,
@@ -2385,7 +2386,7 @@ fn voice_speed_menu(app: &mut App, ui: &mut egui::Ui, palette: &Palette, chat: &
         ui,
         palette,
         Icon::Play,
-        "Voice message speed",
+        &crate::i18n::gettext(app.locale, "Voice message speed"),
         &items,
         |ui| {
             for (speed, label) in &options {

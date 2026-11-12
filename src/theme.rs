@@ -17,7 +17,7 @@ pub type Catalog = fastframe_theme::Catalog<Palette>;
 pub const DESKTOP_THEMES: fastframe_theme::DesktopThemes = fastframe_theme::DesktopThemes {
     slug: "zapfast",
     omarchy_template: include_str!("../contrib/omarchy/zapfast.json.tpl"),
-    // Every template ZapFast shipped before, so an untouched copy installed
+    // Every template ZapFastie shipped before, so an untouched copy installed
     // by an older release is replaced with the current one.
     omarchy_previous_templates: &[include_str!(
         "../contrib/omarchy/previous/zapfast-1.json.tpl"
@@ -25,7 +25,7 @@ pub const DESKTOP_THEMES: fastframe_theme::DesktopThemes = fastframe_theme::Desk
     presets: true,
 };
 
-/// The shared palettes, as ZapFast reads them.
+/// The shared palettes, as ZapFastie reads them.
 pub fn presets() -> impl Iterator<Item = CustomTheme> {
     fastframe_theme::presets::themes::<Palette>()
 }
@@ -506,7 +506,7 @@ impl fastframe_theme::Palette for Palette {
     }
 
     /// Spotifast palettes share the sixteen interface colours. Derive the
-    /// chat-only colours when importing one, while keeping explicit ZapFast
+    /// chat-only colours when importing one, while keeping explicit ZapFastie
     /// overrides.
     fn derive(&mut self, given: &std::collections::BTreeSet<&str>) {
         if given.contains("window") && !given.contains("chat") {
@@ -882,7 +882,7 @@ pub fn apply_text_rendering_change(ctx: &egui::Context) -> bool {
 
 fastframe_icons::icons! {
     /// Every icon the interface draws. Icons Spotifast ships too come from
-    /// fastframe-icons (`lucide`); the rest are ZapFast's own files.
+    /// fastframe-icons (`lucide`); the rest are ZapFastie's own files.
     pub enum Icon {
         prefix: "zapfast-icon-",
         directory: "../assets/icons/",
@@ -1510,7 +1510,7 @@ pub fn preview_macos(ctx: &egui::Context) {
 
 /// Horizontal clearance for the window's buttons at the left of its top
 /// edge: the traffic lights on macOS, which do not scale with UI zoom, or the
-/// caption buttons ZapFast draws where the desktop puts them on the left.
+/// caption buttons ZapFastie draws where the desktop puts them on the left.
 pub fn traffic_light_inset(ctx: &egui::Context) -> f32 {
     if cfg!(target_os = "macos") {
         fastframe_titlebar::footprint(ctx, TOP_BAR_HEIGHT).left
@@ -1523,7 +1523,7 @@ pub fn traffic_light_inset(ctx: &egui::Context) -> f32 {
     }
 }
 
-/// Whether ZapFast draws the window's title bar itself: on Windows and
+/// Whether ZapFastie draws the window's title bar itself: on Windows and
 /// Linux when Settings > Appearance > Custom title bar is on
 /// (fastframe-titlebar), or in a layout test's preview of it.
 pub fn drawn_titlebar(ctx: &egui::Context) -> bool {
@@ -1539,13 +1539,13 @@ pub fn drawn_titlebar(ctx: &egui::Context) -> bool {
 }
 
 /// Whether the headers run to the window's top edge and share it with the
-/// window's buttons: macOS's hidden title bar, or the one ZapFast draws.
+/// window's buttons: macOS's hidden title bar, or the one ZapFastie draws.
 /// Status banners then go under the open chat's header, not across the top.
 pub fn chrome_in_headers(ctx: &egui::Context) -> bool {
     macos_chrome(ctx) || drawn_titlebar(ctx)
 }
 
-/// The room the caption buttons ZapFast draws take at each end of the top
+/// The room the caption buttons ZapFastie draws take at each end of the top
 /// edge, beside a header [`TOP_BAR_HEIGHT`] tall. Zero on macOS (the traffic
 /// lights are [`traffic_light_inset`]), under the desktop's own title bar,
 /// and in full screen.
@@ -1931,7 +1931,7 @@ mod tests {
         assert!(ratio >= 4.5, "hover contrast is only {ratio:.2}:1");
     }
 
-    /// Every colour ZapFast has can be set by name, including the chat
+    /// Every colour ZapFastie has can be set by name, including the chat
     /// colours Spotifast's palettes lack; explicit ones win over derived ones.
     #[test]
     fn palette_files_set_every_colour_and_keep_explicit_chat_colours() {
@@ -1980,7 +1980,7 @@ mod tests {
         );
     }
 
-    /// ZapFast's Omarchy template adds the chat colours to the base ones and
+    /// ZapFastie's Omarchy template adds the chat colours to the base ones and
     /// renders as Omarchy's own renderer does.
     #[test]
     fn the_omarchy_template_renders_like_omarchy_in_light_and_dark_themes() {

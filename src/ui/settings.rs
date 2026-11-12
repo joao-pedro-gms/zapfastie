@@ -215,7 +215,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     super::banner(app, ui);
     let palette = app.palette;
     let locale = app.locale;
-    // The caption buttons ZapFast draws, beside the column's title row when
+    // The caption buttons ZapFastie draws, beside the column's title row when
     // it reaches the top-right corner, or above it when the window is narrow.
     // Measured where the row stands unscrolled, so scrolling moves it away.
     let page = ui.max_rect();
@@ -303,7 +303,7 @@ const COLUMN_WIDTH: f32 = 640.0;
 const SIDE_MARGIN: f32 = 32.0;
 /// Space above and below the settings column.
 const TOP_MARGIN: f32 = 24.0;
-/// What the title row needs beside the caption buttons ZapFast draws: Back
+/// What the title row needs beside the caption buttons ZapFastie draws: Back
 /// and the title.
 const TITLE_MIN_CONTENT: f32 = 220.0;
 
@@ -421,13 +421,13 @@ fn sections(app: &App) -> Vec<Section> {
         },
     );
     appearance.row(translated(locale, "Language"), "", language_picker);
-    // macOS keeps its own traffic lights over ZapFast's headers.
+    // macOS keeps its own traffic lights over ZapFastie's headers.
     if cfg!(any(windows, target_os = "linux")) {
         appearance.row(
             translated(locale, "Custom title bar"),
             translated(
                 locale,
-                "Draw ZapFast's own title bar and window buttons instead of the desktop's.",
+                "Draw ZapFastie's own title bar and window buttons instead of the desktop's.",
             ),
             custom_titlebar_switch,
         );
@@ -620,7 +620,7 @@ fn sections(app: &App) -> Vec<Section> {
     let note = if app.account_privacy.fetch_failed {
         Some(crate::i18n::gettext(
             locale,
-            "Could not load your account privacy. Trying again when ZapFast reconnects.",
+            "Could not load your account privacy. Trying again when ZapFastie reconnects.",
         ))
     } else if !app.is_connected() {
         Some(crate::i18n::gettext(
@@ -681,7 +681,7 @@ fn sections(app: &App) -> Vec<Section> {
             translated(locale, "Show in the menu bar"),
             keyed(translated(
                 locale,
-                "Closing the window keeps ZapFast in the Dock. Quit with Ctrl+Q.",
+                "Closing the window keeps ZapFastie in the Dock. Quit with Ctrl+Q.",
             )),
             |settings| &mut settings.keep_running_in_background,
         );
@@ -721,7 +721,7 @@ fn sections(app: &App) -> Vec<Section> {
         translated(locale, "Check for updates"),
         translated(
             locale,
-            "Asks GitHub once a day, sending only the ZapFast version.",
+            "Asks GitHub once a day, sending only the ZapFastie version.",
         ),
         |settings| &mut settings.check_for_updates,
     );
@@ -729,7 +729,7 @@ fn sections(app: &App) -> Vec<Section> {
         translated(locale, "Download updates automatically"),
         translated(
             locale,
-            "You still choose when to restart. Package managers and Flatpak update ZapFast themselves.",
+            "You still choose when to restart. Package managers and Flatpak update ZapFastie themselves.",
         ),
         |settings| &mut settings.download_updates_automatically,
     );
@@ -905,7 +905,7 @@ fn sections(app: &App) -> Vec<Section> {
     let mut about_section = Section::new(translated(locale, "About"));
     about_section.block(
         vec![
-            "ZapFast".into(),
+            "ZapFastie".into(),
             translated(locale, "Keyboard shortcuts"),
             translated(locale, "Source code"),
         ],
@@ -924,7 +924,7 @@ fn sections(app: &App) -> Vec<Section> {
     ]
 }
 
-/// The app lock: a password, how long ZapFast may go unused, and the form
+/// The app lock: a password, how long ZapFastie may go unused, and the form
 /// that sets, changes, or removes the password.
 fn app_lock_rows(app: &App, privacy: &mut Section) {
     use crate::app_lock::FormMode;
@@ -970,7 +970,7 @@ fn app_lock_rows(app: &App, privacy: &mut Section) {
             translated(locale, "Lock after"),
             keyed(translated(
                 locale,
-                "Time without using ZapFast, also counted while it is in the tray. Ctrl+Shift+L locks it at once.",
+                "Time without using ZapFastie, also counted while it is in the tray. Ctrl+Shift+L locks it at once.",
             )),
             move |ui, app| {
                 let selected = app.settings.app_lock_after;
@@ -1107,8 +1107,8 @@ fn theme_picker(ui: &mut egui::Ui, app: &mut App) {
             .settings
             .custom_theme
             .as_deref()
-            .map(fastframe_theme::display_name)
-            .unwrap_or_else(|| app.settings.theme.label());
+            .map(|name| fastframe_theme::display_name(name).to_owned())
+            .unwrap_or_else(|| app.settings.theme.translated(app.locale));
         let response = egui::ComboBox::from_id_salt("appearance_theme")
             .selected_text(" ")
             .width(200.0_f32.min(ui.available_width()))
@@ -1118,7 +1118,7 @@ fn theme_picker(ui: &mut egui::Ui, app: &mut App) {
                     if theme_option(
                         ui,
                         &palette,
-                        choice.label(),
+                        &choice.translated(app.locale),
                         app.settings.custom_theme.is_none() && app.settings.theme == choice,
                     ) {
                         app.actions.push(Action::SetTheme(choice));
@@ -1143,7 +1143,7 @@ fn theme_picker(ui: &mut egui::Ui, app: &mut App) {
         let rect = response.response.rect;
         let text = widgets::line(
             ui,
-            selected,
+            &selected,
             theme::regular(14.0),
             palette.text,
             rect.width() - 36.0,
@@ -1197,10 +1197,7 @@ fn font_picker(ui: &mut egui::Ui, app: &mut App) {
     let palette = app.palette;
     let selected = app.settings.font;
     // "Inter" is a name; "System" is a word.
-    let label = |choice: FontChoice| match choice {
-        FontChoice::System => crate::i18n::gettext(app.locale, choice.label()).into_owned(),
-        FontChoice::Inter => choice.label().to_owned(),
-    };
+    let label = |choice: FontChoice| choice.translated(app.locale);
     let response = egui::ComboBox::from_id_salt("interface_font")
         .selected_text(label(selected))
         .width(200.0_f32.min(ui.available_width()))
@@ -1219,8 +1216,7 @@ fn motion_picker(ui: &mut egui::Ui, app: &mut App) {
     use crate::settings::MotionChoice;
     let palette = app.palette;
     let selected = app.settings.motion;
-    let label =
-        |choice: MotionChoice| crate::i18n::gettext(app.locale, choice.label()).into_owned();
+    let label = |choice: MotionChoice| choice.translated(app.locale);
     let response = egui::ComboBox::from_id_salt("interface_motion")
         .selected_text(label(selected))
         .width(200.0_f32.min(ui.available_width()))
@@ -1835,7 +1831,7 @@ fn profile_field(
     response.lost_focus() && ui.input(|input| input.key_pressed(egui::Key::Enter))
 }
 
-/// The version, links to more about ZapFast, and who made it.
+/// The version, links to more about ZapFastie, and who made it.
 fn about(app: &mut App, ui: &mut egui::Ui) {
     let palette = app.palette;
     ui.horizontal(|ui| {
@@ -1845,7 +1841,7 @@ fn about(app: &mut App, ui: &mut egui::Ui) {
         ui.vertical(|ui| {
             theme::text(
                 ui,
-                format!("ZapFast {}", env!("CARGO_PKG_VERSION")),
+                format!("ZapFastie {}", env!("CARGO_PKG_VERSION")),
                 theme::semibold(16.0),
                 palette.text,
             );

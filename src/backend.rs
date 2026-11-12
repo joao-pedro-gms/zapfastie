@@ -569,12 +569,12 @@ pub enum Command {
         complete: bool,
     },
     /// Internal: the one-time replay of the phone's contacts, for the first
-    /// names saved before ZapFast kept them, finished.
+    /// names saved before ZapFastie kept them, finished.
     FirstNamesRecovered {
         complete: bool,
     },
     /// Internal: the one-time replay of the phone's stars, for those made
-    /// before ZapFast followed them, finished.
+    /// before ZapFastie followed them, finished.
     StarsRecovered {
         complete: bool,
     },
@@ -992,7 +992,7 @@ pub enum Command {
     /// Sets aside an unreadable archive and the linked session, then starts
     /// over with a new archive and a new link.
     StartOverArchive,
-    /// Whether the person is looking at ZapFast. While they are not, the
+    /// Whether the person is looking at ZapFastie. While they are not, the
     /// linked phone keeps receiving push notifications.
     SetOnline(bool),
     Shutdown,
@@ -1556,7 +1556,7 @@ pub enum Event {
     },
     /// The current call changed state. The UI renders this and nothing else.
     Call(Box<crate::calls::CallUpdate>),
-    /// A group call ZapFast cannot join while [`crate::calls::GROUP_CALLS_ENABLED`] is off:
+    /// A group call ZapFastie cannot join while [`crate::calls::GROUP_CALLS_ENABLED`] is off:
     /// ringing (`phase` is `Incoming`), so the window says who is calling and to answer on the
     /// phone, or over, so that word is taken back. It never takes the call screen.
     PhoneOnlyCall(Box<crate::calls::CallUpdate>),

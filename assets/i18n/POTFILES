@@ -33,3 +33,8 @@ src/group_admin.rs
 src/ui/polls.rs
 src/ui/update.rs
 src/a11y.rs
+src/ui/blocking.rs
+src/blocking.rs
+src/ui/voice_bar.rs
+src/ui/attachment_preview.rs
+src/ui/chat_export.rs

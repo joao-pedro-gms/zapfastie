@@ -482,6 +482,11 @@ pub struct App {
     /// The wallpaper image named in the settings, decoded off this thread.
     pub wallpaper_image: crate::wallpaper::CustomImage,
 
+    /// How many messages were sent from this window, as an animation target:
+    /// the composer's field pops once each time it changes.
+    pub(crate) composer_pops: f32,
+    /// How many chats this window has opened, so each opening fades in afresh.
+    pub(crate) chat_opens: u64,
     /// A sent message moves its chat up, so the chat list goes to the top,
     /// if it is near the top already (the list decides, from its offset).
     pub scroll_chats_to_top: bool,
@@ -904,7 +909,7 @@ pub struct App {
     /// texture each is drawn through.
     pub call_member_frames: HashMap<String, std::sync::Arc<egui::ColorImage>>,
     pub call_member_textures: HashMap<String, CallTexture>,
-    /// Whether ZapFast starts at login, when this installation supports it.
+    /// Whether ZapFastie starts at login, when this installation supports it.
     pub start_with_system: Option<bool>,
     /// The read or change of the login item running on its thread.
     login_item: crate::autostart::LoginItem,
@@ -941,7 +946,7 @@ pub struct App {
     /// its command line tool.
     #[cfg(test)]
     test_raised: bool,
-    /// Whether the tray menu offers "Lock ZapFast": whether an app lock
+    /// Whether the tray menu offers "Lock ZapFastie": whether an app lock
     /// password was set when it last changed.
     tray_lockable: bool,
     /// Whether the app is running without a window.
@@ -1217,7 +1222,7 @@ fn wayland_session() -> bool {
 }
 
 /// The app outlives its window: closing it with "keep running" on hides
-/// ZapFast, and the tray, a notification or another launch brings it back.
+/// ZapFastie, and the tray, a notification or another launch brings it back.
 impl fastframe_shell::Resident for App {
     fn closed(&self) -> fastframe_shell::Closed {
         if self.quit_requested {
@@ -1314,25 +1319,25 @@ fn tray_action(event: fastframe_tray::Event, window_hidden: bool) -> Option<Acti
     })
 }
 
-/// The tray item: ZapFast's icon, and a menu to show or hide the window,
+/// The tray item: ZapFastie's icon, and a menu to show or hide the window,
 /// to lock it while an app lock password is set, and to quit. The title and
 /// the menu never name a chat, so they are safe while locked.
 ///
-/// "Lock ZapFast" is always in the menu, hidden without a password;
+/// "Lock ZapFastie" is always in the menu, hidden without a password;
 /// `App::sync_tray` shows or hides it as the password is set or removed.
 fn tray_config(lockable: bool) -> fastframe_tray::Config {
     use fastframe_tray::MenuItem;
     fastframe_tray::Config {
         id: "zapfast",
-        title: "ZapFast".into(),
+        title: "ZapFastie".into(),
         icon: crate::util::app_icon_rgba,
         template_icon: Some(crate::util::tray_template_rgba),
         // The icon changes with the unread count, which a host that has the
         // installed icon's name would draw instead.
         themed_icon: false,
         menu: vec![
-            MenuItem::action(TRAY_SHOW, "Show or hide ZapFast"),
-            MenuItem::action(TRAY_LOCK, "Lock ZapFast").visible(lockable),
+            MenuItem::action(TRAY_SHOW, "Show or hide ZapFastie"),
+            MenuItem::action(TRAY_LOCK, "Lock ZapFastie").visible(lockable),
             MenuItem::Separator,
             MenuItem::action(TRAY_QUIT, "Quit"),
         ],
@@ -1346,8 +1351,8 @@ fn wants_tray_item(allowed: bool, keep_running: bool, exists: bool) -> bool {
     allowed && keep_running && !exists
 }
 
-/// Whether closing the window keeps ZapFast running. On macOS the Dock
-/// brings the window back, so closing it keeps ZapFast running as other Mac
+/// Whether closing the window keeps ZapFastie running. On macOS the Dock
+/// brings the window back, so closing it keeps ZapFastie running as other Mac
 /// apps do, and the setting decides only the menu-bar item. Elsewhere only a
 /// tray item a panel shows can bring it back.
 fn closing_keeps_running(dock: bool, tray_shown: bool, keep_running: bool) -> bool {
@@ -1506,7 +1511,7 @@ impl App {
     pub fn start_hidden(&mut self) {
         self.hide_intent = true;
         // No window will attach the tray, which makes the macOS item; make
-        // it now without bringing ZapFast forward.
+        // it now without bringing ZapFastie forward.
         if let Some(tray) = &mut self.tray {
             tray.create_item();
         }
@@ -1556,7 +1561,7 @@ impl App {
                 _ => Palette::dark(),
             });
         let locale = crate::i18n::resolve(settings.interface_language);
-        // With a password set, ZapFast starts locked.
+        // With a password set, ZapFastie starts locked.
         let app_lock = crate::app_lock::AppLock::new(settings.app_lock_hash.is_some());
         let tray_lockable = settings.app_lock_hash.is_some();
         let mut app = Self {
@@ -1722,6 +1727,8 @@ impl App {
             unread_kept: HashSet::new(),
             toasts: Vec::new(),
             actions: Vec::new(),
+            composer_pops: 0.0,
+            chat_opens: 0,
             composer_undo_epoch: 0,
             prefilled: None,
             deferred_account_actions: Vec::new(),
@@ -2079,7 +2086,10 @@ impl App {
             match Account::detached(&self.dirs, id, crate::settings::AccountSettings::default()) {
                 Ok((account, _)) => account,
                 Err(error) => {
-                    self.toast_error(format!("Could not add an account: {error}"));
+                    self.toast_error(
+                        crate::i18n::gettext(self.locale, "Could not add an account: {error}")
+                            .replace("{error}", &error.to_string()),
+                    );
                     return;
                 }
             }
@@ -2087,7 +2097,10 @@ impl App {
             match Account::spawn(&self.dirs, id, &self.settings, &self.waker) {
                 Ok(account) => account,
                 Err(error) => {
-                    self.toast_error(format!("Could not add an account: {error}"));
+                    self.toast_error(
+                        crate::i18n::gettext(self.locale, "Could not add an account: {error}")
+                            .replace("{error}", &error.to_string()),
+                    );
                     return;
                 }
             }
@@ -2221,7 +2234,7 @@ impl App {
         }
     }
 
-    /// Whether closing the window keeps ZapFast running, hidden.
+    /// Whether closing the window keeps ZapFastie running, hidden.
     pub fn keeps_running_on_close(&self) -> bool {
         closing_keeps_running(
             self.dock.is_some(),
@@ -2241,7 +2254,7 @@ impl App {
 
     /// Whether a panel shows the tray item now, so a hidden window can be
     /// brought back from it. On Linux the item exists before a panel shows
-    /// it (ZapFast started at login before the panel), and on a desktop
+    /// it (ZapFastie started at login before the panel), and on a desktop
     /// without one it never is.
     fn tray_shown(&self) -> bool {
         #[cfg(test)]
@@ -2362,7 +2375,7 @@ impl App {
         self.tray_colour_checked = None;
     }
 
-    /// Offers "Lock ZapFast" in the tray exactly while an app lock password
+    /// Offers "Lock ZapFastie" in the tray exactly while an app lock password
     /// is set, so setting or removing one changes the menu at once, and
     /// makes the item when the setting that wants it is turned on.
     fn sync_tray(&mut self) {
@@ -2602,11 +2615,11 @@ impl App {
     }
 
     /// Announces a message while the app lock is on, or with notification
-    /// content turned off: "New message" from ZapFast, without the chat, the
+    /// content turned off: "New message" from ZapFastie, without the chat, the
     /// sender, the text or a picture, so the desktop shows nothing the lock
     /// screen hides. A chat's own sound and the mention sound would tell who
     /// wrote, so only the message sound plays, still silent for groups when
-    /// group sounds are off. The click target stays inside ZapFast: it opens
+    /// group sounds are off. The click target stays inside ZapFastie: it opens
     /// the message, once unlocked behind the lock.
     fn notify_without_content(
         &mut self,
@@ -4533,7 +4546,7 @@ impl App {
             }
             Event::Syncing(syncing) => {
                 if self.syncing && !syncing {
-                    self.toast("History loaded");
+                    self.toast(crate::i18n::gettext(self.locale, "History loaded"));
                 }
                 if live && !self.syncing && syncing {
                     self.announcer.say(
@@ -4885,7 +4898,10 @@ impl App {
             Event::UpdateAvailable { version, url } => {
                 let notice = crate::updates::Release { version, url };
                 if self.update.as_ref() != Some(&notice) {
-                    self.toast(format!("ZapFast {} is available", notice.version));
+                    self.toast(
+                        crate::i18n::gettext(self.locale, "ZapFastie {version} is available")
+                            .replace("{version}", &notice.version),
+                    );
                 }
                 self.update = Some(notice);
             }
@@ -4946,7 +4962,7 @@ impl App {
                     .into_owned(),
                     crate::calls::CALL_LINKS_OFF => crate::i18n::gettext(
                         self.locale,
-                        "ZapFast can't join group calls yet: open the link on your phone.",
+                        "ZapFastie can't join group calls yet: open the link on your phone.",
                     )
                     .into_owned(),
                     "Connect to WhatsApp to change disappearing messages." => {
@@ -5019,7 +5035,7 @@ impl App {
                     ),
                     ArchiveFailure::Write => crate::i18n::gettext(
                         self.locale,
-                        "WhatsApp updated this chat, but ZapFast could not save the change",
+                        "WhatsApp updated this chat, but ZapFastie could not save the change",
                     ),
                 };
                 self.toast_error(message);
@@ -5125,7 +5141,7 @@ impl App {
                 if (live && self.announced_offline)
                     || matches!(self.link, LinkStatus::Disconnected { .. })
                 {
-                    self.toast("Back online");
+                    self.toast(crate::i18n::gettext(self.locale, "Back online"));
                 }
                 if live {
                     self.announced_offline = false;
@@ -5202,7 +5218,10 @@ impl App {
                 if !self.any_linked() {
                     self.forget_app_lock();
                 }
-                self.toast_error("This device was unlinked from your phone");
+                self.toast_error(crate::i18n::gettext(
+                    self.locale,
+                    "This device was unlinked from your phone",
+                ));
                 return;
             }
             LinkStatus::Failed(message) => self.toast_error(message.clone()),
@@ -5789,7 +5808,7 @@ impl App {
             }
             Refusal::Offline => crate::i18n::gettext(
                 self.locale,
-                "Not sent: ZapFast is not connected to WhatsApp.",
+                "Not sent: ZapFastie is not connected to WhatsApp.",
             ),
             Refusal::QuoteUnavailable => crate::i18n::gettext(
                 self.locale,
@@ -6790,7 +6809,7 @@ impl App {
 
     fn stage_all(&mut self, items: impl IntoIterator<Item = Pending>) {
         if self.open_chat.is_none() {
-            self.toast_error("Open a chat first");
+            self.toast_error(crate::i18n::gettext(self.locale, "Open a chat first"));
             return;
         }
         for item in items {
@@ -6947,17 +6966,21 @@ impl App {
     #[allow(dead_code)]
     fn send_files(&mut self, paths: Vec<PathBuf>) {
         let Some(chat) = self.open_chat.clone() else {
-            self.toast_error("Open a chat first");
+            self.toast_error(crate::i18n::gettext(self.locale, "Open a chat first"));
             return;
         };
         if paths.is_empty() {
             return;
         }
-        self.toast(format!(
-            "Sending {} file{}…",
-            paths.len(),
-            if paths.len() == 1 { "" } else { "s" }
-        ));
+        self.toast(
+            crate::i18n::ngettext(
+                self.locale,
+                "Sending {count} file…",
+                "Sending {count} files…",
+                paths.len() as u32,
+            )
+            .replace("{count}", &paths.len().to_string()),
+        );
         self.backend.send(Command::SendFiles {
             chat,
             paths,
@@ -7503,6 +7526,7 @@ impl App {
                     Some(message) => self.apply(Action::OpenMessage { chat: id, message }, ctx),
                     None => self.open_chat(id),
                 }
+                self.chat_opens = self.chat_opens.wrapping_add(1);
                 // The chat may carry a palette of its own.
                 self.apply_theme(ctx);
             }
@@ -7696,6 +7720,7 @@ impl App {
                 text,
                 quoting,
             } => {
+                self.composer_pops += 1.0;
                 self.send_text(chat, text, quoting);
                 self.reply_to = None;
             }
@@ -7782,7 +7807,10 @@ impl App {
                     return;
                 };
                 if conversation.fetching_phone {
-                    self.toast("History is already being requested for this chat");
+                    self.toast(crate::i18n::gettext(
+                        self.locale,
+                        "History is already being requested for this chat",
+                    ));
                     return;
                 }
                 if conversation.message(&message).is_none() {
@@ -7791,7 +7819,10 @@ impl App {
                 conversation.fetching_phone = true;
                 conversation.phone_explicit = true;
                 self.backend.send(Command::ReloadHistory { chat, message });
-                self.toast("Requesting earlier messages from your phone");
+                self.toast(crate::i18n::gettext(
+                    self.locale,
+                    "Requesting earlier messages from your phone",
+                ));
             }
             Action::ToggleMotion { chat, message } => {
                 let playing = (chat, message);
@@ -7886,7 +7917,8 @@ impl App {
                     // own, or one that never decodes would download forever:
                     // the bubble offers the retry, as a failed download does.
                     log::warn!("a downloaded attachment could not be displayed");
-                    media.state = MediaState::Failed("ZapFast could not display this file".into());
+                    media.state =
+                        MediaState::Failed("ZapFastie could not display this file".into());
                 } else if !matches!(media.state, MediaState::Downloading) {
                     // Gone from the disk: it downloads again like any
                     // attachment that was never downloaded.
@@ -8051,10 +8083,19 @@ impl App {
                     self.attachment_missing(path);
                 } else if allowed && path.is_file() {
                     if let Err(error) = open::that_detached(&path) {
-                        self.toast_error(format!("Could not open the attachment: {error}"));
+                        self.toast_error(
+                            crate::i18n::gettext(
+                                self.locale,
+                                "Could not open the attachment: {error}",
+                            )
+                            .replace("{error}", &error.to_string()),
+                        );
                     }
                 } else {
-                    self.toast("For safety, open this file yourself from its folder");
+                    self.toast(crate::i18n::gettext(
+                        self.locale,
+                        "For safety, open this file yourself from its folder",
+                    ));
                     if let Some(folder) = path.parent() {
                         self.actions.push(Action::OpenFolder(folder.to_owned()));
                     }
@@ -8088,10 +8129,16 @@ impl App {
             Action::OpenFolder(path) => {
                 if path.is_dir() {
                     if let Err(error) = open::that_detached(&path) {
-                        self.toast_error(format!("Could not open the folder: {error}"));
+                        self.toast_error(
+                            crate::i18n::gettext(self.locale, "Could not open the folder: {error}")
+                                .replace("{error}", &error.to_string()),
+                        );
                     }
                 } else {
-                    self.toast_error("The folder is unavailable");
+                    self.toast_error(crate::i18n::gettext(
+                        self.locale,
+                        "The folder is unavailable",
+                    ));
                 }
             }
             Action::OpenUrl(url) => {
@@ -8101,7 +8148,7 @@ impl App {
                     } else {
                         self.toast(crate::i18n::gettext(
                             self.locale,
-                            "ZapFast can't join group calls yet: open the link on your phone.",
+                            "ZapFastie can't join group calls yet: open the link on your phone.",
                         ));
                     }
                 } else if let Some(code) = crate::safety::group_invite_code(&url) {
@@ -8114,12 +8161,15 @@ impl App {
                 } else if let Some(url) = crate::safety::external_url(&url) {
                     ctx.open_url(egui::OpenUrl::new_tab(url));
                 } else {
-                    self.toast_error("This link type cannot be opened from ZapFast");
+                    self.toast_error(crate::i18n::gettext(
+                        self.locale,
+                        "This link type cannot be opened from ZapFastie",
+                    ));
                 }
             }
             Action::CopyText(text) => {
                 ctx.copy_text(text);
-                self.toast("Copied");
+                self.toast(crate::i18n::gettext(self.locale, "Copied"));
             }
             Action::CopyImage(path) => {
                 self.backend.send(Command::PrepareClipboardImage(path));
@@ -8993,7 +9043,7 @@ impl App {
             }
             Action::SendGif(gif) => {
                 if let Some(chat) = self.open_chat.clone() {
-                    self.toast("Sending GIF…");
+                    self.toast(crate::i18n::gettext(self.locale, "Sending GIF…"));
                     let quoting = self.reply_to.take();
                     self.backend.send(Command::SendGif { chat, gif, quoting });
                     self.picker = None;
@@ -9085,7 +9135,10 @@ impl App {
             Action::ClearChat(chat) => self.backend.send(Command::ClearChat(chat)),
             Action::SetPinned(chat, pinned) => {
                 if pinned && self.pinned_count() >= self.pin_limit {
-                    self.toast(format!("You can only pin {} chats", self.pin_limit));
+                    self.toast(
+                        crate::i18n::gettext(self.locale, "You can only pin {count} chats")
+                            .replace("{count}", &self.pin_limit.to_string()),
+                    );
                     return;
                 }
                 if let Some(known) = self.chat_mut(&chat) {
@@ -9366,7 +9419,7 @@ impl App {
                     self.toast_error(
                         crate::i18n::gettext(
                             self.locale,
-                            "You have {limit} labels, the most ZapFast keeps.",
+                            "You have {limit} labels, the most ZapFastie keeps.",
                         )
                         .replace("{limit}", &crate::archive::LABEL_LIMIT.to_string()),
                     );
@@ -10589,18 +10642,27 @@ impl App {
                 self.start_with_system = crate::autostart::switch(state);
                 if outcome.changed && matches!(state, fastframe_autostart::State::NeedsApproval(_))
                 {
-                    self.toast("Allow ZapFast in System Settings, under Login Items.");
+                    self.toast(crate::i18n::gettext(
+                        self.locale,
+                        "Allow ZapFastie in System Settings, under Login Items.",
+                    ));
                 }
             }
             Err(error) => {
                 if outcome.changed {
-                    self.toast_error(format!("Could not change the login item: {error}"));
+                    self.toast_error(
+                        crate::i18n::gettext(
+                            self.locale,
+                            "Could not change the login item: {error}",
+                        )
+                        .replace("{error}", &error.to_string()),
+                    );
                 }
             }
         }
     }
 
-    /// Collects a finished password check, and locks once ZapFast has gone
+    /// Collects a finished password check, and locks once ZapFastie has gone
     /// unused for the chosen time. Inactivity counts while the window is
     /// hidden too: only input in the window restarts it.
     fn tick_app_lock(&mut self, ctx: &egui::Context) {
@@ -10617,7 +10679,7 @@ impl App {
         if self.app_lock.is_locked() {
             return;
         }
-        // Recording a voice message is using ZapFast, keys or not.
+        // Recording a voice message is using ZapFastie, keys or not.
         if self.recording.is_some() {
             self.app_lock.note_input();
         }
@@ -11426,7 +11488,10 @@ impl App {
         // Microphone errors name only the device and its stream, never what
         // was said, so the log keeps them for bug reports (#382).
         log::warn!("recording failed: {error}");
-        self.toast_error(format!("Could not record: {error}"));
+        self.toast_error(
+            crate::i18n::gettext(self.locale, "Could not record: {error}")
+                .replace("{error}", error),
+        );
     }
 
     /// Replace a macOS window when the selected theme needs a different surface.
@@ -15698,7 +15763,7 @@ mod tests {
         );
     }
 
-    /// Demo and test runs share the machine with a linked ZapFast, whose real
+    /// Demo and test runs share the machine with a linked ZapFastie, whose real
     /// taskbar badge they must not overwrite.
     /// A background page is not an answer to a request the reader made.
     /// Counting it as one would look like the phone missing, and back off the
@@ -18054,7 +18119,7 @@ mod tests {
         assert!(!app.hide_intent);
     }
 
-    /// On Linux the tray item exists before a panel shows it (ZapFast started
+    /// On Linux the tray item exists before a panel shows it (ZapFastie started
     /// at login before the panel, or a desktop without one). Until a panel
     /// shows it, closing quits and the window is not hidden, since nothing
     /// could bring it back. A hidden start waits for a panel instead; see
@@ -18084,7 +18149,7 @@ mod tests {
     }
 
     /// On macOS the Dock brings a closed window back, so closing it keeps
-    /// ZapFast running with or without a menu-bar item, and the setting
+    /// ZapFastie running with or without a menu-bar item, and the setting
     /// decides only the item. A hidden start still needs the item: the
     /// Dock's reopen handler needs a window made first.
     #[test]
@@ -18112,7 +18177,7 @@ mod tests {
         assert!(Resident::start_hidden(&mut app));
     }
 
-    /// At login on GNOME the tray watcher comes up after ZapFast (#429): a
+    /// At login on GNOME the tray watcher comes up after ZapFastie (#429): a
     /// hidden start keeps the window hidden while it waits for a panel, stays
     /// hidden once one shows the item, and shows the window if none has
     /// within `TRAY_WAIT`.
@@ -18885,8 +18950,8 @@ mod tests {
             assert_eq!(
                 super::tray_config(lockable).menu,
                 [
-                    fastframe_tray::MenuItem::action(super::TRAY_SHOW, "Show or hide ZapFast"),
-                    fastframe_tray::MenuItem::action(super::TRAY_LOCK, "Lock ZapFast")
+                    fastframe_tray::MenuItem::action(super::TRAY_SHOW, "Show or hide ZapFastie"),
+                    fastframe_tray::MenuItem::action(super::TRAY_LOCK, "Lock ZapFastie")
                         .visible(lockable),
                     fastframe_tray::MenuItem::Separator,
                     fastframe_tray::MenuItem::action(super::TRAY_QUIT, "Quit"),
@@ -18895,7 +18960,7 @@ mod tests {
         }
     }
 
-    /// The tray offers "Lock ZapFast" as soon as a password is set and stops
+    /// The tray offers "Lock ZapFastie" as soon as a password is set and stops
     /// as soon as it is removed, not at the next start.
     #[test]
     fn the_tray_offers_the_lock_while_a_password_is_set() {
@@ -26916,7 +26981,7 @@ mod app_lock_tests {
         app.lock_app();
         app.maybe_notify(CHAT, &message);
         let shown = app.notifications.shown.last().unwrap();
-        assert_eq!(shown.title, "ZapFast");
+        assert_eq!(shown.title, "ZapFastie");
         assert_eq!(shown.body, "New message");
         assert_eq!(shown.picture, None);
         assert_eq!(
@@ -26951,7 +27016,7 @@ mod app_lock_tests {
         app.settings.notification_content = false;
         app.maybe_notify(CHAT, &message);
         let shown = app.notifications.shown.last().unwrap().clone();
-        assert_eq!(shown.title, "ZapFast");
+        assert_eq!(shown.title, "ZapFastie");
         assert_eq!(shown.body, "New message");
         assert_eq!(shown.picture, None);
         assert_eq!(shown.sound, app.settings.message_sound);
