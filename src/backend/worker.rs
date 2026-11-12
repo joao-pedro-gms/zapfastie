@@ -7653,6 +7653,12 @@ impl Worker {
                 }
                 self.emit_chat(&chat);
             }
+            Command::SetChatPalette { chat, palette } => {
+                if let Err(error) = self.archive.set_chat_palette(&chat, palette.as_deref()) {
+                    log::warn!("could not store the chat's palette: {error}");
+                }
+                self.emit_chat(&chat);
+            }
             Command::PickChatSound(chat) => {
                 let events = self.events.clone();
                 let waker = self.waker.clone();

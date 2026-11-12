@@ -613,6 +613,11 @@ pub enum Command {
         chat: ChatId,
         speed: Option<f32>,
     },
+    /// Stores a chat's own palette, by theme filename; `None` follows the window's.
+    SetChatPalette {
+        chat: ChatId,
+        palette: Option<String>,
+    },
     /// Changes a chat's disappearing-message timer; `0` turns it off.
     SetDisappearingTimer {
         chat: ChatId,

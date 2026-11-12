@@ -321,6 +321,8 @@ pub struct Chat {
     pub unread_mention: Option<String>,
     /// This chat's own voice message speed; `None` follows Settings.
     pub voice_speed: Option<f32>,
+    /// This chat's own palette, by theme filename; `None` follows the window's.
+    pub palette: Option<String>,
 }
 
 /// A group's permissions and admins, as its metadata says. Kept in the
@@ -413,6 +415,7 @@ impl Chat {
             notification_sound: None,
             unread_mention: None,
             voice_speed: None,
+            palette: None,
         }
     }
 
@@ -2895,6 +2898,11 @@ pub enum Action {
     StopVoice,
     /// Sets the voice playback speed to one of the supported speeds.
     SetVoiceSpeed(f32),
+    /// Gives the chat its own palette, by theme filename; `None` follows the window's.
+    SetChatPalette {
+        chat: ChatId,
+        palette: Option<String>,
+    },
     /// Plays or pauses a downloaded video inside its message.
     PlayVideo {
         message: String,

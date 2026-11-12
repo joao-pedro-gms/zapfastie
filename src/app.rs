@@ -7247,19 +7247,30 @@ impl App {
                     == egui::Theme::Dark
             }
         };
-        let palette = self.settings.cached_palette().unwrap_or_else(|| {
-            if self.settings.theme == ThemeChoice::Messages {
-                if dark {
-                    Palette::messages()
+        // A chat can be given a palette of its own, which stands over the
+        // window's while it is open.
+        let chat_palette = self
+            .open_chat
+            .as_ref()
+            .and_then(|id| self.chats.iter().find(|chat| &chat.id == id))
+            .and_then(|chat| chat.palette.as_ref())
+            .and_then(|name| self.custom_themes.find(name))
+            .map(|theme| theme.palette);
+        let palette = chat_palette
+            .or_else(|| self.settings.cached_palette())
+            .unwrap_or_else(|| {
+                if self.settings.theme == ThemeChoice::Messages {
+                    if dark {
+                        Palette::messages()
+                    } else {
+                        Palette::messages_light()
+                    }
+                } else if dark {
+                    Palette::dark()
                 } else {
-                    Palette::messages_light()
+                    Palette::light()
                 }
-            } else if dark {
-                Palette::dark()
-            } else {
-                Palette::light()
-            }
-        });
+            });
         if crate::theme::apply_text_rendering_change(ctx) {
             self.applied_dark = None;
         }
@@ -7492,6 +7503,8 @@ impl App {
                     Some(message) => self.apply(Action::OpenMessage { chat: id, message }, ctx),
                     None => self.open_chat(id),
                 }
+                // The chat may carry a palette of its own.
+                self.apply_theme(ctx);
             }
             // Applied by `apply_call_action` before anything else.
             Action::StartCall(_)
@@ -7637,6 +7650,11 @@ impl App {
             }
             Action::CloseChat => {
                 self.close_info();
+                let chat_theme = self
+                    .open_chat
+                    .as_ref()
+                    .and_then(|id| self.chats.iter().find(|chat| &chat.id == id))
+                    .is_some_and(|chat| chat.palette.is_some());
                 // A narrow window's Back from a picked call returns to the
                 // call history.
                 self.picked_call = None;
@@ -7667,6 +7685,11 @@ impl App {
                 self.reaction_target = None;
                 self.reaction_anchor = None;
                 self.emoji_jump = None;
+                // Leaving a chat that had a palette puts the window's own back.
+                if chat_theme {
+                    self.applied_dark = None;
+                    self.apply_theme(ctx);
+                }
             }
             Action::SendText {
                 chat,
@@ -8625,6 +8648,21 @@ impl App {
                 self.settings.voice_speed = crate::audio::supported_speed(speed);
                 self.sync_voice_speed();
                 self.mark_settings_dirty();
+            }
+            Action::SetChatPalette { chat, palette } => {
+                if let Some(entry) = self.chats.iter_mut().find(|entry| entry.id == chat) {
+                    entry.palette = palette.clone();
+                }
+                self.backend.send(Command::SetChatPalette {
+                    chat: chat.clone(),
+                    palette,
+                });
+                // The open chat wears its own palette at once; another chat's
+                // waits until it is opened.
+                if self.open_chat.as_deref() == Some(chat.as_str()) {
+                    self.applied_dark = None;
+                    self.apply_theme(ctx);
+                }
             }
             Action::StartRecording => {
                 if self.open_chat.is_some() && self.recording.is_none() {

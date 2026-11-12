@@ -182,7 +182,7 @@ const CHAT_COLUMNS: &str =
                     c.notification_sound, c.marked_unread,
                     (SELECT f.position FROM favorites f WHERE f.chat = c.id), c.left,
                     c.info_locked, c.group_admin, c.group_description, c.voice_speed,
-                    c.group_settings";
+                    c.group_settings, c.palette";
 
 /// Adds columns introduced after the initial schema when missing.
 const MIGRATIONS: &[(&str, &str, &str)] = &[
@@ -228,6 +228,8 @@ const MIGRATIONS: &[(&str, &str, &str)] = &[
     ("chats", "history_start", "INTEGER NOT NULL DEFAULT 0"),
     // NULL plays voice messages at the speed in Settings.
     ("chats", "voice_speed", "REAL"),
+    // The chat's own palette, by theme filename; NULL follows the window's.
+    ("chats", "palette", "TEXT"),
     // A group's permissions and admins as JSON; NULL until its metadata says.
     ("chats", "group_settings", "TEXT"),
     ("contacts", "first_name", "TEXT"),
@@ -342,6 +344,7 @@ fn chat_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<Chat> {
         group_settings: row
             .get::<_, Option<String>>(27)?
             .and_then(|settings| serde_json::from_str(&settings).ok()),
+        palette: row.get(28)?,
     })
 }
 
@@ -733,6 +736,15 @@ impl Archive {
         self.connection.execute(
             "UPDATE chats SET voice_speed = ?2 WHERE id = ?1",
             params![id, speed],
+        )?;
+        Ok(())
+    }
+
+    /// A chat's own palette, by theme filename; `None` follows the window's.
+    pub fn set_chat_palette(&self, id: &str, palette: Option<&str>) -> Result<()> {
+        self.connection.execute(
+            "UPDATE chats SET palette = ?2 WHERE id = ?1",
+            params![id, palette],
         )?;
         Ok(())
     }
@@ -4797,6 +4809,21 @@ pub(crate) mod tests {
         assert_eq!(archive.chat(id).unwrap().unwrap().voice_speed, Some(1.25));
         archive.set_voice_speed(id, None).unwrap();
         assert_eq!(archive.chat(id).unwrap().unwrap().voice_speed, None);
+    }
+
+    #[test]
+    fn a_chat_keeps_its_own_palette() {
+        let archive = Archive::in_memory().unwrap();
+        let id = "1@s.whatsapp.net";
+        archive.ensure_chat(id, "Ada").unwrap();
+        assert_eq!(archive.chat(id).unwrap().unwrap().palette, None);
+        archive.set_chat_palette(id, Some("Nord.json")).unwrap();
+        assert_eq!(
+            archive.chat(id).unwrap().unwrap().palette.as_deref(),
+            Some("Nord.json")
+        );
+        archive.set_chat_palette(id, None).unwrap();
+        assert_eq!(archive.chat(id).unwrap().unwrap().palette, None);
     }
 
     #[test]

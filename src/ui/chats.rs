@@ -2203,6 +2203,7 @@ fn context_menu(app: &mut App, ui: &mut egui::Ui, chat: &Chat, palette: &Palette
     }
     sound_menu(app, ui, palette, chat);
     voice_speed_menu(app, ui, palette, chat);
+    chat_palette_menu(app, ui, palette, chat);
     labels::chat_menu(app, ui, chat, palette);
     let lock_label = if chat.locked {
         crate::i18n::gettext(locale, "Unlock chat")
@@ -2394,6 +2395,42 @@ fn voice_speed_menu(app: &mut App, ui: &mut egui::Ui, palette: &Palette, chat: &
                     app.actions.push(Action::SetChatVoiceSpeed {
                         chat: chat.id.clone(),
                         speed,
+                    });
+                    ui.close();
+                }
+            }
+        },
+    );
+}
+
+/// The chat's own palette: the window's, or any theme the catalogue offers.
+fn chat_palette_menu(app: &mut App, ui: &mut egui::Ui, palette: &Palette, chat: &Chat) {
+    let options: Vec<(Option<String>, String)> = std::iter::once((
+        None,
+        crate::i18n::gettext(app.locale, "Default").into_owned(),
+    ))
+    .chain(app.custom_themes.picker_themes().map(|theme| {
+        (
+            Some(theme.filename.clone()),
+            fastframe_theme::display_name(&theme.filename).to_owned(),
+        )
+    }))
+    .collect();
+    let items: Vec<&str> = options.iter().map(|(_, label)| label.as_str()).collect();
+    widgets::submenu(
+        ui,
+        palette,
+        Icon::Sun,
+        &crate::i18n::gettext(app.locale, "Chat theme"),
+        &items,
+        |ui| {
+            for (name, label) in &options {
+                let name = name.clone();
+                let checked = chat.palette == name;
+                if widgets::menu_item(ui, palette, checked.then_some(Icon::Check), label) {
+                    app.actions.push(Action::SetChatPalette {
+                        chat: chat.id.clone(),
+                        palette: name,
                     });
                     ui.close();
                 }

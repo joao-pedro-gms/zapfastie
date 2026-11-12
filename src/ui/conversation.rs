@@ -1730,7 +1730,7 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
             // The draft grows to six lines, or to fewer in a window too short
             // to spare them: the field may take a fifth of the window's height,
             // so a short window still shows a message or two above it.
-            let lines = (ui.ctx().content_rect().height() / 5.0 / line_height)
+            let lines = (ui.ctx().content_rect().height() / 5.0 / line_height.max(1.0))
                 .floor()
                 .clamp(1.0, 6.0);
             let tallest = line_height * lines;
