@@ -20,15 +20,15 @@ pub struct AppDirs {
 
 impl AppDirs {
     pub fn discover() -> Self {
-        match Self::of("zapfast") {
+        match Self::of("zapfastie") {
             Some(dirs) => dirs,
             None => {
                 let fallback = std::env::current_dir().unwrap_or_default();
                 Self {
-                    config: fallback.join("zapfast-config"),
-                    state: fallback.join("zapfast-state"),
-                    cache: fallback.join("zapfast-cache"),
-                    runtime: fallback.join("zapfast-run"),
+                    config: fallback.join("zapfastie-config"),
+                    state: fallback.join("zapfastie-state"),
+                    cache: fallback.join("zapfastie-cache"),
+                    runtime: fallback.join("zapfastie-run"),
                 }
             }
         }
@@ -51,13 +51,17 @@ impl AppDirs {
 
     /// Adopts earlier names, newest first, without replacing existing data.
     /// Call only after acquiring the instance guard, and never for demo runs.
+    ///
+    /// `zapfast` is the name this app shipped under before ZapFastie: the
+    /// sessions and settings of anyone who updates are moved across once, so a
+    /// rename never costs a linked phone.
     pub fn adopt_previous_names(&self) -> std::io::Result<()> {
-        for name in ["fastsapp", "fastwhatsapp"] {
+        for name in ["zapfast", "fastsapp", "fastwhatsapp"] {
             if let Some(old) = Self::of(name) {
                 self.adopt(&old)?;
             }
             if let (Some(from), Some(to)) =
-                (eframe::storage_dir(name), eframe::storage_dir("zapfast"))
+                (eframe::storage_dir(name), eframe::storage_dir("zapfastie"))
             {
                 adopt_directory(&from, &to)?;
             }
@@ -242,7 +246,7 @@ impl AppDirs {
 
     /// Current-run log, replaced at startup.
     pub fn log_file(&self) -> PathBuf {
-        self.state.join("zapfast.log")
+        self.state.join("zapfastie.log")
     }
 
     /// Panic log written before process exit.
@@ -433,7 +437,7 @@ mod tests {
 
     fn root(name: &str) -> PathBuf {
         let root =
-            std::env::temp_dir().join(format!("zapfast-paths-{name}-{}", std::process::id()));
+            std::env::temp_dir().join(format!("zapfastie-paths-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         std::fs::create_dir_all(&root).unwrap();
         root
@@ -495,7 +499,7 @@ mod tests {
         for name in ["fastsapp", "fastwhatsapp"] {
             let root = root(name);
             let old = AppDirs::under(&root.join(name));
-            let new = AppDirs::under(&root.join("zapfast"));
+            let new = AppDirs::under(&root.join("zapfastie"));
             old.ensure().unwrap();
             for path in [
                 old.settings_file(),
@@ -532,7 +536,7 @@ mod tests {
     #[test]
     fn newest_data_wins_without_merging_archives() {
         let root = root("precedence");
-        let new = AppDirs::under(&root.join("zapfast"));
+        let new = AppDirs::under(&root.join("zapfastie"));
         let recent = AppDirs::under(&root.join("fastsapp"));
         let oldest = AppDirs::under(&root.join("fastwhatsapp"));
         recent.ensure().unwrap();

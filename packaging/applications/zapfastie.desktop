@@ -3,16 +3,16 @@ Type=Application
 Name=ZapFastie
 GenericName=WhatsApp Client
 Comment=A native WhatsApp client
-Exec=zapfast %U
-Icon=zapfast
+Exec=zapfastie %U
+Icon=zapfastie
 Terminal=false
 Categories=Network;InstantMessaging;Chat;
 Keywords=whatsapp;chat;messaging;
-StartupWMClass=zapfast
+StartupWMClass=zapfastie
 MimeType=x-scheme-handler/whatsapp;x-scheme-handler/wa;
 SingleMainWindow=true
 Actions=quit;
 
 [Desktop Action quit]
 Name=Quit ZapFastie
-Exec=zapfast quit
+Exec=zapfastie quit

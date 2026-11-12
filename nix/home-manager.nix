@@ -6,33 +6,33 @@ self:
   ...
 }:
 let
-  cfg = config.programs.zapfast;
+  cfg = config.programs.zapfastie;
   json = pkgs.formats.json { };
-  # paths.rs: ProjectDirs::from("me", "paolino", "zapfast").
+  # paths.rs: ProjectDirs::from("me", "paolino", "zapfastie").
   configDir =
     if pkgs.stdenv.hostPlatform.isDarwin then
       "${config.home.homeDirectory}/Library/Application Support/me.paolino.zapfast"
     else
-      "${config.xdg.configHome}/zapfast";
-  declared = json.generate "zapfast-settings.json" cfg.settings;
+      "${config.xdg.configHome}/zapfastie";
+  declared = json.generate "zapfastie-settings.json" cfg.settings;
   jq = lib.getExe pkgs.jq;
   readSecret = key: path: ''
     if [[ -r ${lib.escapeShellArg path} ]]; then
       zapfastSecrets+=(--rawfile ${lib.escapeShellArg key} ${lib.escapeShellArg path})
     else
-      warnEcho ${lib.escapeShellArg "ZapFast: cannot read ${path}, keeping the current ${key}"}
+      warnEcho ${lib.escapeShellArg "ZapFastie: cannot read ${path}, keeping the current ${key}"}
     fi
   '';
 in
 {
-  options.programs.zapfast = {
-    enable = lib.mkEnableOption "ZapFast, a native WhatsApp client";
+  options.programs.zapfastie = {
+    enable = lib.mkEnableOption "ZapFastie, a native WhatsApp client";
 
     package = lib.mkOption {
       type = lib.types.package;
       default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
-      defaultText = lib.literalExpression "zapfast.packages.\${pkgs.stdenv.hostPlatform.system}.default";
-      description = "The ZapFast package to install.";
+      defaultText = lib.literalExpression "zapfastie.packages.\${pkgs.stdenv.hostPlatform.system}.default";
+      description = "The ZapFastie package to install.";
     };
 
     settings = lib.mkOption {
@@ -46,18 +46,18 @@ in
         }
       '';
       description = ''
-        Keys merged into ZapFast's `settings.json` on every activation. Keys
+        Keys merged into ZapFastie's `settings.json` on every activation. Keys
         left out keep whatever the app last saved, so window geometry, recent
         emoji and the lock verifiers survive. A key declared here is reset on
         the next activation if it is changed in the app. Per-account preferences
         such as read receipts live in each account's own file and cannot be
-        declared here. Restart ZapFast after
+        declared here. Restart ZapFastie after
         activation: it reads the file at start, and its next save writes back
         the values it holds in memory.
 
         Values are copied to the Nix store, which every local user can read.
         Give secrets, such as proxy credentials or `giphy_key`, through
-        {option}`programs.zapfast.secretFiles` instead.
+        {option}`programs.zapfastie.secretFiles` instead.
       '';
     };
 
@@ -66,7 +66,7 @@ in
       default = { };
       example = lib.literalExpression ''
         {
-          proxy = config.sops.secrets.zapfast-proxy.path;
+          proxy = config.sops.secrets.zapfastie-proxy.path;
         }
       '';
       description = ''
@@ -85,7 +85,7 @@ in
     assertions = [
       {
         assertion = builtins.all (key: !(cfg.settings ? ${key})) (builtins.attrNames cfg.secretFiles);
-        message = "programs.zapfast: a key cannot be in both settings and secretFiles.";
+        message = "programs.zapfastie: a key cannot be in both settings and secretFiles.";
       }
     ];
 
@@ -105,7 +105,7 @@ in
         elif zapfastBase=$(${jq} -ce objects "$zapfastFile" 2>/dev/null); then
           :
         else
-          warnEcho "ZapFast: $zapfastFile is not a JSON object, leaving it unchanged"
+          warnEcho "ZapFastie: $zapfastFile is not a JSON object, leaving it unchanged"
           zapfastBase=
         fi
         if [[ -z "$zapfastBase" ]]; then

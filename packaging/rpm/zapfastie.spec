@@ -1,14 +1,14 @@
-# ZapFast built from its release source, for Fedora COPR (paolino/zapfast) and
+# ZapFastie built from its release source, for Fedora COPR (paolino/zapfastie) and
 # openSUSE OBS. Cargo fetches the locked dependencies while building, so the
 # COPR project and the OBS package need network access during builds.
 
-Name:           zapfast
+Name:           zapfastie
 Version:        @VERSION@
 Release:        1%{?dist}
 Summary:        Fast native WhatsApp client
 License:        MIT
 URL:            https://zapfast.rocks
-Source0:        https://github.com/crmne/zapfast/archive/refs/tags/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+Source0:        https://github.com/joao-pedro-gms/zapfastie/archive/refs/tags/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
 # ring compiles its own C, and LTO objects in its archive leave the link
 # without ring_core_* symbols, as on Arch.
@@ -47,7 +47,7 @@ Provides:       fastsapp = %{version}-%{release}
 Obsoletes:      fastsapp < %{version}-%{release}
 
 %description
-ZapFast is a native WhatsApp client for the desktop, written in Rust with
+ZapFastie is a native WhatsApp client for the desktop, written in Rust with
 egui: no browser engine, about 200 MB of memory when idle. It links as a
 companion device of your phone and keeps your chats in an encrypted local
 archive.
@@ -61,20 +61,20 @@ export RUSTFLAGS="${RUSTFLAGS:-} --remap-path-prefix=%{_builddir}=/"
 cargo build --locked --release
 
 %install
-install -Dm755 target/release/zapfast %{buildroot}%{_bindir}/zapfast
-install -Dm644 packaging/applications/zapfast.desktop %{buildroot}%{_datadir}/applications/zapfast.desktop
-install -Dm644 packaging/icons/zapfast.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/zapfast.svg
-install -Dm644 contrib/omarchy/zapfast.json.tpl %{buildroot}%{_datadir}/zapfast/omarchy/zapfast.json.tpl
-install -Dm755 contrib/omarchy/zapfast-theme %{buildroot}%{_datadir}/zapfast/omarchy/zapfast-theme
+install -Dm755 target/release/zapfastie %{buildroot}%{_bindir}/zapfastie
+install -Dm644 packaging/applications/zapfastie.desktop %{buildroot}%{_datadir}/applications/zapfastie.desktop
+install -Dm644 packaging/icons/zapfastie.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/zapfastie.svg
+install -Dm644 contrib/omarchy/zapfastie.json.tpl %{buildroot}%{_datadir}/zapfastie/omarchy/zapfastie.json.tpl
+install -Dm755 contrib/omarchy/zapfastie-theme %{buildroot}%{_datadir}/zapfastie/omarchy/zapfastie-theme
 
 %files
 %license LICENSE THIRD-PARTY-NOTICES.md
 %doc README.md
-%{_bindir}/zapfast
-%{_datadir}/applications/zapfast.desktop
-%{_datadir}/icons/hicolor/scalable/apps/zapfast.svg
-%{_datadir}/zapfast/
+%{_bindir}/zapfastie
+%{_datadir}/applications/zapfastie.desktop
+%{_datadir}/icons/hicolor/scalable/apps/zapfastie.svg
+%{_datadir}/zapfastie/
 
 %changelog
 * @DATE@ Carmine Paolino <carmine@paolino.me> - @VERSION@-1
-- ZapFast @VERSION@: https://github.com/crmne/zapfast/releases/tag/v@VERSION@
+- ZapFast @VERSION@: https://github.com/joao-pedro-gms/zapfastie/releases/tag/v@VERSION@

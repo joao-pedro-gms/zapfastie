@@ -1,28 +1,50 @@
 ---
 title: Motion
-description: How ZapFastie animates, and the ideas worth building next.
+description: How ZapFastie animates, what the settings do, and the ideas still open.
 nav_order: 7
 ---
 
 ## What moves today
 
-Motion is one setting, Settings > Appearance > Motion, with three values:
+Motion is Settings > Appearance > Motion, with three values:
 
-| Value | A transition takes | What it means |
+| Value | A full transition takes | What it means |
 | --- | --- | --- |
-| Full | 0.22 s | the default |
-| Reduced | 0.1 s | the same transitions, shorter |
+| Full | the pace below | the default |
+| Reduced | half the pace | the same transitions, shorter |
 | Off | none | every screen is still |
 
-Three things use it. A message that just arrived, sent here or from the phone,
-draws a ring around its bubble that widens and fades: one stroke, no re-layout.
-A chat that opens fades its messages in over the chat's own background, so
-switching conversations reads as a change rather than a cut. A message sent
-from here pops the composer's field once, the same way.
+The pace is a slider under the picker, 0.10 s to 0.40 s, and it sets how long a
+full transition lasts. It hides while Motion is Off: there is nothing to pace.
 
-Everything animates with `egui`'s own clocks, which stop when the value settles,
-so nothing spins. Screens never move for decoration alone: a transition has to
-say what changed.
+Ten things use it, all of them on `egui`'s own clocks, which stop when the value
+settles, so nothing spins:
+
+**Conversation**
+
+- A message that just arrived, sent here or from the phone, draws a ring around
+  its bubble that widens and fades: one stroke, no re-layout. A message sent
+  from here also fills with its own accent for a moment and fades back, so it
+  reads as arriving rather than as already being there.
+- Sending a message pops the composer's field once.
+- Opening a chat fades its messages in, over the chat's own background.
+- The reply strip fades up from the composer instead of snapping into place.
+- The sticky date at the top of the transcript fades out a second after the
+  reader stops scrolling.
+
+**The rest of the window**
+
+- Another page (Chats, Calls, Settings) arrives under a wash of the pane's own
+  background, which fades out: a cut becomes a change of view.
+- The emoji, GIF and sticker panel rises the last ten points into place.
+- Dragging files over the window washes the whole window in the accent colour
+  and draws a border on it, not only the card in the middle.
+
+**Where the code lives**
+
+`App::motion_time()` is the only answer to "how long is a transition right now":
+the Motion choice at the configured pace. Every animation below reads it, and a
+zero puts the end state on screen at once.
 
 ## Rules for anything added
 
@@ -35,44 +57,41 @@ say what changed.
 - On a screen reader, keep it short or skip it: `fastframe-notifications` and
   the typing dots already step at ten frames a second for that reason.
 
-## Ideas, roughly in order of value
+## Still open
 
 **Conversation**
-1. A sent bubble that scales 0.98 to 1.0 as it lands, instead of only its ring.
-2. A reply strip that slides up from the composer rather than appearing.
-3. A day separator that fades in as the transcript crosses it, instead of the
-   sticky chip appearing at once.
-4. A jump to a search hit that eases the scroll and flashes the bubble, which
+
+1. A jump to a search hit that eases the scroll and flashes the bubble, which
    the jump highlight already half does.
-5. Images that fade from their thumbnail to the full picture when they finish
+2. Images that fade from their thumbnail to the full picture when they finish
    downloading.
+3. The waveform drawing itself as a voice message plays.
 
 **Lists and navigation**
-6. A chat row that lifts and settles when a new message moves it up.
-7. A cross fade between Chats, Calls and Settings, on the central panel only.
-8. The rail's lit square sliding between destinations instead of jumping.
-9. A search field that expands from the search button on a narrow window.
-10. The unread badge counting up, or at least fading between values.
+
+4. A chat row that lifts and settles when a new message moves it up. A row's
+   height is its layout, so this needs the list to paint at interpolated
+   positions instead of laying out each frame.
+5. The rail's lit square sliding between destinations rather than jumping.
+6. A search field that expands from the search button on a narrow window.
+7. The unread badge counting up, or at least fading between values.
 
 **Composer and media**
-11. A recording bar that grows from the microphone button when recording starts.
-12. The waveform drawing itself as a voice message plays.
-13. The picker opening upward from the emoji button with a short spring,
-    instead of appearing at a fixed place.
-14. A file drop that highlights the whole window, not just the composer.
+
+8. A recording bar that grows from the microphone button when recording starts.
 
 **Calls**
-15. The call screen entering from the bottom on an incoming call, and leaving
-    the same way when it ends.
-16. A connecting indicator that breathes rather than spins.
+
+9. The call screen entering from the bottom on an incoming call, and leaving the
+   same way when it ends.
+10. A connecting indicator that breathes rather than spins.
 
 **Polish**
-17. A theme change that keeps its reveal, which `theme::Transition` already does
-    for palettes, and apply the same reveal to a chat's own palette.
-18. A duration slider under Motion, 0.1 s to 0.4 s, once there are transitions
-    worth tuning.
-19. Reduce motion automatically when the desktop says so (`prefers-reduced-motion`
-    through the portal), rather than only by hand.
+
+11. Applying the palette reveal `theme::Transition` already does for a theme to
+    a chat's own palette, when the chat changes its colours.
+12. Reduce motion automatically when the desktop says so
+    (`prefers-reduced-motion` through the portal), rather than only by hand.
 
 ## What not to do
 

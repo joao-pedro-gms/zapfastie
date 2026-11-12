@@ -129,14 +129,31 @@ impl MotionChoice {
         }
     }
 
-    /// Seconds a decorative transition takes. Zero means it does not run.
+    /// Seconds a decorative transition takes at the default pace. Zero means
+    /// it does not run.
     pub fn time(self) -> f32 {
+        self.time_at(DEFAULT_MOTION_SECONDS)
+    }
+
+    /// Seconds a transition takes when the full one is `full` seconds long:
+    /// Reduced halves it, Off never runs.
+    pub fn time_at(self, full: f32) -> f32 {
         match self {
-            Self::Full => 0.22,
-            Self::Reduced => 0.1,
+            Self::Full => full.clamp(MOTION_SECONDS_MIN, MOTION_SECONDS_MAX),
+            Self::Reduced => (full * 0.5).clamp(MOTION_SECONDS_MIN, MOTION_SECONDS_MAX),
             Self::Off => 0.0,
         }
     }
+}
+
+/// The pace a full transition takes before anyone moves the slider.
+pub const DEFAULT_MOTION_SECONDS: f32 = 0.22;
+/// The fastest and slowest pace the slider offers.
+pub const MOTION_SECONDS_MIN: f32 = 0.1;
+pub const MOTION_SECONDS_MAX: f32 = 0.4;
+
+fn default_motion_seconds() -> f32 {
+    DEFAULT_MOTION_SECONDS
 }
 
 /// Background colours offered by WhatsApp's wallpaper picker, after the
@@ -484,6 +501,11 @@ pub struct Settings {
     /// How much the interface animates.
     #[serde(default)]
     pub motion: MotionChoice,
+    /// How long a full transition takes, in seconds, before
+    /// [`MotionChoice::Reduced`] halves it. Settings > Appearance > Motion
+    /// offers it as a slider, so the pacing can be tuned without a rebuild.
+    #[serde(default = "default_motion_seconds")]
+    pub motion_seconds: f32,
     /// Windows and Linux: draw ZapFastie's own title bar and window buttons
     /// instead of the desktop's. Off by default: on some Intel graphics
     /// drivers a frameless window shows a black band at the top and its
@@ -624,6 +646,7 @@ impl Default for Settings {
             messages_theme: false,
             font: FontChoice::System,
             motion: MotionChoice::Full,
+            motion_seconds: DEFAULT_MOTION_SECONDS,
             custom_titlebar: false,
             interface_language: None,
             custom_theme: None,
@@ -683,9 +706,9 @@ impl Default for Settings {
 ///    mode) become [`WallpaperColor::Theme`], the new default.
 pub const SETTINGS_VERSION: u32 = 1;
 
-/// Optional build-time GIPHY key from `ZAPFAST_GIPHY_KEY`.
+/// Optional build-time GIPHY key from `ZAPFASTIE_GIPHY_KEY`.
 /// The previous name remains accepted for existing build setups.
-pub const BUILT_IN_GIPHY_KEY: Option<&str> = match option_env!("ZAPFAST_GIPHY_KEY") {
+pub const BUILT_IN_GIPHY_KEY: Option<&str> = match option_env!("ZAPFASTIE_GIPHY_KEY") {
     Some(key) if !key.is_empty() => Some(key),
     _ => option_env!("FASTSAPP_GIPHY_KEY"),
 };
@@ -1295,7 +1318,7 @@ mod tests {
 
     #[test]
     fn round_trips_through_disk() {
-        let dir = std::env::temp_dir().join(format!("zapfast-settings-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("zapfastie-settings-{}", std::process::id()));
         let path = dir.join("settings.json");
         let settings = Settings {
             zoom: 1.25,

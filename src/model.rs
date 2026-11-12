@@ -938,16 +938,16 @@ pub enum Content {
 /// The id prefix of the call entries ZapFastie files from call records: the
 /// calls it handled and the phone's call log. They are local, so no receipt,
 /// reaction or deletion is ever sent for them.
-pub const CALL_ENTRY_PREFIX: &str = "zapfast-call-";
+pub const CALL_ENTRY_PREFIX: &str = "zapfastie-call-";
 
 /// The chat id the entries of calls joined through a call link are filed
 /// under. No chat has it: such a call belongs to none, so its entries show on
 /// the Calls page alone, never in the chat list.
-pub const CALL_LINK_CHAT: &str = "zapfast-call-link";
+pub const CALL_LINK_CHAT: &str = "zapfastie-call-link";
 
 /// The id prefix of the disappearing-timer notices ZapFastie files from live
 /// setting changes. They are local system rows, never sent anywhere.
-pub const TIMER_NOTICE_PREFIX: &str = "zapfast-timer-";
+pub const TIMER_NOTICE_PREFIX: &str = "zapfastie-timer-";
 
 /// Whether `id` is one ZapFastie made up for a row of its own, which no server
 /// ever issued: a call entry, or a disappearing-timer notice. Nothing sent to
@@ -2024,7 +2024,7 @@ impl Contact {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Page {
     Chats,
     /// Every call of the account, newest first.
@@ -3307,6 +3307,8 @@ pub enum Action {
     SetFont(crate::settings::FontChoice),
     /// How much the interface animates.
     SetMotion(crate::settings::MotionChoice),
+    /// How long a full transition takes, in seconds.
+    SetMotionSeconds(f32),
     /// Windows and Linux: draws ZapFastie's own title bar and window buttons
     /// (`true`) or the desktop's. Decorations are fixed when a window is
     /// made, so the window is replaced.

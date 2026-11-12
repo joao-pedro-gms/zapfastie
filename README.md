@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/assets/images/logo.svg" alt="ZapFast logo" width="88" height="88">
+  <img src="docs/assets/images/logo.svg" alt="ZapFastie logo" width="88" height="88">
 </p>
 
-<h1 align="center">ZapFast</h1>
+<h1 align="center">ZapFastie</h1>
 
 <p align="center"><strong>WhatsApp, native and fast.</strong><br>A lightweight WhatsApp app for Linux, macOS, and Windows.</p>
 
@@ -19,7 +19,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-00a884" alt="MIT license"></a>
 </p>
 
-ZapFast is a WhatsApp client written in Rust with
+ZapFastie is a WhatsApp client written in Rust with
 [egui](https://www.egui.rs) and [fastframe](https://fastframe.dev), the
 framework behind a family of native desktop apps. It links to your phone as a
 companion device through
@@ -34,11 +34,11 @@ Spanish, and Turkish.
 
 <picture>
   <source media="(prefers-color-scheme: light)" srcset="docs/screenshot-light.png">
-  <img src="docs/screenshot.png" alt="ZapFast showing a conversation with an attachment, voice messages, reactions, a quoted reply, and a link preview">
+  <img src="docs/screenshot.png" alt="ZapFastie showing a conversation with an attachment, voice messages, reactions, a quoted reply, and a link preview">
 </picture>
 
 <details>
-<summary><strong>Watch ZapFast in action</strong></summary>
+<summary><strong>Watch ZapFastie in action</strong></summary>
 
 https://github.com/user-attachments/assets/2bf86b54-45fc-4add-8de7-c426c3cdad9b
 
@@ -63,14 +63,14 @@ https://github.com/user-attachments/assets/2bf86b54-45fc-4add-8de7-c426c3cdad9b
 | Platform | Installation |
 |---|---|
 | **macOS** | `brew install --cask crmne/tap/zapfast`, or [download the Mac app](https://zapfast.rocks/download/#macos). |
-| **Arch Linux** | `yay -S zapfast-bin` |
+| **Arch Linux** | `yay -S zapfastie-bin` |
 | **Windows** | Choose your build on the [Download page](https://zapfast.rocks/download/#windows). |
 | **Other Linux** | Find Nix, AppImage, and other options on the [Download page](https://zapfast.rocks/download/#linux). |
 | **From source** | Follow [Getting started](https://zapfast.rocks/getting-started/) for dependencies and commands. |
 
 ## Link your phone
 
-1. Open ZapFast. It shows a QR code.
+1. Open ZapFastie. It shows a QR code.
 2. On your phone, open WhatsApp, then **Settings**, **Linked devices**,
    **Link a device**, and scan the code. Or click **Link with phone number**
    and enter the eight-character code on your phone.
@@ -78,7 +78,7 @@ https://github.com/user-attachments/assets/2bf86b54-45fc-4add-8de7-c426c3cdad9b
    scroll up.
 
 The link survives restarts, and your phone does not need to stay online to
-read what ZapFast has already stored. See
+read what ZapFastie has already stored. See
 [Getting started](https://zapfast.rocks/getting-started/) for the full
 walkthrough and [How it links](https://zapfast.rocks/how-it-links/) for the
 details.
@@ -96,7 +96,7 @@ The complete guide lives at **[zapfast.rocks](https://zapfast.rocks/)**.
 | Make your own theme | [Making a theme](https://zapfast.rocks/themes/) |
 | Understand what stays on this computer | [How it links](https://zapfast.rocks/how-it-links/) |
 | Understand account risk | [Account safety](https://zapfast.rocks/what-is-zapfast/#account-safety) |
-| Report a bug or propose a feature | Read [Contributing](CONTRIBUTING.md), then use the [issue forms](https://github.com/crmne/zapfast/issues/new/choose). |
+| Report a bug or propose a feature | Read [Contributing](CONTRIBUTING.md), then use the [issue forms](https://github.com/joao-pedro-gms/zapfastie/issues/new/choose). |
 
 ## Contributing
 
@@ -111,7 +111,7 @@ cargo run --features demo -- --demo
 demo pages, screenshots, and recorded tours, and
 [PACKAGING.md](PACKAGING.md) releases and packages.
 
-Native notifications use Fastframe on Linux, macOS and Windows. ZapFast keeps
+Native notifications use Fastframe on Linux, macOS and Windows. ZapFastie keeps
 its account/chat routing, privacy settings, notification limits and sound
 previews. Clicks open the announced message; reading a chat withdraws its
 tracked notifications. OS permissions and notification presentation still apply.
@@ -120,19 +120,19 @@ tracked notifications. OS permissions and notification presentation still apply.
 ## More native apps
 
 **Want Spotify just as fast and native?** [Spotifast](https://spotifast.rocks)
-is ZapFast's sibling. Both are built on
+is ZapFastie's sibling. Both are built on
 [fastframe](https://fastframe.dev).
 
 ## Acknowledgements
 
-ZapFast uses [whatsapp-rust](https://github.com/oxidezap/whatsapp-rust),
+ZapFastie uses [whatsapp-rust](https://github.com/oxidezap/whatsapp-rust),
 [egui](https://www.egui.rs), [fastframe](https://fastframe.dev), the
 [Inter](https://rsms.me/inter/) typeface and Noto Color Emoji (OFL), and
 [Lucide](https://lucide.dev) icons (ISC), also used for the chat wallpaper
 doodles. The notification sounds are [Pidgin](https://pidgin.im)'s, under the
 GPL-2.0 (see `assets/sounds/`).
 
-ZapFast is an unofficial client and is not affiliated with WhatsApp or Meta.
+ZapFastie is an unofficial client and is not affiliated with WhatsApp or Meta.
 Using an unofficial client may be against WhatsApp's terms of service and
 could get an account suspended. Use it at your own risk. WhatsApp is a
 trademark of WhatsApp LLC.
@@ -143,7 +143,7 @@ Licensed under the [MIT License](LICENSE).
 
 <a href="https://www.star-history.com/?repos=crmne%2Fzapfast&amp;type=date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=crmne/zapfast&amp;type=date&amp;theme=dark">
-    <img alt="ZapFast GitHub stars over time" src="https://api.star-history.com/chart?repos=crmne/zapfast&amp;type=date">
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=joao-pedro-gms/zapfastie&amp;type=date&amp;theme=dark">
+    <img alt="ZapFast GitHub stars over time" src="https://api.star-history.com/chart?repos=joao-pedro-gms/zapfastie&amp;type=date">
   </picture>
 </a>

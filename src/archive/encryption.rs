@@ -29,7 +29,7 @@ pub(super) fn key_for(path: &Path) -> Result<Zeroizing<[u8; 32]>> {
     fs::create_dir_all(parent)?;
     let store = platform_store()?;
     let entry = store
-        .build("rocks.zapfast.ZapFast", &identity_for(parent)?, None)
+        .build("rocks.zapfastie.ZapFastie", &identity_for(parent)?, None)
         .map_err(keyring_error)
         .context("The OS keyring could not open ZapFastie's archive key")?;
     key_from_entry(path, &entry)
@@ -62,7 +62,11 @@ fn copy_archive_key_in(
         return Ok(());
     }
     let old_entry = store
-        .build("rocks.zapfast.ZapFast", &identity_for(old_parent)?, None)
+        .build(
+            "rocks.zapfastie.ZapFastie",
+            &identity_for(old_parent)?,
+            None,
+        )
         .map_err(keyring_error)
         .context("The OS keyring could not open ZapFastie's archive key")?;
     let key = match old_entry.get_secret() {
@@ -88,7 +92,11 @@ fn copy_archive_key_in(
         }
     };
     let new_entry = store
-        .build("rocks.zapfast.ZapFast", &identity_for(new_parent)?, None)
+        .build(
+            "rocks.zapfastie.ZapFastie",
+            &identity_for(new_parent)?,
+            None,
+        )
         .map_err(keyring_error)
         .context("The OS keyring could not open ZapFastie's archive key")?;
     new_entry
@@ -113,7 +121,7 @@ fn copy_archive_key_in(
 /// such as a removed account's. Never call it while the archive exists.
 pub fn forget_archive_key(identity: &str) -> Result<()> {
     let entry = platform_store()?
-        .build("rocks.zapfast.ZapFast", identity, None)
+        .build("rocks.zapfastie.ZapFastie", identity, None)
         .map_err(keyring_error)?;
     match entry.delete_credential() {
         Ok(()) | Err(keyring_core::Error::NoEntry) => Ok(()),
@@ -368,7 +376,7 @@ mod tests {
         let directory = directory();
         let path = directory.path().join("archive.db");
         let store = keyring_core::mock::Store::new().unwrap();
-        let entry = store.build("zapfast-test", "archive", None).unwrap();
+        let entry = store.build("zapfastie-test", "archive", None).unwrap();
         let key = key_from_entry(&path, &entry).unwrap();
         assert_eq!(*key, *key_from_entry(&path, &entry).unwrap());
         let connection = open(&path, &key).unwrap();
@@ -463,7 +471,7 @@ mod tests {
             let path = directory.path().join("archive.db");
             let kept = directory.path().join("archive-unreadable.db");
             let store = keyring_core::mock::Store::new().unwrap();
-            let entry = store.build("zapfast-test", "archive", None).unwrap();
+            let entry = store.build("zapfastie-test", "archive", None).unwrap();
             let original_key = key_from_entry(&path, &entry).unwrap();
             let connection = open(&path, &original_key).unwrap();
             connection
@@ -494,7 +502,7 @@ mod tests {
         let directory = directory();
         let path = directory.path().join("archive.db");
         let store = keyring_core::mock::Store::new().unwrap();
-        let entry = store.build("zapfast-test", "archive", None).unwrap();
+        let entry = store.build("zapfastie-test", "archive", None).unwrap();
         entry.set_secret(&[]).unwrap();
         for contents in [b"".as_slice(), HEADER.as_slice()] {
             fs::write(&path, contents).unwrap();

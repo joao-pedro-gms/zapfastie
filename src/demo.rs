@@ -2435,7 +2435,7 @@ pub fn apply_flags(app: &mut App, page: Option<&str>) {
                 if let Some(conversation) = app.conversations.get_mut(&chat) {
                     conversation.messages.push(message(
                         &chat,
-                        "zapfast-timer-demo",
+                        "zapfastie-timer-demo",
                         false,
                         now - 30,
                         Content::DisappearingTimer { seconds: 604_800 },
@@ -2460,7 +2460,7 @@ pub fn apply_flags(app: &mut App, page: Option<&str>) {
                             Content::text("Let's keep new messages for a day."),
                         ),
                         (
-                            "zapfast-timer-demo-group",
+                            "zapfastie-timer-demo-group",
                             now - 30,
                             Content::DisappearingTimer { seconds: 86_400 },
                         ),
@@ -2883,11 +2883,11 @@ pub fn apply_flags(app: &mut App, page: Option<&str>) {
                 use crate::updates::{DownloadState, Installation, Kind, Prepared};
                 app.update = Some(crate::updates::Release {
                     version: "99.0.0".to_owned(),
-                    url: "https://github.com/crmne/zapfast/releases/latest".to_owned(),
+                    url: "https://github.com/joao-pedro-gms/zapfastie/releases/latest".to_owned(),
                 });
                 app.show_update = true;
                 let installation = Installation {
-                    executable: "/demo/zapfast".into(),
+                    executable: "/demo/zapfastie".into(),
                     kind: Kind::Portable,
                 };
                 app.update_support = Some(Ok(installation.clone()));
@@ -4488,7 +4488,7 @@ mod tests {
 
     pub(super) fn app() -> App {
         let root = tempfile::Builder::new()
-            .prefix("zapfast-demo-")
+            .prefix("zapfastie-demo-")
             .tempdir()
             .unwrap();
         let (mut app, _events) = App::headless(AppDirs::under(root.path()), Settings::default());
@@ -7922,7 +7922,7 @@ mod tests {
 
     fn app_on_attachment(content: Content) -> OnAttachment {
         let root = tempfile::Builder::new()
-            .prefix("zapfast-demo-")
+            .prefix("zapfastie-demo-")
             .tempdir()
             .unwrap();
         let (mut app, events) = App::headless(AppDirs::under(root.path()), Settings::default());
@@ -9424,7 +9424,7 @@ mod tests {
     #[test]
     fn enter_in_the_croppers_first_frame_keeps_the_crop() {
         let root = tempfile::Builder::new()
-            .prefix("zapfast-demo-")
+            .prefix("zapfastie-demo-")
             .tempdir()
             .unwrap();
         let (mut app, events) = App::headless(AppDirs::under(root.path()), Settings::default());
@@ -11550,7 +11550,7 @@ mod tests {
         apply_flags(&mut app, Some("disappearing-notice-group"));
         render(&mut app, &ctx);
         let chat = app.open_chat.clone().unwrap();
-        let notice = "zapfast-timer-demo-group";
+        let notice = "zapfastie-timer-demo-group";
         app.message_cursor.insert(chat.clone(), notice.into());
         app.reveal_cursor = true;
         press_key(&mut app, &ctx, egui::Key::Num2, messages_shortcut());
@@ -13888,7 +13888,7 @@ mod tests {
         std::path::PathBuf,
     ) {
         let root = tempfile::Builder::new()
-            .prefix("zapfast-demo-")
+            .prefix("zapfastie-demo-")
             .tempdir()
             .unwrap();
         let (mut app, events) = App::headless(AppDirs::under(root.path()), Settings::default());
@@ -18995,7 +18995,7 @@ mod tests {
         std::sync::mpsc::Sender<crate::backend::Event>,
     ) {
         let root = tempfile::Builder::new()
-            .prefix("zapfast-demo-")
+            .prefix("zapfastie-demo-")
             .tempdir()
             .unwrap();
         let (mut app, events) = App::headless(AppDirs::under(root.path()), Settings::default());
@@ -23148,7 +23148,7 @@ mod tests {
         render(&mut app, &ctx);
         let texture = ctx
             .data_mut(|data| {
-                data.get_temp::<egui::TextureHandle>(egui::Id::new(("zapfast-mark", 44_usize)))
+                data.get_temp::<egui::TextureHandle>(egui::Id::new(("zapfastie-mark", 44_usize)))
             })
             .expect("the mark was drawn at 44 pixels");
         assert_eq!(texture.size(), [44, 44]);
@@ -23346,7 +23346,7 @@ mod tests {
 
     impl egui::load::ImageLoader for CountingImages {
         fn id(&self) -> &str {
-            "zapfast::demo::tests::CountingImages"
+            "zapfastie::demo::tests::CountingImages"
         }
 
         fn load(

@@ -4310,7 +4310,7 @@ impl Worker {
                             .set_ephemeral(&chat, *expiration, timestamp)
                             .unwrap_or(false);
                         log::debug!(
-                            target: "zapfast::disappearing",
+                            target: "zapfastie::disappearing",
                             "group timer update: duration={expiration}s timestamp={timestamp} accepted={accepted}"
                         );
                         if accepted {
@@ -5161,7 +5161,7 @@ impl Worker {
                         .set_ephemeral(&chat, expiration, timestamp)
                         .unwrap_or(false);
                     log::debug!(
-                        target: "zapfast::disappearing",
+                        target: "zapfastie::disappearing",
                         "protocol timer update: duration={expiration}s timestamp={timestamp} fallback_timestamp={used_fallback} accepted={accepted}"
                     );
                     if accepted {
@@ -5178,7 +5178,7 @@ impl Worker {
                     }
                 } else {
                     log::debug!(
-                        target: "zapfast::disappearing",
+                        target: "zapfastie::disappearing",
                         "protocol timer update missing expiration"
                     );
                 }
@@ -15589,7 +15589,7 @@ mod tests {
     #[test]
     fn attachment_staging_files_are_hidden_and_exclusive() {
         let directory = std::env::temp_dir().join(format!(
-            "zapfast-attachment-staging-{}",
+            "zapfastie-attachment-staging-{}",
             rand::random::<u64>()
         ));
         std::fs::create_dir_all(&directory).expect("creates staging directory");
@@ -17369,7 +17369,7 @@ mod tests {
     #[tokio::test]
     async fn downloads_use_the_chosen_folder_and_fall_back_to_the_cache() {
         let (mut worker, _events, _, _) = receipt_tests::worker();
-        let root = std::env::temp_dir().join(format!("zapfast-downloads-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("zapfastie-downloads-{}", std::process::id()));
         let chosen = root.join("Downloads/WhatsApp");
         worker
             .handle_command(Command::SetDownloadFolder(Some(chosen.clone())))
@@ -17873,7 +17873,8 @@ mod tests {
 
     #[test]
     fn starting_over_keeps_the_old_archive_and_forgets_the_link() {
-        let root = std::env::temp_dir().join(format!("zapfast-start-over-{}", std::process::id()));
+        let root =
+            std::env::temp_dir().join(format!("zapfastie-start-over-{}", std::process::id()));
         let dirs = crate::paths::AppDirs::under(&root);
         dirs.ensure().unwrap();
         std::fs::write(dirs.archive_db(), b"encrypted").unwrap();
@@ -20034,7 +20035,7 @@ mod receipt_tests {
         static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
         let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let root =
-            std::env::temp_dir().join(format!("zapfast-worker-test-{}-{n}", std::process::id()));
+            std::env::temp_dir().join(format!("zapfastie-worker-test-{}-{n}", std::process::id()));
         let worker = Worker {
             privacy_ready: true,
             privacy_confirmed: true,
@@ -22528,7 +22529,7 @@ mod receipt_tests {
         };
         worker.store_message(picture.clone(), None, None);
         let chat = PEER.to_owned();
-        let downloaded = std::path::PathBuf::from("/tmp/zapfast-photo.jpg");
+        let downloaded = std::path::PathBuf::from("/tmp/zapfastie-photo.jpg");
         worker
             .archive
             .set_media_path(&chat, "photo", &downloaded)
@@ -22948,7 +22949,7 @@ mod receipt_tests {
     fn the_archive_range_skips_a_timer_notice_at_the_end() {
         let (mut worker, _events, _inbox, _wa) = worker();
         worker.store_message(incoming("theirs", 100), None, None);
-        let mut notice = incoming("zapfast-timer-setting", 400);
+        let mut notice = incoming("zapfastie-timer-setting", 400);
         notice.content = Content::DisappearingTimer { seconds: 86_400 };
         worker
             .archive
@@ -22957,7 +22958,7 @@ mod receipt_tests {
         assert!(
             worker
                 .archive
-                .message(PEER, "zapfast-timer-setting")
+                .message(PEER, "zapfastie-timer-setting")
                 .expect("reads")
                 .is_some(),
             "the notice stays in the transcript"
@@ -23646,7 +23647,7 @@ mod receipt_tests {
     fn a_timer_protocol_timestamp_does_not_hide_a_later_delivered_message() {
         let (mut worker, _events, _inbox, _wa) = worker();
         worker.store_message(incoming("before-timer", 100), None, None);
-        let mut notice = incoming("zapfast-timer-setting", 400);
+        let mut notice = incoming("zapfastie-timer-setting", 400);
         notice.content = Content::DisappearingTimer { seconds: 86_400 };
         worker
             .archive
@@ -23672,7 +23673,7 @@ mod receipt_tests {
     fn a_chat_read_does_not_use_a_timer_notice_as_its_read_position() {
         let (mut worker, _events, _inbox, _wa) = worker();
         worker.store_message(incoming("before-timer", 100), None, None);
-        let mut notice = incoming("zapfast-timer-setting", 400);
+        let mut notice = incoming("zapfastie-timer-setting", 400);
         notice.content = Content::DisappearingTimer { seconds: 86_400 };
         worker
             .archive

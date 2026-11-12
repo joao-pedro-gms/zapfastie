@@ -320,8 +320,8 @@ const ALERT: &[u8] = include_bytes!("../assets/sounds/alert.wav");
 /// sounds go with it when the application bundle carries them.
 fn sound_file(sound: &NotificationSound) -> Option<&'static str> {
     match sound {
-        NotificationSound::Receive => Some("zapfast-receive.wav"),
-        NotificationSound::Alert => Some("zapfast-alert.wav"),
+        NotificationSound::Receive => Some("zapfastie-receive.wav"),
+        NotificationSound::Alert => Some("zapfastie-alert.wav"),
         _ => None,
     }
 }
@@ -460,8 +460,8 @@ fn deliver(
     let client = match CLIENT.get_or_init(|| {
         Client::new(
             App::new(notification_app_id(), "ZapFastie")
-                .desktop_entry("zapfast")
-                .icon("zapfast")
+                .desktop_entry("zapfastie")
+                .icon("zapfastie")
                 // ZapFastie's green, the theme's accent, behind the logo on
                 // Windows toasts, so Windows 11's dark theme leaves it as drawn.
                 .logo(
@@ -593,7 +593,7 @@ mod tests {
 
     #[test]
     fn the_windows_shortcut_uses_the_notification_identity() {
-        let installer = include_str!("../packaging/windows/zapfast.iss");
+        let installer = include_str!("../packaging/windows/zapfastie.iss");
         let shortcuts: Vec<_> = installer
             .lines()
             .filter(|line| {

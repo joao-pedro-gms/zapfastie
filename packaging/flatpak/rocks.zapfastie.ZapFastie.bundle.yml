@@ -1,0 +1,38 @@
+# The release workflow's Flatpak: the binary the Linux job built, packaged
+# into the same sandbox as rocks.zapfastie.ZapFastie.yml describes. The
+# job unpacks the release tarball into built/ beside this file first.
+id: rocks.zapfastie.ZapFastie
+runtime: org.freedesktop.Platform
+runtime-version: '26.08'
+sdk: org.freedesktop.Sdk
+command: zapfastie
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=all
+  - --socket=pulseaudio
+  - --share=network
+  # Archive encryption key.
+  - --talk-name=org.freedesktop.secrets
+  - --talk-name=org.kde.StatusNotifierWatcher
+  # Desktop notifications, which Fastframe sends straight to the server.
+  - --talk-name=org.freedesktop.Notifications
+  - --persist=.local/state
+modules:
+  - name: zapfastie
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 zapfastie /app/bin/zapfastie
+      - install -Dm644 packaging/applications/*.desktop /app/share/applications/rocks.zapfastie.ZapFastie.desktop
+      - sed -i 's/^Icon=.*$/Icon=rocks.zapfastie.ZapFastie/;s/^StartupWMClass=zapfastie$/StartupWMClass=rocks.zapfastie.ZapFastie/' /app/share/applications/rocks.zapfastie.ZapFastie.desktop
+      - install -Dm644 packaging/icons/zapfastie.svg /app/share/icons/hicolor/scalable/apps/rocks.zapfastie.ZapFastie.svg
+      - install -Dm644 packaging/flatpak/rocks.zapfastie.ZapFastie.metainfo.xml /app/share/metainfo/rocks.zapfastie.ZapFastie.metainfo.xml
+      - install -Dm644 LICENSE /app/share/licenses/zapfastie/LICENSE
+    sources:
+      - type: dir
+        path: built
+      # Metainfo belongs to this packaging checkout, not the portable archive.
+      - type: file
+        path: rocks.zapfastie.ZapFastie.metainfo.xml
+        dest: packaging/flatpak

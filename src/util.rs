@@ -766,9 +766,9 @@ pub fn hue(seed: &str) -> f32 {
 }
 
 /// Embedded SVG app logo used across platform surfaces.
-const MARK: &[u8] = include_bytes!("../packaging/icons/zapfast.svg");
+const MARK: &[u8] = include_bytes!("../packaging/icons/zapfastie.svg");
 /// The same mark without its rim and shading, which blur below this size.
-const SMALL_MARK: &[u8] = include_bytes!("../packaging/icons/zapfast-small.svg");
+const SMALL_MARK: &[u8] = include_bytes!("../packaging/icons/zapfastie-small.svg");
 const SMALL_BELOW: usize = 40;
 
 /// Rasterizes the logo to straight-alpha RGBA.
@@ -827,11 +827,30 @@ fn plain_disc(size: usize) -> Vec<u8> {
 pub fn tray_template_rgba(size: usize) -> Vec<u8> {
     // The flat mark at every size: a template has no room for shading.
     let mut rgba = render_mark(SMALL_MARK, size).unwrap_or_else(|| plain_disc(size));
-    // The disc's green against the ink's says how much of a pixel is disc.
-    const INK: f32 = 14.0;
-    const DISC: f32 = 168.0;
+    // How much of a pixel is disc, read from its brightness between the
+    // icon's own two tones rather than from a fixed colour: the palette is a
+    // choice, and the mask only needs disc against ink.
+    let brightness = |pixel: &[u8; 4]| {
+        0.2126 * f32::from(pixel[0]) + 0.7152 * f32::from(pixel[1]) + 0.0722 * f32::from(pixel[2])
+    };
+    let drawn = rgba
+        .as_chunks::<4>()
+        .0
+        .iter()
+        // Only pixels the shape covers completely: at the antialiased edge
+        // the un-premultiplied colour overshoots, and the two tones would
+        // stop being the extremes.
+        .filter(|pixel| pixel[3] >= 250)
+        .map(brightness);
+    let mut low = 255.0_f32;
+    let mut high = 0.0_f32;
+    for value in drawn {
+        low = low.min(value);
+        high = high.max(value);
+    }
+    let span = (high - low).max(1.0);
     for pixel in rgba.as_chunks_mut::<4>().0 {
-        let disc = ((f32::from(pixel[1]) - INK) / (DISC - INK)).clamp(0.0, 1.0);
+        let disc = ((brightness(pixel) - low) / span).clamp(0.0, 1.0);
         pixel[3] = (f32::from(pixel[3]) * disc).round() as u8;
         pixel[0] = 0;
         pixel[1] = 0;
@@ -1122,7 +1141,8 @@ mod tests {
     #[test]
     fn image_loader_reads_native_paths() {
         use egui::load::BytesPoll;
-        let dir = std::env::temp_dir().join(format!("zapfast-image-paths-{}", std::process::id()));
+        let dir =
+            std::env::temp_dir().join(format!("zapfastie-image-paths-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("猫 photo 100% #1.png");
         std::fs::write(&path, b"image bytes").unwrap();
@@ -1207,7 +1227,7 @@ mod tests {
         // tray that asks for the themed icon then draws a missing-icon
         // marker (#396).
         let svg = std::str::from_utf8(MARK).expect("the icon is UTF-8");
-        assert!(!svg.contains("<filter"), "packaging/icons/zapfast.svg");
+        assert!(!svg.contains("<filter"), "packaging/icons/zapfastie.svg");
     }
 
     #[test]

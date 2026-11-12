@@ -580,7 +580,7 @@ mod tests {
         drop(first);
     }
 
-    /// `zapfast quit` against a copy from before the verb: one that declines
+    /// `zapfastie quit` against a copy from before the verb: one that declines
     /// it is left running and reported as older, and nothing new starts.
     #[test]
     fn a_copy_that_declines_quit_is_reported_as_older() {

@@ -2154,7 +2154,7 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                 .data_mut(|data| data.insert_temp(composer_pill_id(), pill.response.rect));
             // A send pops the field once: a ring that widens and fades, so the
             // message going out is felt in the place it was written.
-            let pop_time = app.settings.motion.time();
+            let pop_time = app.motion_time();
             if pop_time > 0.0 && app.composer_pops > 0.0 {
                 let now = ui.ctx().animate_value_with_time(
                     egui::Id::new("composer-pop"),
@@ -2600,6 +2600,16 @@ fn reply_strip(app: &mut App, ui: &mut egui::Ui, quoted: &Message) {
         app.display_name_or(&quoted.sender, quoted.sender_name.as_deref())
     };
     let summary = markup::plain(&quoted.summary_in(app.locale), &app.mention_list(quoted));
+    // It fades up from the composer rather than snapping into place. Opacity
+    // only, so the composer keeps the height it measures either way.
+    let appear = ui.ctx().animate_bool_with_time(
+        reply_strip_id().with("appear"),
+        true,
+        app.motion_time().max(0.01),
+    );
+    if appear < 1.0 {
+        ui.multiply_opacity(0.25 + 0.75 * appear);
+    }
     let strip = widgets::raised(ui, &palette, strip_frame(&palette), |ui| {
         ui.set_width(ui.available_width().max(0.0));
         ui.horizontal(|ui| {
@@ -3147,7 +3157,7 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
     {
         conversation.landed = Some(newest.clone());
         ui.ctx().data_mut(|data| {
-            data.insert_temp(landed_id(&chat.id), (newest, app.settings.motion.time()));
+            data.insert_temp(landed_id(&chat.id), (newest, app.motion_time()));
         });
     }
     // The current message: the one the cursor names, or the newest when it
@@ -4333,7 +4343,7 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
     // A chat that has just opened fades its messages in over the chat's own
     // background, so switching conversations reads as a change rather than a
     // cut. It is a veil painted after the rows: nothing moves, no id changes.
-    let reveal_time = app.settings.motion.time();
+    let reveal_time = app.motion_time();
     if reveal_time > 0.0 {
         let reveal = ui.ctx().animate_bool_with_time(
             egui::Id::new(("chat-reveal", &chat.id, app.chat_opens)),
@@ -5172,6 +5182,23 @@ fn bubble(
                 ),
                 egui::StrokeKind::Outside,
             );
+            // A bubble sent from here also fills with its own accent for a
+            // moment, so the message reads as arriving rather than as
+            // already being there. Paint only: nothing moves or re-measures.
+            if message.from_me {
+                let pop = ui.ctx().animate_bool_with_time(
+                    bubble.id.with("sent-pop"),
+                    true,
+                    (time * 0.6).max(0.01),
+                );
+                if pop < 1.0 {
+                    ui.painter().rect_filled(
+                        bubble.rect,
+                        egui::CornerRadius::same(radius),
+                        view.palette.accent.gamma_multiply(0.16 * (1.0 - pop)),
+                    );
+                }
+            }
         }
     }
     response
@@ -5203,7 +5230,7 @@ impl SelectionLeash {
 
 impl egui::plugin::Plugin for SelectionLeash {
     fn debug_name(&self) -> &'static str {
-        "zapfast-selection-leash"
+        "zapfastie-selection-leash"
     }
 
     fn input_hook(&mut self, ctx: &egui::Context, input: &mut egui::RawInput) {
@@ -12505,11 +12532,11 @@ mod tests {
         let rows = vec![
             incoming("old", Content::text("old")),
             incoming(
-                "zapfast-timer-1",
+                "zapfastie-timer-1",
                 Content::DisappearingTimer { seconds: 86_400 },
             ),
             incoming(
-                "zapfast-call-1",
+                "zapfastie-call-1",
                 Content::Call {
                     video: false,
                     status: crate::model::CallStatus::Missed,
@@ -13738,7 +13765,7 @@ mod reaction_tests {
 
     #[test]
     fn every_message_menu_label_can_be_translated() {
-        const TEMPLATE: &str = include_str!("../../assets/i18n/zapfast.pot");
+        const TEMPLATE: &str = include_str!("../../assets/i18n/zapfastie.pot");
         // Line by line: a Windows checkout may end the template's lines in CRLF.
         let translatable = |text: &str| {
             let msgid = format!("msgid \"{text}\"");

@@ -93,7 +93,19 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
         screen.left() + 8.0,
         (screen.right() - panel_width - 8.0).max(8.0),
     );
-    let y = (anchor.top() - panel_height - 10.0).max(screen.top() + 8.0);
+    // It rises the last few points into place while the Motion allows it, so
+    // the panel reads as opening from the composer rather than blinking on.
+    let rise = if app.motion_time() > 0.0 {
+        let settled = ctx.animate_bool_with_time(
+            egui::Id::new(("picker-rise", area_id())),
+            true,
+            app.motion_time(),
+        );
+        10.0 * (1.0 - settled)
+    } else {
+        0.0
+    };
+    let y = (anchor.top() - panel_height - 10.0).max(screen.top() + 8.0) + rise;
     let area = egui::Area::new(area_id())
         .fixed_pos(pos2(x, y))
         .order(egui::Order::Foreground)
@@ -1990,7 +2002,7 @@ mod motion_tests {
 
     #[test]
     fn sticker_motion_is_probed_once_until_the_file_changes() {
-        let dir = std::env::temp_dir().join(format!("zapfast-motion-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("zapfastie-motion-{}", std::process::id()));
         std::fs::create_dir_all(&dir).expect("creates temporary directory");
         let path = dir.join("animated.webp");
         std::fs::write(&path, b"RIFF0000WEBPANIM").expect("writes animated header");
@@ -2017,7 +2029,7 @@ mod motion_tests {
 
     #[test]
     fn sticker_motion_is_served_from_the_picker_context() {
-        let dir = std::env::temp_dir().join(format!("zapfast-motion-ctx-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("zapfastie-motion-ctx-{}", std::process::id()));
         std::fs::create_dir_all(&dir).expect("creates temporary directory");
         let path = dir.join("animated.webp");
         std::fs::write(&path, b"RIFF0000WEBPANIM").expect("writes animated header");
@@ -2029,7 +2041,8 @@ mod motion_tests {
 
     #[test]
     fn a_failed_probe_is_retried_instead_of_memoized() {
-        let dir = std::env::temp_dir().join(format!("zapfast-motion-retry-{}", std::process::id()));
+        let dir =
+            std::env::temp_dir().join(format!("zapfastie-motion-retry-{}", std::process::id()));
         std::fs::create_dir_all(&dir).expect("creates temporary directory");
         let path = dir.join("animated.webp");
         std::fs::write(&path, b"RIFF0000WEBPANIM").expect("writes animated header");

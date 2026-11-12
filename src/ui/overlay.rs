@@ -204,7 +204,7 @@ pub fn settle(app: &mut App, ctx: &egui::Context) {
                 overlay,
                 opener,
                 chat: app.open_chat.clone(),
-                page: app.page.clone(),
+                page: app.page,
                 entered: false,
             }
         }

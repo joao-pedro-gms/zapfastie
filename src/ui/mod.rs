@@ -176,9 +176,24 @@ fn main_view(app: &mut App, ui: &mut egui::Ui, list_only: bool) {
             chats::show(app, ui);
         }
     }
+    // Another page arrives under a wash of the pane's own background, which
+    // fades out in the Motion time: a cut becomes a change of view. The
+    // instant is kept per page, so a repaint never restarts the reveal.
+    let page_began = {
+        let id = page_reveal_id();
+        let now = ui.input(|input| input.time);
+        let page = app.page as u8;
+        match ui.ctx().data(|data| data.get_temp::<(u8, f64)>(id)) {
+            Some((seen, at)) if seen == page => at,
+            _ => {
+                ui.ctx().data_mut(|data| data.insert_temp(id, (page, now)));
+                now
+            }
+        }
+    };
     let search_overlay = pane::show(app, ui);
     let info_overlay = info::show(app, ui);
-    egui::CentralPanel::default()
+    let central = egui::CentralPanel::default()
         .frame(central_frame(app))
         .show(ui, |ui| {
             // The top of every page drags the window, beneath its own
@@ -200,6 +215,25 @@ fn main_view(app: &mut App, ui: &mut egui::Ui, list_only: bool) {
                 Page::Wallpaper => settings::wallpaper_show(app, ui),
             }
         });
+    {
+        let time = app.motion_time();
+        let elapsed = (ui.input(|input| input.time) - page_began) as f32;
+        if time > 0.0 && elapsed < time {
+            let left = 1.0 - (elapsed / time).clamp(0.0, 1.0);
+            let background = central_background(app);
+            ui.painter().rect_filled(
+                central.response.rect,
+                0.0,
+                egui::Color32::from_rgba_unmultiplied(
+                    background.r(),
+                    background.g(),
+                    background.b(),
+                    (255.0 * left) as u8,
+                ),
+            );
+            ui.ctx().request_repaint();
+        }
+    }
     if let Some(region) = search_overlay {
         pane::show_overlay(app, ui.ctx(), region);
     }
@@ -522,12 +556,31 @@ fn focus_ring(app: &App, ctx: &egui::Context) {
     ctx.data_mut(|data| data.insert_temp(focus_ring_id().with("layer"), response.layer_id));
 }
 
+/// When the pane last changed page, and to which.
+fn page_reveal_id() -> egui::Id {
+    egui::Id::new("central-page-reveal")
+}
+
 /// Shows where dragged files will be sent.
 fn drop_target(app: &mut App, ctx: &egui::Context) {
     if !app.dropping {
         return;
     }
     let palette = app.palette;
+    // The whole window answers, not only the card in the middle of it: a tint
+    // and a stroke on the window's own rect say the drop lands anywhere.
+    let window = ctx.content_rect();
+    let painter = ctx.layer_painter(egui::LayerId::new(
+        egui::Order::Foreground,
+        egui::Id::new("drop-target-wash"),
+    ));
+    painter.rect_filled(window, 0.0, palette.accent.gamma_multiply(0.06));
+    painter.rect_stroke(
+        window.shrink(1.0),
+        egui::CornerRadius::ZERO,
+        Stroke::new(2.0, palette.accent),
+        egui::StrokeKind::Inside,
+    );
     let name = app
         .current_chat()
         .map(|chat| app.chat_title(chat))
