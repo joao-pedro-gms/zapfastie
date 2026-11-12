@@ -95,67 +95,6 @@ impl FontChoice {
     }
 }
 
-/// How much of the interface animates: the motion a change plays as it lands.
-/// `Off` leaves every screen still, for a reader who wants no movement at all.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum MotionChoice {
-    /// Every transition, at its own pace.
-    #[default]
-    Full,
-    /// The same transitions, shorter.
-    Reduced,
-    /// No transitions.
-    Off,
-}
-
-impl MotionChoice {
-    pub const ALL: [MotionChoice; 3] = [Self::Full, Self::Reduced, Self::Off];
-
-    pub fn label(self) -> &'static str {
-        match self {
-            Self::Full => "Full",
-            Self::Reduced => "Reduced",
-            Self::Off => "Off",
-        }
-    }
-
-    /// The label in the interface's language, extractable by the template.
-    pub fn translated(self, locale: crate::i18n::Locale) -> String {
-        match self {
-            Self::Full => crate::i18n::gettext(locale, "Full").into_owned(),
-            Self::Reduced => crate::i18n::gettext(locale, "Reduced").into_owned(),
-            Self::Off => crate::i18n::gettext(locale, "Off").into_owned(),
-        }
-    }
-
-    /// Seconds a decorative transition takes at the default pace. Zero means
-    /// it does not run.
-    pub fn time(self) -> f32 {
-        self.time_at(DEFAULT_MOTION_SECONDS)
-    }
-
-    /// Seconds a transition takes when the full one is `full` seconds long:
-    /// Reduced halves it, Off never runs.
-    pub fn time_at(self, full: f32) -> f32 {
-        match self {
-            Self::Full => full.clamp(MOTION_SECONDS_MIN, MOTION_SECONDS_MAX),
-            Self::Reduced => (full * 0.5).clamp(MOTION_SECONDS_MIN, MOTION_SECONDS_MAX),
-            Self::Off => 0.0,
-        }
-    }
-}
-
-/// The pace a full transition takes before anyone moves the slider.
-pub const DEFAULT_MOTION_SECONDS: f32 = 0.22;
-/// The fastest and slowest pace the slider offers.
-pub const MOTION_SECONDS_MIN: f32 = 0.1;
-pub const MOTION_SECONDS_MAX: f32 = 0.4;
-
-fn default_motion_seconds() -> f32 {
-    DEFAULT_MOTION_SECONDS
-}
-
 /// Background colours offered by WhatsApp's wallpaper picker, after the
 /// active theme's own chat colour.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -498,14 +437,6 @@ pub struct Settings {
     pub(crate) messages_theme: bool,
     /// The interface's typeface.
     pub font: FontChoice,
-    /// How much the interface animates.
-    #[serde(default)]
-    pub motion: MotionChoice,
-    /// How long a full transition takes, in seconds, before
-    /// [`MotionChoice::Reduced`] halves it. Settings > Appearance > Motion
-    /// offers it as a slider, so the pacing can be tuned without a rebuild.
-    #[serde(default = "default_motion_seconds")]
-    pub motion_seconds: f32,
     /// Windows and Linux: draw ZapFastie's own title bar and window buttons
     /// instead of the desktop's. Off by default: on some Intel graphics
     /// drivers a frameless window shows a black band at the top and its
@@ -645,8 +576,6 @@ impl Default for Settings {
             theme: ThemeChoice::System,
             messages_theme: false,
             font: FontChoice::System,
-            motion: MotionChoice::Full,
-            motion_seconds: DEFAULT_MOTION_SECONDS,
             custom_titlebar: false,
             interface_language: None,
             custom_theme: None,

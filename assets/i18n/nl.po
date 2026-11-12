@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: ZapFastie\n"
 "Report-Msgid-Bugs-To: https://github.com/joao-pedro-gms/zapfastie/issues/new?"
 "template=translation.yml\n"
-"POT-Creation-Date: 2026-11-12 16:08-0300\n"
+"POT-Creation-Date: 2026-11-12 17:07-0300\n"
 "PO-Revision-Date: 2026-11-01 23:47+0100\n"
 "Last-Translator: TheDutchSmoke\n"
 "Language-Team: Dutch\n"
@@ -83,11 +83,11 @@ msgstr "Ongelezen"
 msgid "Private"
 msgstr "Privé"
 
-#: src/model.rs:206 src/ui/picker.rs:1304
+#: src/model.rs:206 src/ui/picker.rs:1292
 msgid "Favorites"
 msgstr "Favorieten"
 
-#: src/model.rs:207 src/settings.rs:462
+#: src/model.rs:207 src/settings.rs:401
 msgid "Groups"
 msgstr "Groepen"
 
@@ -99,7 +99,7 @@ msgstr "Kanalen"
 msgid "Missed"
 msgstr "Gemist"
 
-#: src/model.rs:1741 src/ui/conversation.rs:2501 src/ui/image_preview.rs:1061
+#: src/model.rs:1741 src/ui/conversation.rs:2479 src/ui/image_preview.rs:1061
 #: src/ui/info.rs:1538 src/a11y.rs:199
 msgid "Photo"
 msgstr "Foto"
@@ -109,7 +109,7 @@ msgstr "Foto"
 msgid "Video"
 msgstr "Video"
 
-#: src/model.rs:1743 src/ui/picker.rs:159 src/a11y.rs:207
+#: src/model.rs:1743 src/ui/picker.rs:147 src/a11y.rs:207
 msgid "GIF"
 msgstr "GIF"
 
@@ -117,11 +117,11 @@ msgstr "GIF"
 msgid "Video message"
 msgstr "Videobericht"
 
-#: src/model.rs:1745 src/app.rs:11125 src/a11y.rs:221
+#: src/model.rs:1745 src/app.rs:11096 src/a11y.rs:221
 msgid "Voice message"
 msgstr "Spraakbericht"
 
-#: src/model.rs:1746 src/ui/conversation.rs:11742 src/a11y.rs:223
+#: src/model.rs:1746 src/ui/conversation.rs:11627 src/a11y.rs:223
 msgid "Audio"
 msgstr "Audio"
 
@@ -137,16 +137,16 @@ msgstr "Sticker"
 msgid "Sticker pack"
 msgstr "Stickerpakket"
 
-#: src/model.rs:1750 src/ui/conversation.rs:8554 src/a11y.rs:239
+#: src/model.rs:1750 src/ui/conversation.rs:8439 src/a11y.rs:239
 msgid "Location"
 msgstr "Locatie"
 
-#: src/model.rs:1751 src/ui/conversation.rs:8601 src/ui/conversation.rs:8827
+#: src/model.rs:1751 src/ui/conversation.rs:8486 src/ui/conversation.rs:8712
 #: src/a11y.rs:243 src/a11y.rs:275
 msgid "Live location"
 msgstr "Live locatie"
 
-#: src/model.rs:1752 src/ui/conversation.rs:8599 src/a11y.rs:262
+#: src/model.rs:1752 src/ui/conversation.rs:8484 src/a11y.rs:262
 msgid "Live location ended"
 msgstr "Live locatie beëindigd"
 
@@ -158,7 +158,7 @@ msgstr "Contact"
 msgid "Poll"
 msgstr "Peiling"
 
-#: src/model.rs:1755 src/ui/conversation.rs:8081 src/a11y.rs:267
+#: src/model.rs:1755 src/ui/conversation.rs:7966 src/a11y.rs:267
 #: src/a11y.rs:695
 msgid "This message was deleted"
 msgstr "Dit bericht is verwijderd"
@@ -200,12 +200,12 @@ msgid "Missed video call"
 msgstr "Gemiste video-oproep"
 
 #: src/model.rs:1765 src/ui/conversation.rs:689 src/ui/conversation.rs:856
-#: src/ui/conversation.rs:5507 src/ui/calls.rs:104 src/ui/calls.rs:389
+#: src/ui/conversation.rs:5392 src/ui/calls.rs:104 src/ui/calls.rs:389
 msgid "Voice call"
 msgstr "Spraakoproep"
 
 #: src/model.rs:1766 src/ui/conversation.rs:690 src/ui/conversation.rs:884
-#: src/ui/conversation.rs:5524 src/ui/calls.rs:105 src/ui/calls.rs:387
+#: src/ui/conversation.rs:5409 src/ui/calls.rs:105 src/ui/calls.rs:387
 msgid "Video call"
 msgstr "Video-oproep"
 
@@ -232,7 +232,7 @@ msgstr "{weekday} om {time}"
 msgid "{date} at {time}"
 msgstr "{date} om {time}"
 
-#: src/util.rs:312 src/settings.rs:128 src/settings.rs:460 src/ui/info.rs:630
+#: src/util.rs:312 src/settings.rs:399 src/ui/info.rs:630
 msgid "Off"
 msgstr "Uit"
 
@@ -383,7 +383,7 @@ msgstr "{hours} u"
 msgid "{hours} h {minutes} min"
 msgstr "{hours} u {minutes} min"
 
-#: src/ui/chats.rs:188 src/ui/chats.rs:523 src/app.rs:3864
+#: src/ui/chats.rs:188 src/ui/chats.rs:523 src/app.rs:3854
 msgid "Starred"
 msgstr "Met ster"
 
@@ -421,7 +421,7 @@ msgstr "Nog geen favorieten"
 msgid "Locked chats"
 msgstr "Vergrendelde chats"
 
-#: src/ui/chats.rs:1408 src/app.rs:3133
+#: src/ui/chats.rs:1408 src/app.rs:3123
 msgid "Message yourself"
 msgstr "Stuur jezelf een bericht"
 
@@ -448,12 +448,12 @@ msgstr "Bezig met opslaan…"
 msgid "Draft:"
 msgstr "Concept:"
 
-#: src/ui/chats.rs:1763 src/ui/chats.rs:2160 src/ui/picker.rs:1735
+#: src/ui/chats.rs:1763 src/ui/chats.rs:2160 src/ui/picker.rs:1723
 msgid "Remove from favorites"
 msgstr "Uit favorieten verwijderen"
 
-#: src/ui/chats.rs:1765 src/ui/chats.rs:2162 src/ui/conversation.rs:7272
-#: src/ui/conversation.rs:7797 src/ui/dialogs.rs:1459 src/ui/picker.rs:1736
+#: src/ui/chats.rs:1765 src/ui/chats.rs:2162 src/ui/conversation.rs:7157
+#: src/ui/conversation.rs:7682 src/ui/dialogs.rs:1459 src/ui/picker.rs:1724
 msgid "Add to favorites"
 msgstr "Aan favorieten toevoegen"
 
@@ -476,7 +476,7 @@ msgstr "Chat wissen"
 msgid "Delete chat"
 msgstr "Chat verwijderen"
 
-#: src/ui/chats.rs:1790 src/ui/chats.rs:2358 src/ui/conversation.rs:11122
+#: src/ui/chats.rs:1790 src/ui/chats.rs:2358 src/ui/conversation.rs:11007
 #: src/ui/call.rs:529
 msgid "Mute"
 msgstr "Dempen"
@@ -518,7 +518,7 @@ msgstr "Uit archief halen"
 msgid "Archive"
 msgstr "Archiveren"
 
-#: src/ui/chats.rs:2198 src/ui/conversation.rs:11120 src/ui/call.rs:522
+#: src/ui/chats.rs:2198 src/ui/conversation.rs:11005 src/ui/call.rs:522
 msgid "Unmute"
 msgstr "Dempen opheffen"
 
@@ -530,7 +530,7 @@ msgstr "Chat ontgrendelen"
 msgid "Lock chat"
 msgstr "Chat vergrendelen"
 
-#: src/ui/chats.rs:2236 src/ui/conversation.rs:686 src/ui/conversation.rs:10018
+#: src/ui/chats.rs:2236 src/ui/conversation.rs:686 src/ui/conversation.rs:9903
 msgid "Copy number"
 msgstr "Nummer kopiëren"
 
@@ -554,7 +554,7 @@ msgstr "Geen geluid"
 msgid "Custom"
 msgstr "Aangepast"
 
-#: src/ui/chats.rs:2314 src/ui/settings.rs:2068
+#: src/ui/chats.rs:2314 src/ui/settings.rs:2015
 msgid "Choose a file…"
 msgstr "Kies een bestand…"
 
@@ -690,7 +690,7 @@ msgstr "Doorgestreept"
 msgid "Monospace"
 msgstr "Vaste tekenbreedte"
 
-#: src/ui/conversation.rs:2204
+#: src/ui/conversation.rs:2182
 msgid ""
 "Enter sends · Shift+Enter for a new line · *bold* _italic_ ~strike~ · Ctrl+V "
 "pastes a picture"
@@ -698,414 +698,414 @@ msgstr ""
 "Enter om te verzenden · Shift+Enter voor een nieuwe regel · *vet* _cursief_ "
 "~doorgestreept~ · Ctrl+V om een afbeelding te plakken"
 
-#: src/ui/conversation.rs:2206
+#: src/ui/conversation.rs:2184
 msgid "Ctrl+Enter sends · *bold* _italic_ ~strike~ · Ctrl+V pastes a picture"
 msgstr ""
 "Ctrl+Enter om te verzenden · *vet* _cursief_ ~doorgestreept~ · Ctrl+V om een "
 "afbeelding te plakken"
 
-#: src/ui/conversation.rs:2217
+#: src/ui/conversation.rs:2195
 msgid "Hide shortcut hints (bring them back from Keyboard shortcuts)"
 msgstr "Sneltoetstips verbergen (weer aan te zetten via Sneltoetsen)"
 
-#: src/ui/conversation.rs:2234
+#: src/ui/conversation.rs:2212
 #, rust-format
 msgid "All shortcuts ({})"
 msgstr "Alle sneltoetsen ({})"
 
-#: src/ui/conversation.rs:2386
+#: src/ui/conversation.rs:2364
 msgid "Send files"
 msgstr "Bestanden verzenden"
 
-#: src/ui/conversation.rs:2392
+#: src/ui/conversation.rs:2370
 msgid "Send as document"
 msgstr "Als document verzenden"
 
-#: src/ui/conversation.rs:2396 src/ui/locations.rs:16
+#: src/ui/conversation.rs:2374 src/ui/locations.rs:16
 msgid "Send location"
 msgstr "Locatie verzenden"
 
-#: src/ui/conversation.rs:2401 src/ui/polls.rs:16
+#: src/ui/conversation.rs:2379 src/ui/polls.rs:16
 msgid "Create poll"
 msgstr "Peiling maken"
 
-#: src/ui/conversation.rs:2463
+#: src/ui/conversation.rs:2441
 #, rust-format
 msgid "Voice message ({duration}) not sent"
 msgstr "Spraakbericht ({duration}) niet verzonden"
 
-#: src/ui/conversation.rs:2465
+#: src/ui/conversation.rs:2443
 msgid "Discard voice message"
 msgstr "Spraakbericht weggooien"
 
-#: src/ui/conversation.rs:2497
+#: src/ui/conversation.rs:2475
 #, rust-format
 msgid "Cancel sending {name}"
 msgstr "Verzenden van {name} annuleren"
 
-#: src/ui/conversation.rs:2505
+#: src/ui/conversation.rs:2483
 #, rust-format
 msgid "Sending {name}"
 msgstr "{name} wordt verzonden"
 
-#: src/ui/conversation.rs:2511
+#: src/ui/conversation.rs:2489
 #, rust-format
 msgid "{time} left"
 msgstr "Nog {time}"
 
-#: src/ui/conversation.rs:2572
+#: src/ui/conversation.rs:2550
 #, fuzzy
 msgid "Editing message"
 msgstr "Bericht vastmaken"
 
-#: src/ui/conversation.rs:2598 src/ui/conversation.rs:3942
-#: src/ui/conversation.rs:4079 src/ui/conversation.rs:4136
-#: src/ui/conversation.rs:4997 src/ui/conversation.rs:7125 src/ui/call.rs:1017
-#: src/app/calls.rs:135 src/app.rs:3115 src/app.rs:3134
+#: src/ui/conversation.rs:2576 src/ui/conversation.rs:3897
+#: src/ui/conversation.rs:4034 src/ui/conversation.rs:4091
+#: src/ui/conversation.rs:4934 src/ui/conversation.rs:7010 src/ui/call.rs:1017
+#: src/app/calls.rs:135 src/app.rs:3105 src/app.rs:3124
 msgid "You"
 msgstr "Jij"
 
-#: src/ui/conversation.rs:2623
+#: src/ui/conversation.rs:2591
 #, fuzzy, rust-format
 msgid "Replying to {who}"
 msgstr "antwoord aan {name}: {text}"
 
-#: src/ui/conversation.rs:2662
+#: src/ui/conversation.rs:2630
 msgid "Loading preview…"
 msgstr "Voorbeeld laden…"
 
-#: src/ui/conversation.rs:2673
+#: src/ui/conversation.rs:2641
 msgid "Remove link preview"
 msgstr "Linkvoorbeeld verwijderen"
 
-#: src/ui/conversation.rs:2990
+#: src/ui/conversation.rs:2958
 msgid "You pinned a message"
 msgstr "Je hebt een bericht vastgemaakt"
 
-#: src/ui/conversation.rs:2993
+#: src/ui/conversation.rs:2961
 msgid "A message was pinned"
 msgstr "Er is een bericht vastgemaakt"
 
-#: src/ui/conversation.rs:2995
+#: src/ui/conversation.rs:2963
 #, rust-format
 msgid "{} pinned a message"
 msgstr "{} heeft een bericht vastgemaakt"
 
-#: src/ui/conversation.rs:3754 src/notify.rs:19
+#: src/ui/conversation.rs:3709 src/notify.rs:19
 #, rust-format
 msgid "{} unread message"
 msgid_plural "{} unread messages"
 msgstr[0] "{} ongelezen bericht"
 msgstr[1] "{} ongelezen berichten"
 
-#: src/ui/conversation.rs:3958
+#: src/ui/conversation.rs:3913
 #, rust-format
 msgid "Select message from {sender}, {time}: {summary}"
 msgstr "Bericht van {sender}, {time} selecteren: {summary}"
 
-#: src/ui/conversation.rs:4898 src/ui/image_preview.rs:399
+#: src/ui/conversation.rs:4835 src/ui/image_preview.rs:399
 msgid "React"
 msgstr "Reageren"
 
-#: src/ui/conversation.rs:4925 src/ui/conversation.rs:7259
-#: src/ui/conversation.rs:7588 src/ui/image_preview.rs:386
+#: src/ui/conversation.rs:4862 src/ui/conversation.rs:7144
+#: src/ui/conversation.rs:7473 src/ui/image_preview.rs:386
 msgid "Reply"
 msgstr "Beantwoorden"
 
-#: src/ui/conversation.rs:4949 src/ui/conversation.rs:7265
-#: src/ui/conversation.rs:7644 src/ui/dialogs.rs:827 src/ui/dialogs.rs:846
+#: src/ui/conversation.rs:4886 src/ui/conversation.rs:7150
+#: src/ui/conversation.rs:7529 src/ui/dialogs.rs:827 src/ui/dialogs.rs:846
 #: src/ui/image_preview.rs:419
 msgid "Forward"
 msgstr "Doorsturen"
 
-#: src/ui/conversation.rs:5474
+#: src/ui/conversation.rs:5359
 msgid "Group calls happen on the phone"
 msgstr "Groepsoproepen vinden plaats op de telefoon"
 
-#: src/ui/conversation.rs:6611
+#: src/ui/conversation.rs:6496
 #, fuzzy
 msgid "Forwarded"
 msgstr "doorgestuurd"
 
-#: src/ui/conversation.rs:6923 src/ui/conversation.rs:7280
-#: src/ui/conversation.rs:7881 src/ui/message_info.rs:17
+#: src/ui/conversation.rs:6808 src/ui/conversation.rs:7165
+#: src/ui/conversation.rs:7766 src/ui/message_info.rs:17
 msgid "Message info"
 msgstr "Berichtinfo"
 
-#: src/ui/conversation.rs:7195
+#: src/ui/conversation.rs:7080
 msgid "Remove reaction"
 msgstr "Reactie verwijderen"
 
-#: src/ui/conversation.rs:7260 src/ui/conversation.rs:7605
+#: src/ui/conversation.rs:7145 src/ui/conversation.rs:7490
 msgid "Reply privately"
 msgstr "Privé beantwoorden"
 
-#: src/ui/conversation.rs:7261 src/ui/conversation.rs:7617
+#: src/ui/conversation.rs:7146 src/ui/conversation.rs:7502
 msgid "Star"
 msgstr "Markeren met ster"
 
-#: src/ui/conversation.rs:7262 src/ui/conversation.rs:7615
+#: src/ui/conversation.rs:7147 src/ui/conversation.rs:7500
 msgid "Unstar"
 msgstr "Ster verwijderen"
 
-#: src/ui/conversation.rs:7263 src/ui/conversation.rs:7631
+#: src/ui/conversation.rs:7148 src/ui/conversation.rs:7516
 msgid "Pin message"
 msgstr "Bericht vastmaken"
 
-#: src/ui/conversation.rs:7264 src/ui/conversation.rs:7629
+#: src/ui/conversation.rs:7149 src/ui/conversation.rs:7514
 msgid "Unpin message"
 msgstr "Bericht losmaken"
 
-#: src/ui/conversation.rs:7266 src/ui/conversation.rs:7656
+#: src/ui/conversation.rs:7151 src/ui/conversation.rs:7541
 msgid "Open in the viewer"
 msgstr "Openen in de mediaweergave"
 
-#: src/ui/conversation.rs:7267 src/ui/conversation.rs:7670
+#: src/ui/conversation.rs:7152 src/ui/conversation.rs:7555
 msgid "Select"
 msgstr "Selecteren"
 
-#: src/ui/conversation.rs:7268 src/ui/conversation.rs:7736
+#: src/ui/conversation.rs:7153 src/ui/conversation.rs:7621
 msgid "Copy text"
 msgstr "Tekst kopiëren"
 
-#: src/ui/conversation.rs:7269 src/ui/conversation.rs:7752
+#: src/ui/conversation.rs:7154 src/ui/conversation.rs:7637
 msgid "Edit"
 msgstr "Bewerken"
 
-#: src/ui/conversation.rs:7270 src/ui/conversation.rs:7460
-#: src/ui/conversation.rs:7768 src/ui/conversation.rs:8111
-#: src/ui/conversation.rs:11985
+#: src/ui/conversation.rs:7155 src/ui/conversation.rs:7345
+#: src/ui/conversation.rs:7653 src/ui/conversation.rs:7996
+#: src/ui/conversation.rs:11870
 msgid "Delete for everyone"
 msgstr "Voor iedereen verwijderen"
 
-#: src/ui/conversation.rs:7271 src/ui/conversation.rs:7465
-#: src/ui/conversation.rs:7777 src/ui/conversation.rs:11986
+#: src/ui/conversation.rs:7156 src/ui/conversation.rs:7350
+#: src/ui/conversation.rs:7662 src/ui/conversation.rs:11871
 msgid "Delete for me"
 msgstr "Voor mij verwijderen"
 
-#: src/ui/conversation.rs:7273 src/ui/conversation.rs:7806
+#: src/ui/conversation.rs:7158 src/ui/conversation.rs:7691
 msgid "Open in system player"
 msgstr "Openen in systeemspeler"
 
-#: src/ui/conversation.rs:7274 src/ui/conversation.rs:7808
-#: src/ui/picker.rs:1629
+#: src/ui/conversation.rs:7159 src/ui/conversation.rs:7693
+#: src/ui/picker.rs:1617
 msgid "Open file"
 msgstr "Bestand openen"
 
-#: src/ui/conversation.rs:7275 src/ui/conversation.rs:7818
+#: src/ui/conversation.rs:7160 src/ui/conversation.rs:7703
 #: src/ui/image_preview.rs:302 src/ui/image_preview.rs:628
 msgid "Copy image"
 msgstr "Afbeelding kopiëren"
 
-#: src/ui/conversation.rs:7276 src/ui/conversation.rs:7827
+#: src/ui/conversation.rs:7161 src/ui/conversation.rs:7712
 #: src/ui/image_preview.rs:444 src/ui/image_preview.rs:629
 msgid "Save as…"
 msgstr "Opslaan als…"
 
-#: src/ui/conversation.rs:7277 src/ui/conversation.rs:7839
+#: src/ui/conversation.rs:7162 src/ui/conversation.rs:7724
 msgid "Show in folder"
 msgstr "Tonen in map"
 
-#: src/ui/conversation.rs:7278 src/ui/conversation.rs:7852
+#: src/ui/conversation.rs:7163 src/ui/conversation.rs:7737
 msgid "Downloading…"
 msgstr "Bezig met downloaden…"
 
-#: src/ui/conversation.rs:7279 src/ui/conversation.rs:7854
+#: src/ui/conversation.rs:7164 src/ui/conversation.rs:7739
 #: src/ui/image_preview.rs:460 src/ui/image_preview.rs:815
 #: src/ui/image_preview.rs:823 src/ui/image_preview.rs:905
 msgid "Download"
 msgstr "Downloaden"
 
-#: src/ui/conversation.rs:7281 src/ui/conversation.rs:7893
+#: src/ui/conversation.rs:7166 src/ui/conversation.rs:7778
 msgid "Reload earlier messages"
 msgstr "Eerdere berichten opnieuw laden"
 
-#: src/ui/conversation.rs:7282 src/ui/conversation.rs:7906
+#: src/ui/conversation.rs:7167 src/ui/conversation.rs:7791
 msgid "Copy message ID"
 msgstr "Bericht-ID kopiëren"
 
-#: src/ui/conversation.rs:7525
+#: src/ui/conversation.rs:7410
 msgid "Remove your reaction"
 msgstr "Je reactie verwijderen"
 
-#: src/ui/conversation.rs:7542
+#: src/ui/conversation.rs:7427
 msgid "React with any emoji"
 msgstr "Reageren met een emoji naar keuze"
 
-#: src/ui/conversation.rs:7701 src/ui/conversation.rs:8107
+#: src/ui/conversation.rs:7586 src/ui/conversation.rs:7992
 #, rust-format
 msgid "{option}, unavailable: {reason}"
 msgstr "{option}, niet beschikbaar: {reason}"
 
-#: src/ui/conversation.rs:7949
+#: src/ui/conversation.rs:7834
 #, rust-format
 msgid "Card {number}: {button}"
 msgstr "Kaart {number}: {button}"
 
-#: src/ui/conversation.rs:7991
+#: src/ui/conversation.rs:7876
 msgid "Go to replied message"
 msgstr "Naar beantwoord bericht gaan"
 
-#: src/ui/conversation.rs:8002
+#: src/ui/conversation.rs:7887
 #, rust-format
 msgid "Info about {name}"
 msgstr "Info over {name}"
 
-#: src/ui/conversation.rs:8080
+#: src/ui/conversation.rs:7965
 msgid "Only messages you sent"
 msgstr "Alleen door jou verzonden berichten"
 
-#: src/ui/conversation.rs:8082
+#: src/ui/conversation.rs:7967
 msgid "The time limit has passed"
 msgstr "De tijdslimiet is verstreken"
 
-#: src/ui/conversation.rs:8611
+#: src/ui/conversation.rs:8496
 #, rust-format
 msgid "Updated {time}"
 msgstr "Bijgewerkt {time}"
 
-#: src/ui/conversation.rs:8626 src/ui/conversation.rs:8835
+#: src/ui/conversation.rs:8511 src/ui/conversation.rs:8720
 msgid "Open WhatsApp on your phone to follow it."
 msgstr "Open WhatsApp op je telefoon om het te volgen."
 
-#: src/ui/conversation.rs:8670
+#: src/ui/conversation.rs:8555
 msgid "Chat"
 msgstr "Chat"
 
-#: src/ui/conversation.rs:8685
+#: src/ui/conversation.rs:8570
 msgid "Add"
 msgstr "Toevoegen"
 
-#: src/ui/conversation.rs:8733
+#: src/ui/conversation.rs:8618
 #, rust-format
 msgid "{} sticker"
 msgid_plural "{} stickers"
 msgstr[0] "{} sticker"
 msgstr[1] "{} stickers"
 
-#: src/ui/conversation.rs:8746
+#: src/ui/conversation.rs:8631
 msgid "View stickers"
 msgstr "Stickers bekijken"
 
-#: src/ui/conversation.rs:8853
+#: src/ui/conversation.rs:8738
 msgid "View once photo. For your privacy, it opens only on your phone."
 msgstr ""
 "Eenmalig te bekijken foto. Voor je privacy kun je deze alleen op je telefoon "
 "openen."
 
-#: src/ui/conversation.rs:8857
+#: src/ui/conversation.rs:8742
 msgid "View once video. For your privacy, it opens only on your phone."
 msgstr ""
 "Eenmalig te bekijken video. Voor je privacy kun je deze alleen op je "
 "telefoon openen."
 
-#: src/ui/conversation.rs:8861
+#: src/ui/conversation.rs:8746
 msgid "View once voice message. For your privacy, it opens only on your phone."
 msgstr ""
 "Eenmalig te beluisteren spraakbericht. Voor je privacy kun je dit alleen op "
 "je telefoon openen."
 
-#: src/ui/conversation.rs:8865
+#: src/ui/conversation.rs:8750
 msgid "View once audio. For your privacy, it opens only on your phone."
 msgstr ""
 "Eenmalig te beluisteren audio. Voor je privacy kun je deze alleen op je "
 "telefoon openen."
 
-#: src/ui/conversation.rs:8869
+#: src/ui/conversation.rs:8754
 msgid "View once message. For your privacy, it opens only on your phone."
 msgstr ""
 "Eenmalig te bekijken bericht. Voor je privacy kun je dit alleen op je "
 "telefoon openen."
 
-#: src/ui/conversation.rs:8871
+#: src/ui/conversation.rs:8756
 msgid "This message can only be seen on your phone."
 msgstr "Dit bericht kun je alleen op je telefoon bekijken."
 
-#: src/ui/conversation.rs:9213
+#: src/ui/conversation.rs:9098
 msgid "Save all…"
 msgstr "Alles opslaan…"
 
-#: src/ui/conversation.rs:9501 src/ui/conversation.rs:10591
+#: src/ui/conversation.rs:9386 src/ui/conversation.rs:10476
 msgid "Download failed. Click to retry."
 msgstr "Downloaden mislukt. Klik om het opnieuw te proberen."
 
-#: src/ui/conversation.rs:9644 src/ui/dialogs.rs:225
+#: src/ui/conversation.rs:9529 src/ui/dialogs.rs:225
 msgid "Sending reply…"
 msgstr "Antwoord wordt verzonden…"
 
-#: src/ui/conversation.rs:9645 src/ui/dialogs.rs:227
+#: src/ui/conversation.rs:9530 src/ui/dialogs.rs:227
 msgid "Connect to WhatsApp to reply"
 msgstr "Maak verbinding met WhatsApp om te antwoorden"
 
-#: src/ui/conversation.rs:9646
+#: src/ui/conversation.rs:9531
 msgid "This conversation is read-only"
 msgstr "Dit gesprek is alleen-lezen"
 
-#: src/ui/conversation.rs:9647
+#: src/ui/conversation.rs:9532
 msgid "Reply options are for the recipient"
 msgstr "Antwoordopties zijn voor de ontvanger"
 
-#: src/ui/conversation.rs:9648
+#: src/ui/conversation.rs:9533
 msgid "Open this option in WhatsApp Web or on your phone"
 msgstr "Open deze optie in WhatsApp Web of op je telefoon"
 
-#: src/ui/conversation.rs:9827
+#: src/ui/conversation.rs:9712
 #, rust-format
 msgid "Send reply: {label}"
 msgstr "Antwoord verzenden: {label}"
 
-#: src/ui/conversation.rs:9831 src/ui/login.rs:307
+#: src/ui/conversation.rs:9716 src/ui/login.rs:307
 msgid "Copy code"
 msgstr "Code kopiëren"
 
-#: src/ui/conversation.rs:10017 src/ui/dialogs.rs:2089
+#: src/ui/conversation.rs:9902 src/ui/dialogs.rs:2089
 msgid "Message"
 msgstr "Bericht"
 
-#: src/ui/conversation.rs:10295 src/ui/locations.rs:52
+#: src/ui/conversation.rs:10180 src/ui/locations.rs:52
 msgid "Open in a map"
 msgstr "Openen op een kaart"
 
-#: src/ui/conversation.rs:11060
+#: src/ui/conversation.rs:10945
 msgid "Pause"
 msgstr "Pauzeren"
 
-#: src/ui/conversation.rs:11062 src/ui/settings.rs:2051
+#: src/ui/conversation.rs:10947 src/ui/settings.rs:1998
 msgid "Play"
 msgstr "Afspelen"
 
-#: src/ui/conversation.rs:11091
+#: src/ui/conversation.rs:10976
 msgid "Back to the message (Esc)"
 msgstr "Terug naar het bericht (Esc)"
 
-#: src/ui/conversation.rs:11093
+#: src/ui/conversation.rs:10978
 msgid "Fill the window"
 msgstr "Venster vullen"
 
-#: src/ui/conversation.rs:11932
+#: src/ui/conversation.rs:11817
 msgid "Cancel selection"
 msgstr "Selectie annuleren"
 
-#: src/ui/conversation.rs:11941 src/ui/new_group.rs:146
+#: src/ui/conversation.rs:11826 src/ui/new_group.rs:146
 #, rust-format
 msgid "{count} selected"
 msgid_plural "{count} selected"
 msgstr[0] "{count} geselecteerd"
 msgstr[1] "{count} geselecteerd"
 
-#: src/ui/conversation.rs:11955
+#: src/ui/conversation.rs:11840
 msgid "Forward…"
 msgstr "Doorsturen…"
 
-#: src/ui/conversation.rs:11971
+#: src/ui/conversation.rs:11856
 msgid "Delete…"
 msgstr "Verwijderen…"
 
-#: src/ui/conversation.rs:13871
+#: src/ui/conversation.rs:13756
 msgid "View once"
 msgstr "Eenmalig bekijken"
 
-#: src/ui/conversation.rs:13900
+#: src/ui/conversation.rs:13785
 msgid "The recipient can open this photo only once, on their phone."
 msgstr "De ontvanger kan deze foto maar één keer openen, op de telefoon."
 
@@ -1115,7 +1115,7 @@ msgstr "Kies een optie"
 
 #: src/ui/dialogs.rs:198 src/ui/dialogs.rs:937 src/ui/dialogs.rs:1269
 #: src/ui/dialogs.rs:1321 src/ui/locations.rs:27 src/ui/message_info.rs:28
-#: src/ui/labels.rs:234 src/ui/info.rs:311 src/ui/mod.rs:1045
+#: src/ui/labels.rs:234 src/ui/info.rs:311 src/ui/mod.rs:993
 #: src/ui/new_group.rs:57 src/ui/polls.rs:27 src/ui/polls.rs:468
 #: src/ui/blocking.rs:198
 msgid "Close"
@@ -1174,7 +1174,7 @@ msgstr "Vergrendelde chats openen"
 #: src/ui/dialogs.rs:420 src/ui/dialogs.rs:472 src/ui/dialogs.rs:1250
 #: src/ui/dialogs.rs:1466 src/ui/dialogs.rs:1669 src/ui/dialogs.rs:1758
 #: src/ui/dialogs.rs:1824 src/ui/dialogs.rs:1915 src/ui/dialogs.rs:2100
-#: src/ui/locations.rs:82 src/ui/settings.rs:1090 src/ui/settings.rs:1821
+#: src/ui/locations.rs:82 src/ui/settings.rs:1075 src/ui/settings.rs:1768
 #: src/ui/lock.rs:142 src/ui/accounts.rs:377 src/ui/info.rs:2280
 #: src/ui/polls.rs:154 src/ui/chat_export.rs:59
 msgid "Cancel"
@@ -1258,7 +1258,7 @@ msgid_plural "You can forward to up to {count} chats"
 msgstr[0] "Je kunt naar maximaal {count} chat doorsturen"
 msgstr[1] "Je kunt naar maximaal {count} chats doorsturen"
 
-#: src/ui/dialogs.rs:1002 src/ui/settings.rs:916 src/ui/settings.rs:1899
+#: src/ui/dialogs.rs:1002 src/ui/settings.rs:901 src/ui/settings.rs:1846
 msgid "Keyboard shortcuts"
 msgstr "Sneltoetsen"
 
@@ -1266,7 +1266,7 @@ msgstr "Sneltoetsen"
 msgid "Show shortcut hints under the message box"
 msgstr "Sneltoetstips onder het berichtvak tonen"
 
-#: src/ui/dialogs.rs:1064 src/ui/settings.rs:912 src/ui/settings.rs:1910
+#: src/ui/dialogs.rs:1064 src/ui/settings.rs:897 src/ui/settings.rs:1857
 msgid "About"
 msgstr "Over"
 
@@ -1291,7 +1291,7 @@ msgstr ""
 "Dit is een onofficiële client. Het gebruik ervan kan in strijd zijn met de "
 "gebruiksvoorwaarden van WhatsApp en tot schorsing van een account leiden."
 
-#: src/ui/dialogs.rs:1098 src/ui/settings.rs:917 src/ui/settings.rs:1921
+#: src/ui/dialogs.rs:1098 src/ui/settings.rs:902 src/ui/settings.rs:1868
 msgid "Source code"
 msgstr "Broncode"
 
@@ -1530,7 +1530,7 @@ msgstr ""
 msgid "Files in a download folder you chose are kept."
 msgstr "Bestanden in een door jou gekozen downloadmap blijven bewaard."
 
-#: src/ui/dialogs.rs:1625 src/ui/settings.rs:522
+#: src/ui/dialogs.rs:1625 src/ui/settings.rs:507
 msgid "Clear"
 msgstr "Wissen"
 
@@ -1696,7 +1696,7 @@ msgstr "Weergave"
 msgid "Follow system uses your Omarchy colours."
 msgstr "Systeem volgen gebruikt je Omarchy-kleuren."
 
-#: src/ui/settings.rs:353 src/ui/settings.rs:1168
+#: src/ui/settings.rs:353 src/ui/settings.rs:1153
 msgid "Theme"
 msgstr "Thema"
 
@@ -1713,89 +1713,70 @@ msgstr ""
 "elke computer hetzelfde uit."
 
 #: src/ui/settings.rs:363
-#, fuzzy
-msgid "Motion"
-msgstr "Locatie"
-
-#: src/ui/settings.rs:366
-msgid ""
-"How much the interface moves as it changes. Off leaves every screen still."
-msgstr ""
-
-#: src/ui/settings.rs:372
-#, fuzzy
-msgid "Motion pace"
-msgstr "Locatie"
-
-#: src/ui/settings.rs:373
-msgid "How long a full transition takes."
-msgstr ""
-
-#: src/ui/settings.rs:378
 msgid "Wallpaper"
 msgstr "Achtergrond"
 
-#: src/ui/settings.rs:382 src/app.rs:3662 src/ui/image_preview.rs:248
+#: src/ui/settings.rs:367 src/app.rs:3652 src/ui/image_preview.rs:248
 msgid "Image"
 msgstr "Afbeelding"
 
-#: src/ui/settings.rs:392
+#: src/ui/settings.rs:377
 msgid "Zoom"
 msgstr "Zoom"
 
-#: src/ui/settings.rs:395
+#: src/ui/settings.rs:380
 msgid "Ctrl+Plus and Ctrl+Minus work anywhere, and Ctrl+0 resets it."
 msgstr ""
 "Ctrl+Plus en Ctrl+Minus werken overal; Ctrl+0 herstelt de standaardzoom."
 
-#: src/ui/settings.rs:404
+#: src/ui/settings.rs:389
 msgid "Larger"
 msgstr "Groter"
 
-#: src/ui/settings.rs:422
+#: src/ui/settings.rs:407
 msgid "Smaller"
 msgstr "Kleiner"
 
-#: src/ui/settings.rs:430
+#: src/ui/settings.rs:415
 msgid "Language"
 msgstr "Taal"
 
-#: src/ui/settings.rs:434 src/ui/settings.rs:1941
+#: src/ui/settings.rs:419 src/ui/settings.rs:1888
 msgid "Custom title bar"
 msgstr "Aangepaste titelbalk"
 
-#: src/ui/settings.rs:437
+#: src/ui/settings.rs:422
 msgid ""
 "Draw ZapFastie's own title bar and window buttons instead of the desktop's."
 msgstr ""
 "Tekent de eigen titelbalk en vensterknoppen van ZapFastie in plaats van die "
 "van het bureaublad."
 
-#: src/ui/settings.rs:443 src/ui/rail.rs:299
+#: src/ui/settings.rs:428 src/ui/rail.rs:299
 msgid "Chats"
 msgstr "Chats"
 
-#: src/ui/settings.rs:445
+#: src/ui/settings.rs:430
 msgid "Enter sends"
 msgstr "Verzenden met Enter"
 
-#: src/ui/settings.rs:446
+#: src/ui/settings.rs:431
 msgid "When off, Ctrl+Enter sends."
 msgstr "Als dit uitstaat, verzend je met Ctrl+Enter."
 
-#: src/ui/settings.rs:450
+#: src/ui/settings.rs:435
 msgid "Download files automatically"
 msgstr "Bestanden automatisch downloaden"
 
-#: src/ui/settings.rs:453
+#: src/ui/settings.rs:438
 msgid "Files up to 64 MiB download as they come into view."
 msgstr "Bestanden tot 64 MiB worden gedownload zodra ze in beeld komen."
 
-#: src/ui/settings.rs:458
+#: src/ui/settings.rs:443
 msgid "Fetch older history"
 msgstr "Oudere berichten ophalen"
 
-#: src/ui/settings.rs:461
+#: src/ui/settings.rs:446
 msgid ""
 "Asks your phone in the background for older messages in the open, pinned and "
 "ten most recent chats."
@@ -1803,29 +1784,29 @@ msgstr ""
 "Vraagt je telefoon op de achtergrond om oudere berichten in de geopende, "
 "vastgemaakte en tien meest recente chats."
 
-#: src/ui/settings.rs:468
+#: src/ui/settings.rs:453
 msgid "Pause other media while recording or playing"
 msgstr "Andere media pauzeren tijdens opnemen of afspelen"
 
-#: src/ui/settings.rs:469
+#: src/ui/settings.rs:454
 msgid "Music and videos in other apps resume afterwards."
 msgstr "Muziek en video's in andere apps worden daarna hervat."
 
-#: src/ui/settings.rs:474 src/ui/settings.rs:483
+#: src/ui/settings.rs:459 src/ui/settings.rs:468
 msgid "Keep chats archived"
 msgstr "Chats gearchiveerd houden"
 
-#: src/ui/settings.rs:477
+#: src/ui/settings.rs:462
 msgid "When off, a new message brings an archived chat back to the list."
 msgstr ""
 "Als dit uitstaat, zet een nieuw bericht een gearchiveerde chat terug in de "
 "lijst."
 
-#: src/ui/settings.rs:498
+#: src/ui/settings.rs:483
 msgid "Locked chats code"
 msgstr "Code voor vergrendelde chats"
 
-#: src/ui/settings.rs:501
+#: src/ui/settings.rs:486
 msgid ""
 "Opens the Locked tab on this computer. It hides chats, it does not encrypt "
 "them."
@@ -1833,35 +1814,35 @@ msgstr ""
 "Opent het tabblad Vergrendeld op deze computer. Dit verbergt chats, maar "
 "versleutelt ze niet."
 
-#: src/ui/settings.rs:513
+#: src/ui/settings.rs:498
 msgid "Secret code"
 msgstr "Geheime code"
 
-#: src/ui/settings.rs:532 src/ui/settings.rs:2179
+#: src/ui/settings.rs:517 src/ui/settings.rs:2126
 msgid "Notifications"
 msgstr "Meldingen"
 
-#: src/ui/settings.rs:534
+#: src/ui/settings.rs:519
 msgid "Desktop notifications"
 msgstr "Bureaubladmeldingen"
 
-#: src/ui/settings.rs:537
+#: src/ui/settings.rs:522
 msgid "For chats you are not looking at. Muted chats stay quiet."
 msgstr "Voor chats die je niet bekijkt. Gedempte chats blijven stil."
 
-#: src/ui/settings.rs:544
+#: src/ui/settings.rs:529
 msgid "Show message content in notifications"
 msgstr "Berichtinhoud in meldingen tonen"
 
-#: src/ui/settings.rs:545
+#: src/ui/settings.rs:530
 msgid "When off, they say only “New message”."
 msgstr "Als dit uitstaat, staat er alleen “Nieuw bericht”."
 
-#: src/ui/settings.rs:550
+#: src/ui/settings.rs:535
 msgid "Limit repeat notifications"
 msgstr "Herhaalde meldingen beperken"
 
-#: src/ui/settings.rs:553
+#: src/ui/settings.rs:538
 msgid ""
 "After one notification, a chat stays quiet for 10 minutes. Opening the chat "
 "resets this. In groups, mentions and replies to you still notify."
@@ -1870,106 +1851,106 @@ msgstr ""
 "die stilte meteen. In groepen krijg je wel meldingen van vermeldingen en "
 "antwoorden aan jou."
 
-#: src/ui/settings.rs:579 src/ui/settings.rs:2186
+#: src/ui/settings.rs:564 src/ui/settings.rs:2133
 msgid "Play sounds for group messages"
 msgstr "Geluiden afspelen voor groepsberichten"
 
-#: src/ui/settings.rs:582
+#: src/ui/settings.rs:567
 msgid "When off, only mentions and replies to you make a sound."
 msgstr ""
 "Als dit uitstaat, hoor je alleen geluid bij vermeldingen en antwoorden aan "
 "jou."
 
-#: src/ui/settings.rs:590
+#: src/ui/settings.rs:575
 msgid "Privacy"
 msgstr "Privacy"
 
-#: src/ui/settings.rs:592
+#: src/ui/settings.rs:577
 msgid "Off for your account, so only groups get them."
 msgstr "Uitgeschakeld voor je account, dus alleen groepen krijgen ze."
 
-#: src/ui/settings.rs:594
+#: src/ui/settings.rs:579
 msgid "Let people see when you read their messages."
 msgstr "Laat anderen zien wanneer je hun berichten leest."
 
-#: src/ui/settings.rs:597
+#: src/ui/settings.rs:582
 msgid "Send read receipts"
 msgstr "Leesbewijzen verzenden"
 
-#: src/ui/settings.rs:602
+#: src/ui/settings.rs:587
 msgid "Show when you are typing"
 msgstr "Tonen wanneer je typt"
 
-#: src/ui/settings.rs:608 src/ui/blocking.rs:107
+#: src/ui/settings.rs:593 src/ui/blocking.rs:107
 msgid "Blocked contacts"
 msgstr "Geblokkeerde contacten"
 
-#: src/ui/settings.rs:614
+#: src/ui/settings.rs:599
 msgid "Manage"
 msgstr "Beheren"
 
-#: src/ui/settings.rs:630
+#: src/ui/settings.rs:615
 msgid ""
 "Could not load your account privacy. Trying again when ZapFastie reconnects."
 msgstr ""
 "Je accountprivacy kon niet worden geladen. ZapFastie probeert het opnieuw "
 "zodra er weer verbinding is."
 
-#: src/ui/settings.rs:635
+#: src/ui/settings.rs:620
 msgid "Connect to WhatsApp to change your account privacy."
 msgstr "Maak verbinding met WhatsApp om je accountprivacy te wijzigen."
 
-#: src/ui/settings.rs:640
+#: src/ui/settings.rs:625
 msgid "Loading your account privacy…"
 msgstr "Accountprivacy laden…"
 
-#: src/ui/settings.rs:665
+#: src/ui/settings.rs:650
 msgid "Change who is excluded on your phone."
 msgstr "Wijzig op je telefoon wie is uitgesloten."
 
-#: src/ui/settings.rs:683 src/settings.rs:92
+#: src/ui/settings.rs:668 src/settings.rs:92
 msgid "System"
 msgstr "Systeem"
 
-#: src/ui/settings.rs:688
+#: src/ui/settings.rs:673
 #, fuzzy
 msgid "Show in the menu bar"
 msgstr "Tonen in de chat"
 
-#: src/ui/settings.rs:691
+#: src/ui/settings.rs:676
 msgid "Closing the window keeps ZapFastie in the Dock. Quit with Ctrl+Q."
 msgstr ""
 
-#: src/ui/settings.rs:697
+#: src/ui/settings.rs:682
 msgid "Keep running when the window closes"
 msgstr "Actief blijven als het venster sluit"
 
-#: src/ui/settings.rs:698
+#: src/ui/settings.rs:683
 msgid "Quit from the tray or with Ctrl+Q."
 msgstr "Sluit af via het systeemvak of met Ctrl+Q."
 
-#: src/ui/settings.rs:704 src/ui/settings.rs:712
+#: src/ui/settings.rs:689 src/ui/settings.rs:697
 msgid "Start at login"
 msgstr "Starten bij aanmelden"
 
-#: src/ui/settings.rs:705
+#: src/ui/settings.rs:690
 msgid "Starts in the tray, without a window."
 msgstr "Start in het systeemvak, zonder venster."
 
-#: src/ui/settings.rs:728
+#: src/ui/settings.rs:713
 msgid "Check for updates"
 msgstr "Controleren op updates"
 
-#: src/ui/settings.rs:731
+#: src/ui/settings.rs:716
 msgid "Asks GitHub once a day, sending only the ZapFastie version."
 msgstr ""
 "Controleert GitHub één keer per dag en verstuurt alleen de ZapFastie-versie."
 
-#: src/ui/settings.rs:736
+#: src/ui/settings.rs:721
 msgid "Download updates automatically"
 msgstr "Updates automatisch downloaden"
 
-#: src/ui/settings.rs:739
+#: src/ui/settings.rs:724
 msgid ""
 "You still choose when to restart. Package managers and Flatpak update "
 "ZapFastie themselves."
@@ -1977,129 +1958,129 @@ msgstr ""
 "Je kiest zelf wanneer je opnieuw opstart. Pakketbeheerders en Flatpak werken "
 "ZapFastie zelf bij."
 
-#: src/ui/settings.rs:752
+#: src/ui/settings.rs:737
 #, rust-format
 msgid "Using {proxy} from the environment."
 msgstr "Gebruikt {proxy} uit de omgevingsvariabelen."
 
-#: src/ui/settings.rs:760
+#: src/ui/settings.rs:745
 msgid "For WhatsApp, media, and updates. Empty uses ALL_PROXY or HTTPS_PROXY."
 msgstr ""
 "Voor WhatsApp, media en updates. Laat leeg om ALL_PROXY of HTTPS_PROXY te "
 "gebruiken."
 
-#: src/ui/settings.rs:763
+#: src/ui/settings.rs:748
 msgid "Proxy"
 msgstr "Proxy"
 
-#: src/ui/settings.rs:783
+#: src/ui/settings.rs:768
 msgid "GIPHY API key"
 msgstr "GIPHY API-sleutel"
 
-#: src/ui/settings.rs:787
+#: src/ui/settings.rs:772
 msgid "For GIF search. Replaces the key this build includes."
 msgstr "Voor het zoeken naar GIF's. Vervangt de sleutel die deze versie bevat."
 
-#: src/ui/settings.rs:792
+#: src/ui/settings.rs:777
 msgid "For GIF search. Get a free key at developers.giphy.com."
 msgstr ""
 "Voor het zoeken naar GIF's. Vraag een gratis sleutel aan op "
 "developers.giphy.com."
 
-#: src/ui/settings.rs:808 src/ui/settings.rs:2233 src/ui/settings.rs:2239
+#: src/ui/settings.rs:793 src/ui/settings.rs:2180 src/ui/settings.rs:2186
 msgid "Account"
 msgstr "Account"
 
-#: src/ui/settings.rs:811 src/ui/settings.rs:1720
+#: src/ui/settings.rs:796 src/ui/settings.rs:1667
 msgid "Your name"
 msgstr "Je naam"
 
-#: src/ui/settings.rs:813 src/ui/settings.rs:1728
+#: src/ui/settings.rs:798 src/ui/settings.rs:1675
 msgctxt "profile"
 msgid "About"
 msgstr "Info"
 
-#: src/ui/settings.rs:816 src/ui/settings.rs:1697
+#: src/ui/settings.rs:801 src/ui/settings.rs:1644
 msgid "Change profile picture"
 msgstr "Profielfoto wijzigen"
 
-#: src/ui/settings.rs:817 src/ui/settings.rs:1780 src/ui/settings.rs:2235
+#: src/ui/settings.rs:802 src/ui/settings.rs:1727 src/ui/settings.rs:2182
 msgid "Unlink this computer"
 msgstr "Deze computer ontkoppelen"
 
-#: src/ui/settings.rs:818 src/ui/settings.rs:1791 src/ui/accounts.rs:169
+#: src/ui/settings.rs:803 src/ui/settings.rs:1738 src/ui/accounts.rs:169
 msgid "Add account"
 msgstr "Account toevoegen"
 
-#: src/ui/settings.rs:819 src/ui/settings.rs:1767 src/ui/accounts.rs:381
+#: src/ui/settings.rs:804 src/ui/settings.rs:1714 src/ui/accounts.rs:381
 msgid "Remove this account"
 msgstr "Dit account verwijderen"
 
-#: src/ui/settings.rs:824
+#: src/ui/settings.rs:809
 msgid "Files"
 msgstr "Bestanden"
 
-#: src/ui/settings.rs:827
+#: src/ui/settings.rs:812
 msgid "Open folder"
 msgstr "Map openen"
 
-#: src/ui/settings.rs:829
+#: src/ui/settings.rs:814
 msgid "Message archive"
 msgstr "Berichtenarchief"
 
-#: src/ui/settings.rs:847
+#: src/ui/settings.rs:832
 msgid "Downloads"
 msgstr "Downloads"
 
-#: src/ui/settings.rs:860
+#: src/ui/settings.rs:845
 msgid "Change…"
 msgstr "Wijzigen…"
 
-#: src/ui/settings.rs:872
+#: src/ui/settings.rs:857
 msgid "Use default"
 msgstr "Standaard gebruiken"
 
-#: src/ui/settings.rs:883 src/ui/settings.rs:1533
+#: src/ui/settings.rs:868 src/ui/settings.rs:1480
 msgid "Storage used"
 msgstr "Gebruikte opslag"
 
-#: src/ui/settings.rs:884
+#: src/ui/settings.rs:869
 msgid "Media cache"
 msgstr "Mediacache"
 
-#: src/ui/settings.rs:885 src/ui/settings.rs:1587
+#: src/ui/settings.rs:870 src/ui/settings.rs:1534
 msgid "Images"
 msgstr "Afbeeldingen"
 
-#: src/ui/settings.rs:886 src/ui/settings.rs:1593
+#: src/ui/settings.rs:871 src/ui/settings.rs:1540
 msgid "Videos and GIFs"
 msgstr "Video's en GIF's"
 
-#: src/ui/settings.rs:887 src/ui/settings.rs:1599 src/ui/picker.rs:160
+#: src/ui/settings.rs:872 src/ui/settings.rs:1546 src/ui/picker.rs:148
 msgid "Stickers"
 msgstr "Stickers"
 
-#: src/ui/settings.rs:888 src/ui/settings.rs:1605
+#: src/ui/settings.rs:873 src/ui/settings.rs:1552
 msgid "Other"
 msgstr "Overig"
 
-#: src/ui/settings.rs:889 src/ui/settings.rs:1539
+#: src/ui/settings.rs:874 src/ui/settings.rs:1486
 msgid "Clear…"
 msgstr "Wissen…"
 
-#: src/ui/settings.rs:895
+#: src/ui/settings.rs:880
 msgid "Log"
 msgstr "Logboek"
 
-#: src/ui/settings.rs:902
+#: src/ui/settings.rs:887
 msgid "Open"
 msgstr "Openen"
 
-#: src/ui/settings.rs:942 src/ui/settings.rs:969
+#: src/ui/settings.rs:927 src/ui/settings.rs:954
 msgid "App lock"
 msgstr "Appvergrendeling"
 
-#: src/ui/settings.rs:945
+#: src/ui/settings.rs:930
 msgid ""
 "Asks for a password at start and after a while unused. It keeps people using "
 "this computer out of your chats and encrypts nothing more. A forgotten "
@@ -2109,23 +2090,23 @@ msgstr ""
 "Dit houdt andere gebruikers van deze computer uit je chats en voegt geen "
 "versleuteling toe. Als je het wachtwoord vergeet, moet je ontkoppelen."
 
-#: src/ui/settings.rs:952
+#: src/ui/settings.rs:937
 msgid "Turn off…"
 msgstr "Uitschakelen…"
 
-#: src/ui/settings.rs:953
+#: src/ui/settings.rs:938
 msgid "Change password…"
 msgstr "Wachtwoord wijzigen…"
 
-#: src/ui/settings.rs:956
+#: src/ui/settings.rs:941
 msgid "Set password…"
 msgstr "Wachtwoord instellen…"
 
-#: src/ui/settings.rs:970 src/ui/settings.rs:977
+#: src/ui/settings.rs:955 src/ui/settings.rs:962
 msgid "Lock after"
 msgstr "Vergrendelen na"
 
-#: src/ui/settings.rs:980
+#: src/ui/settings.rs:965
 msgid ""
 "Time without using ZapFastie, also counted while it is in the tray. "
 "Ctrl+Shift+L locks it at once."
@@ -2133,90 +2114,90 @@ msgstr ""
 "Tijd zonder ZapFastie te gebruiken, ook terwijl de app in het systeemvak "
 "staat. Ctrl+Shift+L vergrendelt de app meteen."
 
-#: src/ui/settings.rs:1022
+#: src/ui/settings.rs:1007
 msgid "Set an app lock password"
 msgstr "Wachtwoord voor appvergrendeling instellen"
 
-#: src/ui/settings.rs:1023
+#: src/ui/settings.rs:1008
 msgid "Change the app lock password"
 msgstr "Wachtwoord voor appvergrendeling wijzigen"
 
-#: src/ui/settings.rs:1024
+#: src/ui/settings.rs:1009
 msgid "Turn off the app lock"
 msgstr "Appvergrendeling uitschakelen"
 
-#: src/ui/settings.rs:1034
+#: src/ui/settings.rs:1019
 msgid "Current password"
 msgstr "Huidig wachtwoord"
 
-#: src/ui/settings.rs:1041
+#: src/ui/settings.rs:1026
 #, rust-format
 msgid "New password, at least {count} characters"
 msgstr "Nieuw wachtwoord, minstens {count} tekens"
 
-#: src/ui/settings.rs:1046
+#: src/ui/settings.rs:1031
 msgid "Type the new password again"
 msgstr "Typ het nieuwe wachtwoord opnieuw"
 
-#: src/ui/settings.rs:1070
+#: src/ui/settings.rs:1055
 #, rust-format
 msgid "The password needs at least {count} characters."
 msgstr "Het wachtwoord moet minstens {count} tekens bevatten."
 
-#: src/ui/settings.rs:1072
+#: src/ui/settings.rs:1057
 msgid "The two new passwords are different."
 msgstr "De twee nieuwe wachtwoorden komen niet overeen."
 
-#: src/ui/settings.rs:1073 src/ui/lock.rs:85
+#: src/ui/settings.rs:1058 src/ui/lock.rs:85
 msgid "Wrong password. Try again."
 msgstr "Onjuist wachtwoord. Probeer het opnieuw."
 
-#: src/ui/settings.rs:1080
+#: src/ui/settings.rs:1065
 msgid "Turn on"
 msgstr "Inschakelen"
 
-#: src/ui/settings.rs:1081
+#: src/ui/settings.rs:1066
 msgid "Change password"
 msgstr "Wachtwoord wijzigen"
 
-#: src/ui/settings.rs:1082
+#: src/ui/settings.rs:1067
 msgid "Turn off"
 msgstr "Uitschakelen"
 
-#: src/ui/settings.rs:1177
+#: src/ui/settings.rs:1162
 msgid "Open themes folder"
 msgstr "Themamap openen"
 
-#: src/ui/settings.rs:1188
+#: src/ui/settings.rs:1173
 msgid "How to make a theme"
 msgstr "Zelf een thema maken"
 
-#: src/ui/settings.rs:1264 src/ui/settings.rs:1273
+#: src/ui/settings.rs:1211 src/ui/settings.rs:1220
 msgid "Auto"
 msgstr "Automatisch"
 
-#: src/ui/settings.rs:1358
+#: src/ui/settings.rs:1305
 msgid "Add doodles"
 msgstr "Krabbels toevoegen"
 
-#: src/ui/settings.rs:1362
+#: src/ui/settings.rs:1309
 msgid "Show the default doodles over the selected colour."
 msgstr "Toont de standaardkrabbels over de geselecteerde kleur."
 
-#: src/ui/settings.rs:1446
+#: src/ui/settings.rs:1393
 msgid "Choose image…"
 msgstr "Afbeelding kiezen…"
 
-#: src/ui/settings.rs:1447
+#: src/ui/settings.rs:1394
 msgid "Remove image"
 msgstr "Afbeelding verwijderen"
 
-#: src/ui/settings.rs:1475
+#: src/ui/settings.rs:1422
 msgctxt "wallpaper colour"
 msgid "Theme"
 msgstr "Thema"
 
-#: src/ui/settings.rs:1568
+#: src/ui/settings.rs:1515
 #, rust-format
 msgid ""
 "Photos, videos, stickers and files {account} downloaded to this computer. "
@@ -2227,49 +2208,49 @@ msgstr ""
 "gedownload. Bij het wissen blijven je berichten behouden; bijlagen worden "
 "opnieuw gedownload wanneer je ze opent."
 
-#: src/ui/settings.rs:1736
+#: src/ui/settings.rs:1683
 msgid "Linked device"
 msgstr "Gekoppeld apparaat"
 
-#: src/ui/settings.rs:1747
+#: src/ui/settings.rs:1694
 msgid "Edit your name and About"
 msgstr "Je naam en info bewerken"
 
-#: src/ui/settings.rs:1811
+#: src/ui/settings.rs:1758
 msgid "Save"
 msgstr "Opslaan"
 
-#: src/ui/settings.rs:1878
+#: src/ui/settings.rs:1825
 msgid "A native WhatsApp client built with Rust, egui, and whatsapp-rust."
 msgstr "Een native WhatsApp-client gebouwd met Rust, egui en whatsapp-rust."
 
-#: src/ui/settings.rs:1889
+#: src/ui/settings.rs:1836
 #, rust-format
 msgid "Update to {version}"
 msgstr "Bijwerken naar {version}"
 
-#: src/ui/settings.rs:2007
+#: src/ui/settings.rs:1954
 msgid "Mention sound"
 msgstr "Geluid bij vermelding"
 
-#: src/ui/settings.rs:2008
+#: src/ui/settings.rs:1955
 msgid "When a group mentions you or replies to you."
 msgstr "Als iemand in een groep je vermeldt of op je antwoordt."
 
-#: src/ui/settings.rs:2011
+#: src/ui/settings.rs:1958
 msgid "Message sound"
 msgstr "Berichtgeluid"
 
-#: src/ui/settings.rs:2028
+#: src/ui/settings.rs:1975
 msgid "Pidgin alert"
 msgstr "Pidgin-melding"
 
-#: src/ui/settings.rs:2029 src/ui/call.rs:597
+#: src/ui/settings.rs:1976 src/ui/call.rs:597
 msgid "System default"
 msgstr "Systeemstandaard"
 
 #. Translators: no notification sound.
-#: src/ui/settings.rs:2031
+#: src/ui/settings.rs:1978
 msgctxt "sound"
 msgid "None"
 msgstr "Geen"
@@ -2334,7 +2315,7 @@ msgstr "Verbinding maken mislukt"
 msgid "No answer"
 msgstr "Geen antwoord"
 
-#: src/ui/call.rs:407 src/ui/calls.rs:126 src/app.rs:5116
+#: src/ui/call.rs:407 src/ui/calls.rs:126 src/app.rs:5106
 msgid "Connection lost"
 msgstr "Verbinding verbroken"
 
@@ -2532,7 +2513,7 @@ msgstr ""
 "Bel één persoon met spraak of video, of kies een oproep in de lijst om deze "
 "te bekijken."
 
-#: src/app/calls.rs:116 src/app.rs:11122 src/ui/blocking.rs:68
+#: src/app/calls.rs:116 src/app.rs:11093 src/ui/blocking.rs:68
 msgid "Locked chat"
 msgstr "Vergrendelde chat"
 
@@ -2631,58 +2612,58 @@ msgstr[1] "Nog {} over"
 msgid "No one yet"
 msgstr "Nog niemand"
 
-#: src/app.rs:1049
+#: src/app.rs:1041
 msgid "Could not check the number. Please try again."
 msgstr "Het nummer kon niet worden gecontroleerd. Probeer het opnieuw."
 
-#: src/app.rs:1053
+#: src/app.rs:1045
 msgid "This number is not on WhatsApp"
 msgstr "Dit nummer zit niet op WhatsApp"
 
-#: src/app.rs:1056
+#: src/app.rs:1048
 msgid "Not connected to WhatsApp"
 msgstr "Niet verbonden met WhatsApp"
 
-#: src/app.rs:1059 src/app.rs:9302
+#: src/app.rs:1051 src/app.rs:9290
 msgid "Enter a valid international phone number"
 msgstr "Voer een geldig internationaal telefoonnummer in"
 
-#: src/app.rs:2090 src/app.rs:2101
+#: src/app.rs:2080 src/app.rs:2091
 #, rust-format
 msgid "Could not add an account: {error}"
 msgstr ""
 
-#: src/app.rs:2189
+#: src/app.rs:2179
 msgid "Could not delete the removed account's files"
 msgstr "De bestanden van het verwijderde account konden niet worden verwijderd"
 
-#: src/app.rs:3020
+#: src/app.rs:3010
 #, rust-format
 msgid "A label named “{name}” already exists."
 msgstr "Er bestaat al een label met de naam “{name}”."
 
-#: src/app.rs:3114
+#: src/app.rs:3104
 #, rust-format
 msgid "{name} (You)"
 msgstr "{name} (jij)"
 
-#: src/app.rs:3731
+#: src/app.rs:3721
 msgid "Media cache cleared"
 msgstr "Mediacache gewist"
 
-#: src/app.rs:3866
+#: src/app.rs:3856
 msgid "Star removed"
 msgstr "Ster verwijderd"
 
-#: src/app.rs:3902
+#: src/app.rs:3892
 msgid "Pinned for 7 days"
 msgstr "Vastgemaakt voor 7 dagen"
 
-#: src/app.rs:3904
+#: src/app.rs:3894
 msgid "Pin removed"
 msgstr "Losgemaakt"
 
-#: src/app.rs:4185
+#: src/app.rs:4175
 #, rust-format
 msgid ""
 "Saved {path}. Messages: {messages}; attachments: {files}; unavailable: "
@@ -2691,32 +2672,32 @@ msgstr ""
 "{path} opgeslagen. Berichten: {messages}; bijlagen: {files}; niet "
 "beschikbaar: {missing}."
 
-#: src/app.rs:4549
+#: src/app.rs:4539
 msgid "History loaded"
 msgstr ""
 
-#: src/app.rs:4554
+#: src/app.rs:4544
 msgid "Loading chat history"
 msgstr "Chatgeschiedenis laden"
 
-#: src/app.rs:4648
+#: src/app.rs:4638
 msgid "Could not use this image"
 msgstr "Deze afbeelding kon niet worden gebruikt"
 
-#: src/app.rs:4706
+#: src/app.rs:4696
 msgid "Could not use this picture."
 msgstr "Deze afbeelding kon niet worden gebruikt."
 
-#: src/app.rs:4902 src/ui/mod.rs:635
+#: src/app.rs:4892 src/ui/mod.rs:583
 #, rust-format
 msgid "ZapFastie {version} is available"
 msgstr "ZapFastie {version} is beschikbaar"
 
-#: src/app.rs:4955 src/app.rs:9171
+#: src/app.rs:4945 src/app.rs:9159
 msgid "This chat already has three pinned messages"
 msgstr "Deze chat heeft al drie vastgemaakte berichten"
 
-#: src/app.rs:4960
+#: src/app.rs:4950
 msgid ""
 "WhatsApp hasn't turned on group calls from a computer for your account yet. "
 "Ask someone in the group to call it, and answer here."
@@ -2724,76 +2705,76 @@ msgstr ""
 "WhatsApp heeft groepsoproepen vanaf een computer nog niet ingeschakeld voor "
 "je account. Vraag iemand in de groep om te bellen en neem hier op."
 
-#: src/app.rs:4965 src/app.rs:8151
+#: src/app.rs:4955 src/app.rs:8139
 msgid "ZapFastie can't join group calls yet: open the link on your phone."
 msgstr ""
 "ZapFastie kan nog niet deelnemen aan groepsoproepen: open de link op je "
 "telefoon."
 
-#: src/app.rs:4971
+#: src/app.rs:4961
 msgid "Connect to WhatsApp to change disappearing messages."
 msgstr "Maak verbinding met WhatsApp om verdwijnende berichten te wijzigen."
 
-#: src/app.rs:4977
+#: src/app.rs:4967
 msgid "Could not change disappearing messages."
 msgstr "Verdwijnende berichten konden niet worden gewijzigd."
 
-#: src/app.rs:4982
+#: src/app.rs:4972
 msgid "Only admins can change disappearing messages."
 msgstr "Alleen beheerders kunnen verdwijnende berichten wijzigen."
 
-#: src/app.rs:5019
+#: src/app.rs:5009
 msgid "Connect to WhatsApp to archive this chat"
 msgstr "Maak verbinding met WhatsApp om deze chat te archiveren"
 
-#: src/app.rs:5023
+#: src/app.rs:5013
 msgid "Connect to WhatsApp to unarchive this chat"
 msgstr "Maak verbinding met WhatsApp om deze chat uit het archief te halen"
 
-#: src/app.rs:5026
+#: src/app.rs:5016
 msgid "Could not read this chat. Try again"
 msgstr "Deze chat kon niet worden gelezen. Probeer het opnieuw"
 
-#: src/app.rs:5030
+#: src/app.rs:5020
 msgid "Could not confirm archiving on WhatsApp. Try again"
 msgstr "Archiveren kon niet worden bevestigd op WhatsApp. Probeer het opnieuw"
 
-#: src/app.rs:5034
+#: src/app.rs:5024
 msgid "Could not confirm unarchiving on WhatsApp. Try again"
 msgstr ""
 "Uit archief halen kon niet worden bevestigd op WhatsApp. Probeer het opnieuw"
 
-#: src/app.rs:5038
+#: src/app.rs:5028
 msgid "WhatsApp updated this chat, but ZapFastie could not save the change"
 msgstr ""
 "WhatsApp heeft deze chat bijgewerkt, maar ZapFastie kon de wijziging niet "
 "opslaan"
 
-#: src/app.rs:5126
+#: src/app.rs:5116
 msgid "Connecting"
 msgstr "Verbinden"
 
-#: src/app.rs:5144
+#: src/app.rs:5134
 #, fuzzy
 msgid "Back online"
 msgstr "Online"
 
-#: src/app.rs:5223
+#: src/app.rs:5213
 #, fuzzy
 msgid "This device was unlinked from your phone"
 msgstr ""
 "Deze computer is ontkoppeld van je telefoon. Er wordt een nieuwe code "
 "aangevraagd."
 
-#: src/app.rs:5807 src/app.rs:7449 src/blocking.rs:31
+#: src/app.rs:5797 src/app.rs:7439 src/blocking.rs:31
 msgid "Unblock this contact to send messages."
 msgstr "Deblokkeer dit contact om berichten te verzenden."
 
-#: src/app.rs:5811
+#: src/app.rs:5801
 msgid "Not sent: ZapFastie is not connected to WhatsApp."
 msgstr "Niet verzonden: ZapFastie is niet verbonden met WhatsApp."
 
-#: src/app.rs:5815
+#: src/app.rs:5805
 msgid ""
 "Not sent: the message you’re replying to isn’t available on this computer. "
 "Cancel the reply to send without a quote."
@@ -2801,157 +2782,157 @@ msgstr ""
 "Niet verzonden: het bericht waarop je antwoordt, is niet beschikbaar op deze "
 "computer. Annuleer het antwoord om zonder citaat te verzenden."
 
-#: src/app.rs:5819 src/app.rs:6866
+#: src/app.rs:5809 src/app.rs:6856
 msgid "Not sent: view-once mode is available for one photo at a time."
 msgstr ""
 "Niet verzonden: eenmalig bekijken is beschikbaar voor één foto tegelijk."
 
-#: src/app.rs:6812 src/app.rs:6969
+#: src/app.rs:6802 src/app.rs:6959
 #, fuzzy
 msgid "Open a chat first"
 msgstr "Chat openen"
 
-#: src/app.rs:6978
+#: src/app.rs:6968
 #, fuzzy, rust-format
 msgid "Sending {count} file…"
 msgid_plural "Sending {count} files…"
 msgstr[0] "Stem wordt verzonden…"
 msgstr[1] "Stem wordt verzonden…"
 
-#: src/app.rs:7812
+#: src/app.rs:7800
 msgid "History is already being requested for this chat"
 msgstr ""
 
-#: src/app.rs:7824
+#: src/app.rs:7812
 #, fuzzy
 msgid "Requesting earlier messages from your phone"
 msgstr "Eerdere stemmen laden van je telefoon…"
 
-#: src/app.rs:8089
+#: src/app.rs:8077
 #, rust-format
 msgid "Could not open the attachment: {error}"
 msgstr ""
 
-#: src/app.rs:8097
+#: src/app.rs:8085
 msgid "For safety, open this file yourself from its folder"
 msgstr ""
 
-#: src/app.rs:8133
+#: src/app.rs:8121
 #, rust-format
 msgid "Could not open the folder: {error}"
 msgstr ""
 
-#: src/app.rs:8140
+#: src/app.rs:8128
 #, fuzzy
 msgid "The folder is unavailable"
 msgstr "Deze peiling is niet meer beschikbaar."
 
-#: src/app.rs:8166
+#: src/app.rs:8154
 #, fuzzy
 msgid "This link type cannot be opened from ZapFastie"
 msgstr "Deze afbeelding kon niet worden weergegeven in ZapFastie."
 
-#: src/app.rs:8172
+#: src/app.rs:8160
 #, fuzzy
 msgid "Copied"
 msgstr "Afbeelding gekopieerd"
 
-#: src/app.rs:8329
+#: src/app.rs:8317
 msgid "A selected chat is no longer writable"
 msgstr "In een geselecteerde chat kun je geen berichten meer verzenden"
 
-#: src/app.rs:8916
+#: src/app.rs:8904
 msgid "Added to favorites"
 msgstr "Aan favorieten toegevoegd"
 
-#: src/app.rs:8993
+#: src/app.rs:8981
 msgid "Sending the sticker pack…"
 msgstr "Stickerpakket wordt verzonden…"
 
-#: src/app.rs:9046
+#: src/app.rs:9034
 #, fuzzy
 msgid "Sending GIF…"
 msgstr "Bezig met verzenden…"
 
-#: src/app.rs:9139
+#: src/app.rs:9127
 #, fuzzy, rust-format
 msgid "You can only pin {count} chats"
 msgstr "Je kunt naar maximaal {count} chat doorsturen"
 
-#: src/app.rs:9422 src/ui/labels.rs:257
+#: src/app.rs:9410 src/ui/labels.rs:257
 #, rust-format
 msgid "You have {limit} labels, the most ZapFastie keeps."
 msgstr "Je hebt {limit} labels, het maximum dat ZapFastie bewaart."
 
-#: src/app.rs:9589
+#: src/app.rs:9577
 msgid "No chat open"
 msgstr "Geen chat geopend"
 
-#: src/app.rs:9617
+#: src/app.rs:9605
 msgid "Loading the replied message"
 msgstr "Beantwoord bericht laden"
 
-#: src/app.rs:9938
+#: src/app.rs:9915
 msgid "Invite link copied"
 msgstr "Uitnodigingslink gekopieerd"
 
 #. Translators: an announcement from an account that is not on screen:
 #. the account's name, then what it announced.
-#: src/app.rs:10218
+#: src/app.rs:10195
 #, rust-format
 msgid "{}: {}"
 msgstr "{}: {}"
 
-#: src/app.rs:10328
+#: src/app.rs:10305
 msgid "The old link no longer works. Here is a new one."
 msgstr "De oude link werkt niet meer. Hier is een nieuwe."
 
-#: src/app.rs:10370
+#: src/app.rs:10347
 #, rust-format
 msgid "{count} person added to the group"
 msgid_plural "{count} people added to the group"
 msgstr[0] "{count} persoon toegevoegd aan de groep"
 msgstr[1] "{count} personen toegevoegd aan de groep"
 
-#: src/app.rs:10436
+#: src/app.rs:10407
 msgid "This file is no longer on this computer. Download it again."
 msgstr "Dit bestand staat niet meer op deze computer. Download het opnieuw."
 
-#: src/app.rs:10659
+#: src/app.rs:10630
 msgid "Allow ZapFastie in System Settings, under Login Items."
 msgstr ""
 
-#: src/app.rs:10668
+#: src/app.rs:10639
 #, fuzzy, rust-format
 msgid "Could not change the login item: {error}"
 msgstr "De uitnodigingslink kon niet worden opgehaald."
 
-#: src/app.rs:10821
+#: src/app.rs:10792
 msgid "App lock password saved"
 msgstr "Wachtwoord voor appvergrendeling opgeslagen"
 
-#: src/app.rs:10829
+#: src/app.rs:10800
 msgid "App lock turned off"
 msgstr "Appvergrendeling uitgeschakeld"
 
-#: src/app.rs:10963
+#: src/app.rs:10934
 msgid "This video opens in your system player"
 msgstr "Deze video opent in je systeemspeler"
 
-#: src/app.rs:11315 src/app.rs:11375
+#: src/app.rs:11286 src/app.rs:11346
 msgid "Replied message not found"
 msgstr "Beantwoord bericht niet gevonden"
 
-#: src/app.rs:11504
+#: src/app.rs:11475
 #, fuzzy, rust-format
 msgid "Could not record: {error}"
 msgstr "Verbinding maken mislukt"
 
-#: src/app.rs:12008
+#: src/app.rs:11979
 msgid "Copied image"
 msgstr "Afbeelding gekopieerd"
 
-#: src/app.rs:12011 src/app.rs:12016
+#: src/app.rs:11982 src/app.rs:11987
 msgid "Failed to copy image"
 msgstr "Afbeelding kopiëren mislukt"
 
@@ -3061,71 +3042,71 @@ msgstr "Naam of kleur wijzigen"
 msgid "Delete this label. Its chats keep their messages."
 msgstr "Dit label verwijderen. De chats behouden hun berichten."
 
-#: src/ui/picker.rs:158
+#: src/ui/picker.rs:146
 msgid "Emoji"
 msgstr "Emoji"
 
-#: src/ui/picker.rs:497
+#: src/ui/picker.rs:485
 msgid "React to message"
 msgstr "Reageren op bericht"
 
-#: src/ui/picker.rs:508
+#: src/ui/picker.rs:496
 msgid "Close reactions"
 msgstr "Reacties sluiten"
 
-#: src/ui/picker.rs:687
+#: src/ui/picker.rs:675
 msgid "Search emoji"
 msgstr "Emoji zoeken"
 
-#: src/ui/picker.rs:1073
+#: src/ui/picker.rs:1061
 msgid "Search GIFs via GIPHY"
 msgstr "GIF's zoeken via GIPHY"
 
-#: src/ui/picker.rs:1090
+#: src/ui/picker.rs:1078
 msgid "Searching…"
 msgstr "Bezig met zoeken…"
 
-#: src/ui/picker.rs:1177 src/ui/mod.rs:712
+#: src/ui/picker.rs:1165 src/ui/mod.rs:660
 msgid "Retry"
 msgstr "Opnieuw proberen"
 
-#: src/ui/picker.rs:1179
+#: src/ui/picker.rs:1167
 msgid "Load more"
 msgstr "Meer laden"
 
-#: src/ui/picker.rs:1190
+#: src/ui/picker.rs:1178
 msgid "Search for a GIF or browse trending results."
 msgstr "Zoek een GIF of bekijk populaire resultaten."
 
-#: src/ui/picker.rs:1303
+#: src/ui/picker.rs:1291
 msgid "Recent"
 msgstr "Recent"
 
-#: src/ui/picker.rs:1305
+#: src/ui/picker.rs:1293
 msgid "Received"
 msgstr "Ontvangen"
 
-#: src/ui/picker.rs:1306
+#: src/ui/picker.rs:1294
 msgid "Add stickers"
 msgstr "Stickers toevoegen"
 
-#: src/ui/picker.rs:1341
+#: src/ui/picker.rs:1329
 msgid "Search by emoji, word, or pack"
 msgstr "Zoek op emoji, woord of pakket"
 
-#: src/ui/picker.rs:1380
+#: src/ui/picker.rs:1368
 msgid "No stickers match your search."
 msgstr "Geen stickers gevonden voor je zoekopdracht."
 
-#: src/ui/picker.rs:1394
+#: src/ui/picker.rs:1382
 msgid "Loading your stickers…"
 msgstr "Je stickers laden…"
 
-#: src/ui/picker.rs:1396
+#: src/ui/picker.rs:1384
 msgid "Stickers you send appear here."
 msgstr "Stickers die je verzendt, verschijnen hier."
 
-#: src/ui/picker.rs:1405
+#: src/ui/picker.rs:1393
 msgid ""
 "Right-click any sticker to add it to your favorites. They stay in sync with "
 "your phone."
@@ -3133,40 +3114,40 @@ msgstr ""
 "Klik met de rechtermuisknop op een sticker om deze aan je favorieten toe te "
 "voegen. Ze blijven gesynchroniseerd met je telefoon."
 
-#: src/ui/picker.rs:1411
+#: src/ui/picker.rs:1399
 msgid "Stickers people send you appear here."
 msgstr "Stickers die anderen je sturen, verschijnen hier."
 
-#: src/ui/picker.rs:1426
+#: src/ui/picker.rs:1414
 msgid "Remove this pack"
 msgstr "Dit pakket verwijderen"
 
-#: src/ui/picker.rs:1440
+#: src/ui/picker.rs:1428
 msgid "Send this pack to the chat"
 msgstr "Dit pakket naar de chat verzenden"
 
-#: src/ui/picker.rs:1454
+#: src/ui/picker.rs:1442
 msgid "Nothing here yet. Right-click any sticker to add it to this pack."
 msgstr ""
 "Hier staat nog niets. Klik met de rechtermuisknop op een sticker om deze aan "
 "dit pakket toe te voegen."
 
-#: src/ui/picker.rs:1531
+#: src/ui/picker.rs:1519
 msgid "Import a pack"
 msgstr "Een pakket importeren"
 
-#: src/ui/picker.rs:1539
+#: src/ui/picker.rs:1527
 msgid ""
 "Paste a signal.art link from signalstickers.org, or open a .wastickers file."
 msgstr ""
 "Plak een signal.art-link van signalstickers.org of open een .wastickers-"
 "bestand."
 
-#: src/ui/picker.rs:1549
+#: src/ui/picker.rs:1537
 msgid "Make your own"
 msgstr "Zelf maken"
 
-#: src/ui/picker.rs:1557
+#: src/ui/picker.rs:1545
 msgid ""
 "Start a pack, then right-click any sticker to add it. Or turn a picture into "
 "a sticker."
@@ -3174,35 +3155,35 @@ msgstr ""
 "Maak een pakket en klik met de rechtermuisknop op een sticker om deze toe te "
 "voegen. Of maak van een afbeelding een sticker."
 
-#: src/ui/picker.rs:1569
+#: src/ui/picker.rs:1557
 msgid "Make a sticker from a picture…"
 msgstr "Een sticker maken van een afbeelding…"
 
-#: src/ui/picker.rs:1584
+#: src/ui/picker.rs:1572
 msgid "Create pack"
 msgstr "Pakket maken"
 
-#: src/ui/picker.rs:1595
+#: src/ui/picker.rs:1583
 msgid "New pack…"
 msgstr "Nieuw pakket…"
 
-#: src/ui/picker.rs:1628
+#: src/ui/picker.rs:1616
 msgid "Find packs"
 msgstr "Pakketten zoeken"
 
-#: src/ui/picker.rs:1644
+#: src/ui/picker.rs:1632
 msgid "Paste a signal.art link"
 msgstr "Plak een signal.art-link"
 
-#: src/ui/picker.rs:1672
+#: src/ui/picker.rs:1660
 msgid "Browse signalstickers.org"
 msgstr "Signalstickers.org bekijken"
 
-#: src/ui/picker.rs:1688
+#: src/ui/picker.rs:1676
 msgid "Importing the pack…"
 msgstr "Pakket wordt geïmporteerd…"
 
-#: src/ui/picker.rs:1737
+#: src/ui/picker.rs:1725
 msgid "Remove from recents"
 msgstr "Uit recent verwijderen"
 
@@ -3459,31 +3440,23 @@ msgstr "Bericht"
 msgid "Inter"
 msgstr ""
 
-#: src/settings.rs:126
-msgid "Full"
-msgstr ""
-
-#: src/settings.rs:127
-msgid "Reduced"
-msgstr ""
-
-#: src/settings.rs:427
+#: src/settings.rs:366
 msgid "After 1 minute"
 msgstr "Na 1 minuut"
 
-#: src/settings.rs:428
+#: src/settings.rs:367
 msgid "After 15 minutes"
 msgstr "Na 15 minuten"
 
-#: src/settings.rs:429
+#: src/settings.rs:368
 msgid "After 1 hour"
 msgstr "Na 1 uur"
 
-#: src/settings.rs:461
+#: src/settings.rs:400
 msgid "Direct messages"
 msgstr "Privéberichten"
 
-#: src/settings.rs:463
+#: src/settings.rs:402
 msgid "Direct messages and groups"
 msgstr "Privéberichten en groepen"
 
@@ -3717,7 +3690,7 @@ msgstr "Annuleren (Escape)"
 msgid "A native WhatsApp client."
 msgstr "Een native WhatsApp-client."
 
-#: src/ui/login.rs:92 src/ui/mod.rs:645
+#: src/ui/login.rs:92 src/ui/mod.rs:593
 msgid "Connecting to WhatsApp…"
 msgstr "Verbinding maken met WhatsApp…"
 
@@ -3803,54 +3776,54 @@ msgstr "Gearchiveerd"
 msgid "Locked"
 msgstr "Vergrendeld"
 
-#: src/ui/mod.rs:601
+#: src/ui/mod.rs:549
 #, rust-format
 msgid "Drop to send to {name}"
 msgstr "Laat los om naar {name} te verzenden"
 
-#: src/ui/mod.rs:622
+#: src/ui/mod.rs:570
 #, rust-format
 msgid "Loading chat history… {percent}%"
 msgstr "Chatgeschiedenis laden… {percent}%"
 
-#: src/ui/mod.rs:625
+#: src/ui/mod.rs:573
 msgid "Loading chat history…"
 msgstr "Chatgeschiedenis laden…"
 
-#: src/ui/mod.rs:652
+#: src/ui/mod.rs:600
 #, rust-format
 msgid "Offline ({reason}). Reconnecting…"
 msgstr "Offline ({reason}). Opnieuw verbinden…"
 
-#: src/ui/mod.rs:667
+#: src/ui/mod.rs:615
 msgid "Not linked to a phone"
 msgstr "Niet gekoppeld aan een telefoon"
 
-#: src/ui/mod.rs:701
+#: src/ui/mod.rs:649
 msgid "Update"
 msgstr "Bijwerken"
 
-#: src/ui/mod.rs:827
+#: src/ui/mod.rs:775
 msgid "Dismiss"
 msgstr "Negeren"
 
-#: src/ui/mod.rs:842
+#: src/ui/mod.rs:790
 msgid "Copy this message"
 msgstr "Dit bericht kopiëren"
 
-#: src/ui/mod.rs:1042
+#: src/ui/mod.rs:990
 msgid "Minimize"
 msgstr "Minimaliseren"
 
-#: src/ui/mod.rs:1043
+#: src/ui/mod.rs:991
 msgid "Maximize"
 msgstr "Maximaliseren"
 
-#: src/ui/mod.rs:1044
+#: src/ui/mod.rs:992
 msgid "Restore"
 msgstr "Herstellen"
 
-#: src/ui/mod.rs:1226
+#: src/ui/mod.rs:1174
 #, fuzzy
 msgid "Could not record: no microphone"
 msgstr "Verbinding maken mislukt"
@@ -4400,3 +4373,11 @@ msgstr ""
 #, fuzzy
 msgid "Export…"
 msgstr "Chat exporteren…"
+
+#, fuzzy
+#~ msgid "Motion"
+#~ msgstr "Locatie"
+
+#, fuzzy
+#~ msgid "Motion pace"
+#~ msgstr "Locatie"

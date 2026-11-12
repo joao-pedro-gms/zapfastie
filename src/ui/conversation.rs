@@ -2152,28 +2152,6 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
             theme::focus_outline(ui, id, pill.response.rect, f32::from(COMPOSER_RADIUS));
             ui.ctx()
                 .data_mut(|data| data.insert_temp(composer_pill_id(), pill.response.rect));
-            // A send pops the field once: a ring that widens and fades, so the
-            // message going out is felt in the place it was written.
-            let pop_time = app.motion_time();
-            if pop_time > 0.0 && app.composer_pops > 0.0 {
-                let now = ui.ctx().animate_value_with_time(
-                    egui::Id::new("composer-pop"),
-                    app.composer_pops,
-                    pop_time,
-                );
-                let remaining = (app.composer_pops - now).clamp(0.0, 1.0);
-                if remaining > 0.0 {
-                    ui.painter().rect_stroke(
-                        pill.response.rect.expand(4.0 * (1.0 - remaining)),
-                        egui::CornerRadius::same(COMPOSER_RADIUS.saturating_add(2)),
-                        egui::Stroke::new(
-                            1.5,
-                            palette.accent.gamma_multiply(0.55 * remaining),
-                        ),
-                        egui::StrokeKind::Outside,
-                    );
-                }
-            }
             if (send_key || send_click)
                 && (!app.composer.trim().is_empty() || !app.pending.is_empty())
             {
@@ -2600,16 +2578,6 @@ fn reply_strip(app: &mut App, ui: &mut egui::Ui, quoted: &Message) {
         app.display_name_or(&quoted.sender, quoted.sender_name.as_deref())
     };
     let summary = markup::plain(&quoted.summary_in(app.locale), &app.mention_list(quoted));
-    // It fades up from the composer rather than snapping into place. Opacity
-    // only, so the composer keeps the height it measures either way.
-    let appear = ui.ctx().animate_bool_with_time(
-        reply_strip_id().with("appear"),
-        true,
-        app.motion_time().max(0.01),
-    );
-    if appear < 1.0 {
-        ui.multiply_opacity(0.25 + 0.75 * appear);
-    }
     let strip = widgets::raised(ui, &palette, strip_frame(&palette), |ui| {
         ui.set_width(ui.available_width().max(0.0));
         ui.horizontal(|ui| {
@@ -3147,19 +3115,6 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
     // The list's items are its rows: an album is one.
     let starts = row_starts(&conversation.messages, app.selecting_in(&chat.id));
     let total = starts.len();
-    // The newest message plays its landing once the transcript has moved past
-    // the one it showed last: a message sent here, or one that just arrived.
-    if let Some(newest) = conversation
-        .messages
-        .last()
-        .map(|message| message.id.clone())
-        && conversation.landed.as_deref() != Some(newest.as_str())
-    {
-        conversation.landed = Some(newest.clone());
-        ui.ctx().data_mut(|data| {
-            data.insert_temp(landed_id(&chat.id), (newest, app.motion_time()));
-        });
-    }
     // The current message: the one the cursor names, or the newest when it
     // names none, or a message that is gone. An album's item stands for its
     // row, which its first item draws.
@@ -4340,24 +4295,6 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
             data.remove::<TextSelectionRows>(text_selection_id);
         }
     });
-    // A chat that has just opened fades its messages in over the chat's own
-    // background, so switching conversations reads as a change rather than a
-    // cut. It is a veil painted after the rows: nothing moves, no id changes.
-    let reveal_time = app.motion_time();
-    if reveal_time > 0.0 {
-        let reveal = ui.ctx().animate_bool_with_time(
-            egui::Id::new(("chat-reveal", &chat.id, app.chat_opens)),
-            true,
-            reveal_time,
-        );
-        if reveal < 1.0 {
-            ui.painter().rect_filled(
-                output.inner_rect,
-                0.0,
-                palette.chat.gamma_multiply(0.92 * (1.0 - reveal)),
-            );
-        }
-    }
     sticky_date(ui, &palette, app.locale, chat, &output, visible_day);
     let at_bottom =
         output.state.offset.y + output.inner_rect.height() >= output.content_size.y - 24.0;
@@ -5154,60 +5091,8 @@ fn bubble(
             }
         },
     );
-    // A message that just landed, sent here or arrived from the phone, plays
-    // a ring that widens and fades: the interface's only reply to a send, and
-    // it costs one stroke, not a re-layout.
-    if let Some(bubble) = &response
-        && let Some((landed, time)) = ui
-            .ctx()
-            .data(|data| data.get_temp::<(String, f32)>(landed_id(&view.chat.id)))
-        && landed == message.id
-        && time > 0.0
-    {
-        let fade = ui
-            .ctx()
-            .animate_bool_with_time(bubble.id.with("landing"), true, time);
-        if fade < 1.0 && ui.is_rect_visible(bubble.rect) {
-            let radius = if view.palette.bubbles == theme::BubbleStyle::Messages {
-                widgets::MESSAGES_BUBBLE_RADIUS
-            } else {
-                widgets::BUBBLE_RADIUS
-            };
-            ui.painter().rect_stroke(
-                bubble.rect.expand(5.0 * (1.0 - fade)),
-                egui::CornerRadius::same(radius.saturating_add(2)),
-                egui::Stroke::new(
-                    1.0 + 1.5 * (1.0 - fade),
-                    view.palette.accent.gamma_multiply(0.55 * (1.0 - fade)),
-                ),
-                egui::StrokeKind::Outside,
-            );
-            // A bubble sent from here also fills with its own accent for a
-            // moment, so the message reads as arriving rather than as
-            // already being there. Paint only: nothing moves or re-measures.
-            if message.from_me {
-                let pop = ui.ctx().animate_bool_with_time(
-                    bubble.id.with("sent-pop"),
-                    true,
-                    (time * 0.6).max(0.01),
-                );
-                if pop < 1.0 {
-                    ui.painter().rect_filled(
-                        bubble.rect,
-                        egui::CornerRadius::same(radius),
-                        view.palette.accent.gamma_multiply(0.16 * (1.0 - pop)),
-                    );
-                }
-            }
-        }
-    }
+    let _ = &response;
     response
-}
-
-/// The message whose landing ring the transcript should play, and how long it
-/// takes: the newest one if it is new to the transcript.
-fn landed_id(chat: &ChatId) -> egui::Id {
-    egui::Id::new(("message-landed", chat))
 }
 
 /// Clamps message-selection drags to the view while the pointer is outside it.

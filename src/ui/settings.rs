@@ -360,21 +360,6 @@ fn sections(app: &App) -> Vec<Section> {
         font_picker,
     );
     appearance.row(
-        translated(locale, "Motion"),
-        translated(
-            locale,
-            "How much the interface moves as it changes. Off leaves every screen still.",
-        ),
-        motion_picker,
-    );
-    if app.settings.motion != crate::settings::MotionChoice::Off {
-        appearance.row(
-            translated(locale, "Motion pace"),
-            translated(locale, "How long a full transition takes."),
-            motion_pace,
-        );
-    }
-    appearance.row(
         translated(locale, "Wallpaper"),
         Text::default(),
         move |ui, app| {
@@ -1212,44 +1197,6 @@ fn font_picker(ui: &mut egui::Ui, app: &mut App) {
             for choice in FontChoice::ALL {
                 if theme_option(ui, &palette, &label(choice), selected == choice) {
                     app.actions.push(Action::SetFont(choice));
-                }
-            }
-        });
-    theme::reveal_focus(&response.response);
-}
-
-/// How much the interface animates.
-/// A slider for how long a full transition lasts. Reduced halves it, and Off
-/// hides the row: there is nothing to pace.
-fn motion_pace(ui: &mut egui::Ui, app: &mut App) {
-    use crate::settings::{MOTION_SECONDS_MAX, MOTION_SECONDS_MIN};
-    let palette = app.palette;
-    let mut seconds = app.settings.motion_seconds;
-    ui.spacing_mut().slider_width = 150.0_f32.min(ui.available_width()).max(60.0);
-    let response = ui.add(
-        egui::Slider::new(&mut seconds, MOTION_SECONDS_MIN..=MOTION_SECONDS_MAX)
-            .fixed_decimals(2)
-            .suffix(" s"),
-    );
-    let _ = palette;
-    if (seconds - app.settings.motion_seconds).abs() > 0.001 {
-        app.actions.push(Action::SetMotionSeconds(seconds));
-    }
-    theme::reveal_focus(&response);
-}
-
-fn motion_picker(ui: &mut egui::Ui, app: &mut App) {
-    use crate::settings::MotionChoice;
-    let palette = app.palette;
-    let selected = app.settings.motion;
-    let label = |choice: MotionChoice| choice.translated(app.locale);
-    let response = egui::ComboBox::from_id_salt("interface_motion")
-        .selected_text(label(selected))
-        .width(200.0_f32.min(ui.available_width()))
-        .show_ui(ui, |ui| {
-            for choice in MotionChoice::ALL {
-                if theme_option(ui, &palette, &label(choice), selected == choice) {
-                    app.actions.push(Action::SetMotion(choice));
                 }
             }
         });

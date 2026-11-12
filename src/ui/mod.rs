@@ -177,24 +177,9 @@ fn main_view(app: &mut App, ui: &mut egui::Ui, list_only: bool) {
             chats::show(app, ui);
         }
     }
-    // Another page arrives under a wash of the pane's own background, which
-    // fades out in the Motion time: a cut becomes a change of view. The
-    // instant is kept per page, so a repaint never restarts the reveal.
-    let view = view_stamp(app);
-    let view_began = {
-        let id = view_reveal_id();
-        let now = ui.input(|input| input.time);
-        match ui.ctx().data(|data| data.get_temp::<(u64, f64)>(id)) {
-            Some((seen, at)) if seen == view => at,
-            _ => {
-                ui.ctx().data_mut(|data| data.insert_temp(id, (view, now)));
-                now
-            }
-        }
-    };
     let search_overlay = pane::show(app, ui);
     let info_overlay = info::show(app, ui);
-    let central = egui::CentralPanel::default()
+    egui::CentralPanel::default()
         .frame(central_frame(app))
         .show(ui, |ui| {
             // The top of every page drags the window, beneath its own
@@ -216,35 +201,6 @@ fn main_view(app: &mut App, ui: &mut egui::Ui, list_only: bool) {
                 Page::Wallpaper => settings::wallpaper_show(app, ui),
             }
         });
-    {
-        let time = app.motion_time();
-        let elapsed = (ui.input(|input| input.time) - view_began) as f32;
-        if time > 0.0 && elapsed < time {
-            let left = 1.0 - (elapsed / time).clamp(0.0, 1.0);
-            let background = central_background(app);
-            // The list changes too, so the wash covers it: everything from the
-            // rail's edge rightwards, in a layer above the panels and below
-            // menus, dialogs and toasts.
-            let mut area = ui.ctx().content_rect();
-            if rail_drawn {
-                area.min.x += rail::WIDTH;
-            }
-            // The panels' own layer, so the wash lands above them whatever
-            // order the desktop composites: it is painted last, not elsewhere.
-            let painter = ui.ctx().layer_painter(central.response.layer_id);
-            painter.with_clip_rect(area).rect_filled(
-                area,
-                0.0,
-                egui::Color32::from_rgba_unmultiplied(
-                    background.r(),
-                    background.g(),
-                    background.b(),
-                    (255.0 * left) as u8,
-                ),
-            );
-            ui.ctx().request_repaint();
-        }
-    }
     if let Some(region) = search_overlay {
         pane::show_overlay(app, ui.ctx(), region);
     }
@@ -567,49 +523,12 @@ fn focus_ring(app: &App, ctx: &egui::Context) {
     ctx.data_mut(|data| data.insert_temp(focus_ring_id().with("layer"), response.layer_id));
 }
 
-/// When the view last changed, and to what.
-fn view_reveal_id() -> egui::Id {
-    egui::Id::new("view-reveal")
-}
-
-/// What counts as another view: the page, the chat list's filter or label, the
-/// archive and the locked folder, and the chat being read. Any change plays
-/// the reveal, so every screen change reads as one instead of a cut.
-///
-/// The search text is left out on purpose: a keystroke is not a change of
-/// screen, and replaying the reveal on each one would flicker while typing.
-fn view_stamp(app: &App) -> u64 {
-    use std::hash::{Hash, Hasher};
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
-    (app.page as u8).hash(&mut hasher);
-    (app.chat_filter as u8).hash(&mut hasher);
-    app.show_archived.hash(&mut hasher);
-    app.locked_folder.hash(&mut hasher);
-    app.label_filter.hash(&mut hasher);
-    app.open_chat.as_deref().hash(&mut hasher);
-    hasher.finish()
-}
-
 /// Shows where dragged files will be sent.
 fn drop_target(app: &mut App, ctx: &egui::Context) {
     if !app.dropping {
         return;
     }
     let palette = app.palette;
-    // The whole window answers, not only the card in the middle of it: a tint
-    // and a stroke on the window's own rect say the drop lands anywhere.
-    let window = ctx.content_rect();
-    let painter = ctx.layer_painter(egui::LayerId::new(
-        egui::Order::Foreground,
-        egui::Id::new("drop-target-wash"),
-    ));
-    painter.rect_filled(window, 0.0, palette.accent.gamma_multiply(0.06));
-    painter.rect_stroke(
-        window.shrink(1.0),
-        egui::CornerRadius::ZERO,
-        Stroke::new(2.0, palette.accent),
-        egui::StrokeKind::Inside,
-    );
     let name = app
         .current_chat()
         .map(|chat| app.chat_title(chat))
@@ -1101,55 +1020,6 @@ fn window_chrome(app: &App, ui: &mut egui::Ui) {
 #[cfg(test)]
 mod idle_tests {
     use super::*;
-
-    /// Every screen change the interface offers has to move the stamp, or the
-    /// reveal never plays for it: another page, another filter, the archive,
-    /// the locked folder, a label, another chat.
-    #[test]
-    fn every_change_of_view_moves_the_stamp() {
-        let root = tempfile::tempdir().unwrap();
-        let mut app = App::headless(
-            crate::paths::AppDirs::under(root.path()),
-            crate::settings::Settings::default(),
-        )
-        .0;
-        let start = view_stamp(&app);
-
-        app.page = Page::Settings;
-        let settings = view_stamp(&app);
-        assert_ne!(start, settings, "another page");
-
-        app.page = Page::Chats;
-        assert_eq!(start, view_stamp(&app), "and back to the same view");
-
-        app.chat_filter = crate::model::ChatFilter::Unread;
-        let unread = view_stamp(&app);
-        assert_ne!(start, unread, "another chip");
-
-        app.chat_filter = crate::model::ChatFilter::All;
-        app.show_archived = true;
-        let archived = view_stamp(&app);
-        assert_ne!(start, archived, "the archive");
-
-        app.show_archived = false;
-        app.locked_folder = true;
-        let locked = view_stamp(&app);
-        assert_ne!(start, locked, "the locked folder");
-
-        app.locked_folder = false;
-        app.label_filter = Some("label-1".to_owned());
-        let label = view_stamp(&app);
-        assert_ne!(start, label, "a label");
-
-        app.label_filter = None;
-        app.open_chat = Some("ada".to_owned());
-        let chat = view_stamp(&app);
-        assert_ne!(start, chat, "another chat");
-
-        // Typing in the list's search must not rewind the reveal.
-        app.search.push_str("ada");
-        assert_eq!(chat, view_stamp(&app), "a keystroke is not a screen");
-    }
 
     #[test]
     fn settings_uses_panel_background_not_wallpaper_color() {

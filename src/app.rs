@@ -201,9 +201,6 @@ pub struct Conversation {
     pub phone_misses: u32,
     /// Whether messages arrived after the latest phone request.
     pub phone_delivered: bool,
-    /// The newest message the transcript has already shown, so the one that
-    /// arrives next can play its landing.
-    pub(crate) landed: Option<String>,
     /// The height each row last took, keyed by message id, so the transcript
     /// can skip rows far from the viewport instead of laying them out.
     pub(crate) rows: HashMap<String, RowHeight>,
@@ -482,11 +479,6 @@ pub struct App {
     /// The wallpaper image named in the settings, decoded off this thread.
     pub wallpaper_image: crate::wallpaper::CustomImage,
 
-    /// How many messages were sent from this window, as an animation target:
-    /// the composer's field pops once each time it changes.
-    pub(crate) composer_pops: f32,
-    /// How many chats this window has opened, so each opening fades in afresh.
-    pub(crate) chat_opens: u64,
     /// A sent message moves its chat up, so the chat list goes to the top,
     /// if it is near the top already (the list decides, from its offset).
     pub scroll_chats_to_top: bool,
@@ -1727,8 +1719,6 @@ impl App {
             unread_kept: HashSet::new(),
             toasts: Vec::new(),
             actions: Vec::new(),
-            composer_pops: 0.0,
-            chat_opens: 0,
             composer_undo_epoch: 0,
             prefilled: None,
             deferred_account_actions: Vec::new(),
@@ -7526,7 +7516,6 @@ impl App {
                     Some(message) => self.apply(Action::OpenMessage { chat: id, message }, ctx),
                     None => self.open_chat(id),
                 }
-                self.chat_opens = self.chat_opens.wrapping_add(1);
                 // The chat may carry a palette of its own.
                 self.apply_theme(ctx);
             }
@@ -7720,7 +7709,6 @@ impl App {
                 text,
                 quoting,
             } => {
-                self.composer_pops += 1.0;
                 self.send_text(chat, text, quoting);
                 self.reply_to = None;
             }
@@ -9711,19 +9699,6 @@ impl App {
                 crate::theme::set_font(ctx, choice);
                 ctx.request_repaint();
             }
-            Action::SetMotion(choice) => {
-                self.settings.motion = choice;
-                self.mark_settings_dirty();
-                ctx.request_repaint();
-            }
-            Action::SetMotionSeconds(seconds) => {
-                self.settings.motion_seconds = seconds.clamp(
-                    crate::settings::MOTION_SECONDS_MIN,
-                    crate::settings::MOTION_SECONDS_MAX,
-                );
-                self.mark_settings_dirty();
-                ctx.request_repaint();
-            }
             Action::SetCustomTitlebar(custom) => {
                 if self.settings.custom_titlebar != custom {
                     self.settings.custom_titlebar = custom;
@@ -10395,12 +10370,6 @@ impl App {
                 }
             }
         }
-    }
-
-    /// Seconds a decorative transition takes right now: the Motion choice
-    /// scaled by the pace from Settings. Zero means draw the end state at once.
-    pub fn motion_time(&self) -> f32 {
-        self.settings.motion.time_at(self.settings.motion_seconds)
     }
 
     pub fn toast(&mut self, message: impl Into<String>) {
