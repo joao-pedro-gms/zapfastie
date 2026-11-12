@@ -76,6 +76,41 @@ impl FontChoice {
     }
 }
 
+/// How much of the interface animates: the motion a change plays as it lands.
+/// `Off` leaves every screen still, for a reader who wants no movement at all.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum MotionChoice {
+    /// Every transition, at its own pace.
+    #[default]
+    Full,
+    /// The same transitions, shorter.
+    Reduced,
+    /// No transitions.
+    Off,
+}
+
+impl MotionChoice {
+    pub const ALL: [MotionChoice; 3] = [Self::Full, Self::Reduced, Self::Off];
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Full => "Full",
+            Self::Reduced => "Reduced",
+            Self::Off => "Off",
+        }
+    }
+
+    /// Seconds a decorative transition takes. Zero means it does not run.
+    pub fn time(self) -> f32 {
+        match self {
+            Self::Full => 0.22,
+            Self::Reduced => 0.1,
+            Self::Off => 0.0,
+        }
+    }
+}
+
 /// Background colours offered by WhatsApp's wallpaper picker, after the
 /// active theme's own chat colour.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -418,6 +453,9 @@ pub struct Settings {
     pub(crate) messages_theme: bool,
     /// The interface's typeface.
     pub font: FontChoice,
+    /// How much the interface animates.
+    #[serde(default)]
+    pub motion: MotionChoice,
     /// Windows and Linux: draw ZapFast's own title bar and window buttons
     /// instead of the desktop's. Off by default: on some Intel graphics
     /// drivers a frameless window shows a black band at the top and its
@@ -557,6 +595,7 @@ impl Default for Settings {
             theme: ThemeChoice::System,
             messages_theme: false,
             font: FontChoice::System,
+            motion: MotionChoice::Full,
             custom_titlebar: false,
             interface_language: None,
             custom_theme: None,

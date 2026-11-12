@@ -201,6 +201,9 @@ pub struct Conversation {
     pub phone_misses: u32,
     /// Whether messages arrived after the latest phone request.
     pub phone_delivered: bool,
+    /// The newest message the transcript has already shown, so the one that
+    /// arrives next can play its landing.
+    pub(crate) landed: Option<String>,
     /// The height each row last took, keyed by message id, so the transcript
     /// can skip rows far from the viewport instead of laying them out.
     pub(crate) rows: HashMap<String, RowHeight>,
@@ -3051,11 +3054,16 @@ impl App {
         self.person_name(id, None)
     }
 
+    /// Whether a group's own subject is known and not empty. Until the phone
+    /// sends it, the chat is named after its members instead.
+    pub fn group_subject_known(&self, chat: &Chat) -> bool {
+        chat.is_group()
+            && !(chat.name.trim().is_empty() || (chat.name == "Group" && !chat.group_subject_known))
+    }
+
     /// Resolves the chat-list title.
     pub fn chat_title(&self, chat: &Chat) -> String {
-        if chat.is_group()
-            && (chat.name.trim().is_empty() || (chat.name == "Group" && !chat.group_subject_known))
-        {
+        if chat.is_group() && !self.group_subject_known(chat) {
             let participants = self.participant_names(chat);
             return if participants.is_empty() {
                 "Group".to_owned()
@@ -9610,6 +9618,11 @@ impl App {
                 self.settings.font = choice;
                 self.mark_settings_dirty();
                 crate::theme::set_font(ctx, choice);
+                ctx.request_repaint();
+            }
+            Action::SetMotion(choice) => {
+                self.settings.motion = choice;
+                self.mark_settings_dirty();
                 ctx.request_repaint();
             }
             Action::SetCustomTitlebar(custom) => {

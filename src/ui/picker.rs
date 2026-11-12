@@ -17,7 +17,9 @@ use crate::theme::{self, Icon, Palette};
 use super::conversation;
 use super::widgets;
 
+/// The picker's width at most; a narrow window shrinks it.
 const WIDTH: f32 = 420.0;
+/// The picker's height at most; a short window shrinks it.
 const HEIGHT: f32 = 400.0;
 /// Frame inner margin on each side. Placement uses the outer size.
 const FRAME_MARGIN: i8 = 10;
@@ -64,6 +66,7 @@ pub fn release_gif_animations(app: &App, ctx: &egui::Context) {
     }
 }
 
+/// Draws the picker above the composer, no wider or taller than the window.
 pub fn show(app: &mut App, ctx: &egui::Context) {
     if app.picker == Some(PickerTab::Emoji) && app.reaction_target.is_none() {
         if app.picker_recent.is_none() {
@@ -84,10 +87,13 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
         return;
     };
     let screen = ctx.content_rect();
-    let x = anchor
-        .left()
-        .clamp(screen.left() + 8.0, (screen.right() - WIDTH - 8.0).max(8.0));
-    let y = (anchor.top() - HEIGHT - 10.0).max(screen.top() + 8.0);
+    let panel_width = WIDTH.min((screen.width() - 16.0).max(260.0));
+    let panel_height = HEIGHT.min((screen.height() - 16.0).max(200.0));
+    let x = anchor.left().clamp(
+        screen.left() + 8.0,
+        (screen.right() - panel_width - 8.0).max(8.0),
+    );
+    let y = (anchor.top() - panel_height - 10.0).max(screen.top() + 8.0);
     let area = egui::Area::new(area_id())
         .fixed_pos(pos2(x, y))
         .order(egui::Order::Foreground)
@@ -99,12 +105,12 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
                 .inner_margin(Margin::same(10))
                 .shadow(palette.float_shadow())
                 .show(ui, |ui| {
-                    ui.set_width(WIDTH);
-                    ui.set_height(HEIGHT);
+                    ui.set_width(panel_width);
+                    ui.set_height(panel_height);
                     ui.spacing_mut().item_spacing.y = 6.0;
-                    let body_height = HEIGHT - 44.0;
+                    let body_height = panel_height - 44.0;
                     ui.allocate_ui_with_layout(
-                        vec2(WIDTH, body_height),
+                        vec2(panel_width, body_height),
                         egui::Layout::top_down(egui::Align::Min),
                         |ui| match tab {
                             PickerTab::Emoji => emoji_tab(app, ui, &palette),
@@ -418,6 +424,8 @@ fn reaction_picker(app: &mut App, ctx: &egui::Context) {
     };
     let palette = app.palette;
     let screen = ctx.content_rect();
+    let panel_width = WIDTH.min((screen.width() - 16.0).max(260.0));
+    let panel_height = HEIGHT.min((screen.height() - 16.0).max(200.0));
     let menu = if app.reaction_beside_menu {
         ctx.data(|data| {
             data.get_temp::<Rect>(conversation::bubble_id(&chat, &message).with("menu-rect"))
@@ -426,11 +434,11 @@ fn reaction_picker(app: &mut App, ctx: &egui::Context) {
     } else {
         app.reaction_anchor
     };
-    let width = menu.map_or(WIDTH, |menu| {
-        (screen.right() - menu.right() - 32.0).clamp(260.0, WIDTH)
+    let width = menu.map_or(panel_width, |menu| {
+        (screen.right() - menu.right() - 32.0).clamp(260.0, panel_width)
     });
     let outer_width = width + f32::from(FRAME_MARGIN) * 2.0;
-    let outer_height = HEIGHT + f32::from(FRAME_MARGIN) * 2.0;
+    let outer_height = panel_height + f32::from(FRAME_MARGIN) * 2.0;
     let pos = if let Some(menu) = menu
         && menu.right() + outer_width + 16.0 <= screen.right()
     {
@@ -469,7 +477,7 @@ fn reaction_picker(app: &mut App, ctx: &egui::Context) {
                         .shadow(palette.float_shadow())
                         .show(ui, |ui| {
                             ui.set_width(width);
-                            ui.set_height(HEIGHT);
+                            ui.set_height(panel_height);
                             ui.spacing_mut().item_spacing.y = 6.0;
                             ui.horizontal(|ui| {
                                 theme::text(
@@ -508,7 +516,7 @@ fn reaction_picker(app: &mut App, ctx: &egui::Context) {
                                 );
                                 line.paint(ui, rect.min, palette.secondary);
                             }
-                            let body_height = HEIGHT - 100.0;
+                            let body_height = panel_height - 100.0;
                             ui.allocate_ui_with_layout(
                                 vec2(width, body_height),
                                 Layout::top_down(Align::Min),

@@ -1024,10 +1024,15 @@ fn subtitle(app: &App, chat: &Chat) -> (String, Color32) {
                             .replace("{names}", &rest.join(", "))
                             .replace("{last}", last),
                     ),
-                    (_, [one]) => Some(format!("{one} is typing…")),
-                    (_, [rest @ .., last]) => {
-                        Some(format!("{} and {last} are typing…", rest.join(", ")))
-                    }
+                    (_, [one]) => Some(
+                        crate::i18n::gettext(app.locale, "{name} is typing…")
+                            .replace("{name}", one),
+                    ),
+                    (_, [rest @ .., last]) => Some(
+                        crate::i18n::gettext(app.locale, "{names} and {last} are typing…")
+                            .replace("{names}", &rest.join(", "))
+                            .replace("{last}", last),
+                    ),
                 }
             };
             [ChatActivity::Typing, ChatActivity::RecordingAudio]
@@ -1038,15 +1043,28 @@ fn subtitle(app: &App, chat: &Chat) -> (String, Color32) {
         } else if activity == ChatActivity::RecordingAudio {
             crate::i18n::gettext(app.locale, "recording audio…").into_owned()
         } else {
-            "typing…".to_owned()
+            crate::i18n::gettext(app.locale, "typing…").into_owned()
         };
         return (text, palette.accent);
     }
     if chat.is_group() {
+        // A group the phone has not named is titled with its members, so the
+        // line under it counts them instead of repeating the same list twice.
+        if !app.group_subject_known(chat) {
+            let members = chat.participants.len() as u32;
+            if members == 0 {
+                return (String::new(), palette.secondary);
+            }
+            return (
+                crate::i18n::ngettext(app.locale, "{count} member", "{count} members", members)
+                    .replace("{count}", &members.to_string()),
+                palette.secondary,
+            );
+        }
         let names = app.participant_names(chat);
         return (
             if names.is_empty() {
-                "Group".to_owned()
+                crate::i18n::gettext(app.locale, "Group").into_owned()
             } else {
                 names
             },
@@ -1055,7 +1073,10 @@ fn subtitle(app: &App, chat: &Chat) -> (String, Color32) {
     }
     if let Some(presence) = app.presence.get(&chat.id) {
         if presence.online {
-            return ("online".to_owned(), palette.accent);
+            return (
+                crate::i18n::gettext(app.locale, "online").into_owned(),
+                palette.accent,
+            );
         }
         if let Some(seen) = presence.last_seen {
             return (crate::util::last_seen(app.locale, seen), palette.secondary);
@@ -1705,7 +1726,14 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
             // Measure this frame's draft at the text column's width, so the
             // field and the panel holding it grow on the keystroke that wraps
             // a line rather than a frame later, which made them jump.
-            let wrap_id = id.with("wrap");
+            let wrap_id = composer_wrap_id();
+            // The draft grows to six lines, or to fewer in a window too short
+            // to spare them: the field may take a fifth of the window's height,
+            // so a short window still shows a message or two above it.
+            let lines = (ui.ctx().content_rect().height() / 5.0 / line_height)
+                .floor()
+                .clamp(1.0, 6.0);
+            let tallest = line_height * lines;
             let text_height = ui
                 .ctx()
                 .data(|data| data.get_temp::<f32>(wrap_id))
@@ -1719,7 +1747,7 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                 })
                 .or_else(|| ui.ctx().read_response(id).map(|previous| previous.rect.height()))
                 .unwrap_or(line_height)
-                .clamp(line_height, line_height * 6.0);
+                .clamp(line_height, tallest);
             let row_height = (text_height + 2.0 * field_margin).max(line);
             let pill = widgets::raised(ui, &palette, composer_pill(&palette), |ui| {
             ui.allocate_ui_with_layout(
@@ -1801,8 +1829,26 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                         // Grow from one to six lines, then scroll. The height
                         // is this frame's draft, measured above, rather than
                         // the scroll area's memory of the last frame.
-                        egui::ScrollArea::vertical()
+                        // A floating bar draws over what it scrolls. Keep its
+                        // room in the content margin, so the draft wraps short
+                        // of it and never under it, and thin it to sit in that
+                        // gutter without touching the text.
+                        {
+                            let scroll = &mut ui.style_mut().spacing.scroll;
+                            scroll.bar_width = 4.0;
+                            scroll.floating_width = 4.0;
+                            scroll.bar_inner_margin = 0.0;
+                            scroll.bar_outer_margin = 3.0;
+                            scroll.handle_min_length = 20.0;
+                        }
+                        let scrolled = egui::ScrollArea::vertical()
                             .id_salt("composer-scroll")
+                            .content_margin(Margin {
+                                left: 0,
+                                right: COMPOSER_SCROLL_GUTTER,
+                                top: 0,
+                                bottom: 0,
+                            })
                             .max_height(text_height)
                             .min_scrolled_height(text_height)
                             .auto_shrink([false, false])
@@ -1913,7 +1959,7 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                                 .0
                                 .size()
                                 .y
-                                .clamp(line_height, line_height * 6.0);
+                                .clamp(line_height, tallest);
                                 ui.ctx().data_mut(|data| {
                                     data.insert_temp(composer_text_id(), painted);
                                 });
@@ -2038,6 +2084,19 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                                     response.request_focus();
                                 }
                             });
+                        ui.ctx().data_mut(|data| {
+                            data.insert_temp(composer_viewport_id(), scrolled.inner_rect);
+                        });
+                        // The draft is cut at the field's edge: fade it, as the
+                        // strips do, rather than ending on a hard clip.
+                        if scrolled.content_size.y > scrolled.inner_rect.height() + 0.5 {
+                            let veil = if palette.vibrant() {
+                                palette.glass()
+                            } else {
+                                palette.bubble_in
+                            };
+                            widgets::fade_bottom(ui, scrolled.inner_rect, COMPOSER_FADE, veil);
+                        }
                         ui.add_space(bottom);
                         });
                     });
@@ -2139,8 +2198,10 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                     {
                         app.actions.push(Action::SetShortcutHints(false));
                     }
-                    theme::text(ui, &hint, theme::regular(11.0), palette.dim);
-                    // Open the shortcut list without consuming typed `?`.
+                    // The shortcuts button takes its room at the right edge
+                    // first, and the hint truncates into what is left: laid
+                    // out the other way round, the label ate the width and the
+                    // button was drawn over the end of it in a narrow pane.
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                         if theme::icon_button(
                             ui,
@@ -2155,6 +2216,9 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                         {
                             app.actions.push(Action::ShowDialog(Dialog::Shortcuts));
                         }
+                        ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+                            theme::text(ui, &hint, theme::regular(11.0), palette.dim);
+                        });
                     });
                 });
             }
@@ -2186,6 +2250,12 @@ const COMPOSER_PADDING: f32 = 14.0;
 /// Height of the plus and emoji buttons: a row is never shorter, or they
 /// would stretch it and pull the text off its centre.
 const COMPOSER_CONTROL: f32 = 36.0;
+/// Room kept at the right of the draft for the field's scroll bar. A floating
+/// bar allocates no width of its own (`floating_allocated_width` is zero), so
+/// without this the bar paints over the end of every line that reaches it.
+pub(crate) const COMPOSER_SCROLL_GUTTER: i8 = 10;
+/// How tall the fade is where the draft is cut at the field's edge.
+const COMPOSER_FADE: f32 = 14.0;
 /// Space between the composer's rounded field and the buttons at its ends.
 const COMPOSER_INSET: i8 = 2;
 /// Space between the plus and emoji buttons' hit areas. Each area pads its
@@ -2214,6 +2284,16 @@ pub(crate) fn composer_text_id() -> egui::Id {
 /// Where the composer's rounded field was drawn, for layout tests.
 pub(crate) fn composer_pill_id() -> egui::Id {
     egui::Id::new("composer-pill")
+}
+
+/// The width the composer's draft wrapped at last frame, for layout tests.
+pub(crate) fn composer_wrap_id() -> egui::Id {
+    egui::Id::new("composer-wrap")
+}
+
+/// The composer's scroll viewport last frame, for layout tests.
+pub(crate) fn composer_viewport_id() -> egui::Id {
+    egui::Id::new("composer-viewport")
 }
 
 /// The open chat's message list scroll offset and viewport height, as
@@ -2465,7 +2545,12 @@ fn edit_strip(app: &mut App, ui: &mut egui::Ui) {
         ui.set_width(ui.available_width());
         ui.horizontal(|ui| {
             theme::icon(ui, Icon::Pencil, 16.0, palette.accent);
-            theme::text(ui, "Editing message", theme::semibold(12.5), palette.accent);
+            theme::text(
+                ui,
+                crate::i18n::gettext(app.locale, "Editing message"),
+                theme::semibold(12.5),
+                palette.accent,
+            );
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                 if theme::icon_button(
                     ui,
@@ -2488,7 +2573,7 @@ fn edit_strip(app: &mut App, ui: &mut egui::Ui) {
 fn reply_strip(app: &mut App, ui: &mut egui::Ui, quoted: &Message) {
     let palette = app.palette;
     let who = if quoted.from_me {
-        "You".to_owned()
+        crate::i18n::gettext(app.locale, "You").into_owned()
     } else {
         app.display_name_or(&quoted.sender, quoted.sender_name.as_deref())
     };
@@ -2503,7 +2588,7 @@ fn reply_strip(app: &mut App, ui: &mut egui::Ui, quoted: &Message) {
                 ui.set_max_width((ui.available_width() - 40.0).max(0.0));
                 widgets::rich_text(
                     ui,
-                    &format!("Replying to {who}"),
+                    &crate::i18n::gettext(app.locale, "Replying to {who}").replace("{who}", &who),
                     theme::semibold(12.5),
                     palette.accent,
                 );
@@ -3030,6 +3115,19 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
     // The list's items are its rows: an album is one.
     let starts = row_starts(&conversation.messages, app.selecting_in(&chat.id));
     let total = starts.len();
+    // The newest message plays its landing once the transcript has moved past
+    // the one it showed last: a message sent here, or one that just arrived.
+    if let Some(newest) = conversation
+        .messages
+        .last()
+        .map(|message| message.id.clone())
+        && conversation.landed.as_deref() != Some(newest.as_str())
+    {
+        conversation.landed = Some(newest.clone());
+        ui.ctx().data_mut(|data| {
+            data.insert_temp(landed_id(&chat.id), (newest, app.settings.motion.time()));
+        });
+    }
     // The current message: the one the cursor names, or the newest when it
     // names none, or a message that is gone. An album's item stands for its
     // row, which its first item draws.
@@ -5006,7 +5104,43 @@ fn bubble(
             }
         },
     );
+    // A message that just landed, sent here or arrived from the phone, plays
+    // a ring that widens and fades: the interface's only reply to a send, and
+    // it costs one stroke, not a re-layout.
+    if let Some(bubble) = &response
+        && let Some((landed, time)) = ui
+            .ctx()
+            .data(|data| data.get_temp::<(String, f32)>(landed_id(&view.chat.id)))
+        && landed == message.id
+        && time > 0.0
+    {
+        let fade = ui
+            .ctx()
+            .animate_bool_with_time(bubble.id.with("landing"), true, time);
+        if fade < 1.0 && ui.is_rect_visible(bubble.rect) {
+            let radius = if view.palette.bubbles == theme::BubbleStyle::Messages {
+                widgets::MESSAGES_BUBBLE_RADIUS
+            } else {
+                widgets::BUBBLE_RADIUS
+            };
+            ui.painter().rect_stroke(
+                bubble.rect.expand(5.0 * (1.0 - fade)),
+                egui::CornerRadius::same(radius.saturating_add(2)),
+                egui::Stroke::new(
+                    1.0 + 1.5 * (1.0 - fade),
+                    view.palette.accent.gamma_multiply(0.55 * (1.0 - fade)),
+                ),
+                egui::StrokeKind::Outside,
+            );
+        }
+    }
     response
+}
+
+/// The message whose landing ring the transcript should play, and how long it
+/// takes: the newest one if it is new to the transcript.
+fn landed_id(chat: &ChatId) -> egui::Id {
+    egui::Id::new(("message-landed", chat))
 }
 
 /// Clamps message-selection drags to the view while the pointer is outside it.
@@ -5627,7 +5761,9 @@ fn bubble_frame(
             // Reserve the label's line now and paint it once the contents
             // are measured, at their start: an own bubble lays out from the
             // right, and its width is known only then.
-            let forwarded = message.forwarded.then(|| forwarded_label(ui, &palette));
+            let forwarded = message
+                .forwarded
+                .then(|| forwarded_label(ui, &palette, view.locale));
             // Cards share the bubble's settled width: at least CARD_WIDTH and
             // no more than the cap. Text spans that width and stays left-aligned.
             // Bubbles without cards use the natural text width.
@@ -5645,7 +5781,7 @@ fn bubble_frame(
             // An album's footer is its last member's, marks included.
             let starred = view.starred.is_some_and(|ids| ids.contains(&last.id));
             let pinned = view.pins.is_some_and(|ids| ids.contains(&last.id));
-            let reserve = footer_width(ui, last, starred, pinned);
+            let reserve = footer_width(ui, view.locale, last, starred, pinned);
             let settled = album
                 .map(|_| CARD_WIDTH.min(cap))
                 .or_else(|| settled_width(ui, view, message, cap));
@@ -6028,6 +6164,9 @@ const CAROUSEL_CARD_WIDTH: f32 = 280.0;
 /// Location cards: a map preview across the top, then the details.
 const LOCATION_CARD_WIDTH: f32 = 300.0;
 const CAROUSEL_GAP: f32 = 8.0;
+/// Below this card width a link preview puts its thumbnail above the words:
+/// beside them, 64 points left a column too thin to read.
+const PREVIEW_STACKED: f32 = 240.0;
 
 /// Returns the shared card width, bounded by [`CARD_WIDTH`] and `cap`.
 fn settled_width(ui: &egui::Ui, view: &View<'_>, message: &Message, cap: f32) -> Option<f32> {
@@ -6108,7 +6247,7 @@ fn natural_text_width(ui: &egui::Ui, view: &View<'_>, message: &Message, cap: f3
     let last = laid.galley.rows.last().map_or(0.0, |row| row.row.size.x);
     let starred = view.starred.is_some_and(|ids| ids.contains(&message.id));
     let pinned = view.pins.is_some_and(|ids| ids.contains(&message.id));
-    let reserve = footer_width(ui, message, starred, pinned);
+    let reserve = footer_width(ui, view.locale, message, starred, pinned);
     Some(if last + 8.0 + reserve <= cap {
         widest.max(last + 8.0 + reserve)
     } else {
@@ -6397,10 +6536,15 @@ const FORWARDED_HEIGHT: f32 = 15.0;
 /// Reserves the line for a forwarded message's label at the top of its
 /// bubble and returns that space with the laid-out word, for
 /// [`paint_forwarded_label`] once the bubble's contents are measured.
-fn forwarded_label(ui: &mut egui::Ui, palette: &Palette) -> (Rect, std::sync::Arc<egui::Galley>) {
+fn forwarded_label(
+    ui: &mut egui::Ui,
+    palette: &Palette,
+    locale: crate::i18n::Locale,
+) -> (Rect, std::sync::Arc<egui::Galley>) {
+    let word = crate::i18n::gettext(locale, "Forwarded");
     let mut job = egui::text::LayoutJob::default();
     job.append(
-        "Forwarded",
+        &word,
         0.0,
         egui::TextFormat {
             font_id: theme::regular(12.5),
@@ -6413,7 +6557,8 @@ fn forwarded_label(ui: &mut egui::Ui, palette: &Palette) -> (Rect, std::sync::Ar
     let width = FORWARDED_ICON + FORWARDED_GAP + galley.size().x;
     let (reserved, response) =
         ui.allocate_exact_size(vec2(width, FORWARDED_HEIGHT), Sense::hover());
-    response.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, true, "Forwarded"));
+    response
+        .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, true, word.as_ref()));
     // Sit closer to what follows than the bubble's usual spacing.
     ui.add_space(-1.0);
     (reserved, galley)
@@ -6472,7 +6617,13 @@ fn clock_width(ui: &egui::Ui, message: &Message) -> f32 {
 }
 
 /// Width of the message footer, including the room its marks take.
-fn footer_width(ui: &egui::Ui, message: &Message, starred: bool, pinned: bool) -> f32 {
+fn footer_width(
+    ui: &egui::Ui,
+    locale: crate::i18n::Locale,
+    message: &Message,
+    starred: bool,
+    pinned: bool,
+) -> f32 {
     let font = theme::regular(11.0);
     let time = clock_width(ui, message);
     let edited = if message.edited {
@@ -6486,7 +6637,11 @@ fn footer_width(ui: &egui::Ui, message: &Message, starred: bool, pinned: bool) -
     };
     let not_sent = if not_sent(message) {
         ui.painter()
-            .layout_no_wrap(NOT_SENT.to_owned(), theme::medium(11.0), Color32::WHITE)
+            .layout_no_wrap(
+                crate::i18n::gettext(locale, NOT_SENT).into_owned(),
+                theme::medium(11.0),
+                Color32::WHITE,
+            )
             .size()
             .x
             + 6.0
@@ -6576,8 +6731,11 @@ fn footer_over_picture(
         ui.painter()
             .layout_no_wrap(crate::util::clock(message.timestamp), font, Color32::WHITE);
     let failed = not_sent(message).then(|| {
-        ui.painter()
-            .layout_no_wrap(NOT_SENT.to_owned(), theme::medium(11.0), Color32::WHITE)
+        ui.painter().layout_no_wrap(
+            crate::i18n::gettext(view.locale, NOT_SENT).into_owned(),
+            theme::medium(11.0),
+            Color32::WHITE,
+        )
     });
     let tick_width = if message.from_me { 19.0 } else { 0.0 };
     let marks =
@@ -6632,10 +6790,11 @@ fn footer_over_picture(
             ui.id().with(("not-sent", &message.id)),
             Sense::hover(),
         );
+        let hint = crate::i18n::gettext(view.locale, NOT_SENT_HINT);
         response.widget_info(|| {
-            egui::WidgetInfo::labeled(egui::WidgetType::Label, true, NOT_SENT_HINT)
+            egui::WidgetInfo::labeled(egui::WidgetType::Label, true, hint.as_ref())
         });
-        response.on_hover_text(NOT_SENT_HINT);
+        response.on_hover_text(hint.as_ref());
     }
     if pinned {
         x -= FOOTER_MARK_SLOT;
@@ -6741,8 +6900,11 @@ fn footer(
     // uses the text colour: the danger red on an outgoing bubble is too faint
     // to read, and the red icon beside it already carries the alarm.
     let failed = not_sent(message).then(|| {
-        ui.painter()
-            .layout_no_wrap(NOT_SENT.to_owned(), theme::medium(11.0), palette.text)
+        ui.painter().layout_no_wrap(
+            crate::i18n::gettext(view.locale, NOT_SENT).into_owned(),
+            theme::medium(11.0),
+            palette.text,
+        )
     });
     let tick_width = if message.from_me { 19.0 } else { 0.0 };
     let width = time.size().x
@@ -6817,10 +6979,11 @@ fn footer(
             ui.id().with(("not-sent", &message.id)),
             Sense::hover(),
         );
+        let hint = crate::i18n::gettext(view.locale, NOT_SENT_HINT);
         response.widget_info(|| {
-            egui::WidgetInfo::labeled(egui::WidgetType::Label, true, NOT_SENT_HINT)
+            egui::WidgetInfo::labeled(egui::WidgetType::Label, true, hint.as_ref())
         });
-        response.on_hover_text(NOT_SENT_HINT);
+        response.on_hover_text(hint.as_ref());
     }
     if starred {
         x -= FOOTER_MARK_SLOT;
@@ -9946,45 +10109,67 @@ fn preview_layout(
         .next()
         .unwrap_or_default()
         .to_owned();
+    // A narrow card stacks the thumbnail above the words: beside them, a fixed
+    // 64-point picture left a column too thin to read a description in.
+    let stacked = thumbnail.is_some() && card_width < PREVIEW_STACKED;
     // Limit text to the space beside the thumbnail and keep it
     // left-aligned in own bubbles.
-    let column = (card_width - if thumbnail.is_some() { 72.0 } else { 0.0 }).max(0.0);
+    let column = (card_width
+        - if thumbnail.is_some() && !stacked {
+            72.0
+        } else {
+            0.0
+        })
+    .max(0.0);
+    let picture = |ui: &mut egui::Ui| {
+        if let Some((chat, id, bytes)) = thumbnail {
+            let (rect, _) = ui.allocate_exact_size(Vec2::splat(64.0), Sense::hover());
+            // Off-screen cards are laid out too; only a visible
+            // one keeps its thumbnail resident.
+            if ui.is_rect_visible(rect) {
+                let uri = thumbnail_uri(ui.ctx(), chat, id, bytes);
+                egui::Image::new(uri)
+                    .fit_to_exact_size(rect.size())
+                    .corner_radius(4.0)
+                    .paint_at(ui, rect);
+            }
+        }
+    };
+    let words = |ui: &mut egui::Ui| {
+        ui.vertical(|ui| {
+            ui.spacing_mut().item_spacing.y = 2.0;
+            ui.set_width(column);
+            if let Some(title) = &preview.title {
+                widgets::rich_text(ui, title, theme::semibold(13.5), palette.text);
+            }
+            if let Some(description) = &preview.description {
+                let line = widgets::line(
+                    ui,
+                    description,
+                    theme::regular(12.5),
+                    palette.secondary,
+                    ui.available_width(),
+                    2,
+                );
+                let (rect, _) = ui.allocate_exact_size(line.size(), Sense::hover());
+                line.paint(ui, rect.min, palette.secondary);
+            }
+            theme::text(ui, &domain, theme::regular(12.0), palette.dim);
+        });
+    };
     ui.allocate_ui_with_layout(vec2(card_width, 0.0), Layout::top_down(Align::Min), |ui| {
         ui.set_width(card_width);
-        ui.horizontal(|ui| {
-            if let Some((chat, id, bytes)) = thumbnail {
-                let (rect, _) = ui.allocate_exact_size(Vec2::splat(64.0), Sense::hover());
-                // Off-screen cards are laid out too; only a visible
-                // one keeps its thumbnail resident.
-                if ui.is_rect_visible(rect) {
-                    let uri = thumbnail_uri(ui.ctx(), chat, id, bytes);
-                    egui::Image::new(uri)
-                        .fit_to_exact_size(rect.size())
-                        .corner_radius(4.0)
-                        .paint_at(ui, rect);
-                }
-            }
+        if stacked {
             ui.vertical(|ui| {
-                ui.spacing_mut().item_spacing.y = 2.0;
-                ui.set_width(column);
-                if let Some(title) = &preview.title {
-                    widgets::rich_text(ui, title, theme::semibold(13.5), palette.text);
-                }
-                if let Some(description) = &preview.description {
-                    let line = widgets::line(
-                        ui,
-                        description,
-                        theme::regular(12.5),
-                        palette.secondary,
-                        ui.available_width(),
-                        2,
-                    );
-                    let (rect, _) = ui.allocate_exact_size(line.size(), Sense::hover());
-                    line.paint(ui, rect.min, palette.secondary);
-                }
-                theme::text(ui, &domain, theme::regular(12.0), palette.dim);
+                picture(ui);
+                words(ui);
             });
-        });
+        } else {
+            ui.horizontal(|ui| {
+                picture(ui);
+                words(ui);
+            });
+        }
     })
     .response
     .rect
@@ -12692,9 +12877,9 @@ mod tests {
             |ui| {
                 let message = crate::archive::tests::message("1@s.whatsapp.net", "m1", 0, false);
                 clock = clock_width(ui, &message);
-                plain = footer_width(ui, &message, false, false);
-                pinned = footer_width(ui, &message, false, true);
-                both = footer_width(ui, &message, true, true);
+                plain = footer_width(ui, crate::i18n::Locale::English, &message, false, false);
+                pinned = footer_width(ui, crate::i18n::Locale::English, &message, false, true);
+                both = footer_width(ui, crate::i18n::Locale::English, &message, true, true);
             },
         );
         output.textures_delta.clear();
@@ -12777,9 +12962,9 @@ mod tests {
                 let from_them = crate::archive::tests::message("1@s.whatsapp.net", "m1", 0, false);
                 let from_me = crate::archive::tests::message("1@s.whatsapp.net", "m1", 0, true);
                 clock = clock_width(ui, &from_them);
-                incoming = footer_width(ui, &from_them, false, false);
-                starred = footer_width(ui, &from_them, true, false);
-                own = footer_width(ui, &from_me, false, false);
+                incoming = footer_width(ui, crate::i18n::Locale::English, &from_them, false, false);
+                starred = footer_width(ui, crate::i18n::Locale::English, &from_them, true, false);
+                own = footer_width(ui, crate::i18n::Locale::English, &from_me, false, false);
             },
         );
         output.textures_delta.clear();
@@ -12955,12 +13140,26 @@ mod tests {
         };
         let mut widths = Vec::new();
         let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
-            widths.push(footer_width(ui, &message, false, false));
+            widths.push(footer_width(
+                ui,
+                crate::i18n::Locale::English,
+                &message,
+                false,
+                false,
+            ));
             message.status = Delivery::Failed;
-            widths.push(footer_width(ui, &message, false, false));
+            widths.push(footer_width(
+                ui,
+                crate::i18n::Locale::English,
+                &message,
+                false,
+                false,
+            ));
             // Only our own messages can fail to send.
             message.from_me = false;
-            widths.push(footer_width(ui, &message, false, false) + 19.0);
+            widths.push(
+                footer_width(ui, crate::i18n::Locale::English, &message, false, false) + 19.0,
+            );
         });
         output.textures_delta.clear();
         assert!(widths[1] > widths[0] + 30.0, "{widths:?}");

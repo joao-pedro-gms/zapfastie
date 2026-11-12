@@ -360,6 +360,14 @@ fn sections(app: &App) -> Vec<Section> {
         font_picker,
     );
     appearance.row(
+        translated(locale, "Motion"),
+        translated(
+            locale,
+            "How much the interface moves as it changes. Off leaves every screen still.",
+        ),
+        motion_picker,
+    );
+    appearance.row(
         translated(locale, "Wallpaper"),
         Text::default(),
         move |ui, app| {
@@ -1200,6 +1208,26 @@ fn font_picker(ui: &mut egui::Ui, app: &mut App) {
             for choice in FontChoice::ALL {
                 if theme_option(ui, &palette, &label(choice), selected == choice) {
                     app.actions.push(Action::SetFont(choice));
+                }
+            }
+        });
+    theme::reveal_focus(&response.response);
+}
+
+/// How much the interface animates.
+fn motion_picker(ui: &mut egui::Ui, app: &mut App) {
+    use crate::settings::MotionChoice;
+    let palette = app.palette;
+    let selected = app.settings.motion;
+    let label =
+        |choice: MotionChoice| crate::i18n::gettext(app.locale, choice.label()).into_owned();
+    let response = egui::ComboBox::from_id_salt("interface_motion")
+        .selected_text(label(selected))
+        .width(200.0_f32.min(ui.available_width()))
+        .show_ui(ui, |ui| {
+            for choice in MotionChoice::ALL {
+                if theme_option(ui, &palette, &label(choice), selected == choice) {
+                    app.actions.push(Action::SetMotion(choice));
                 }
             }
         });

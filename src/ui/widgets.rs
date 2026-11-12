@@ -504,7 +504,8 @@ pub fn dialog_scroll_height(ui: &Ui) -> f32 {
         .max(100.0)
 }
 
-/// Minimum width needed for menu labels.
+/// Minimum width needed for menu labels. It never exceeds the window, where a
+/// long label ends in an ellipsis instead of running off screen.
 pub fn menu_width(ui: &Ui, labels: &[&str], icons: bool) -> f32 {
     let widest = labels
         .iter()
@@ -517,7 +518,9 @@ pub fn menu_width(ui: &Ui, labels: &[&str], icons: bool) -> f32 {
         .fold(0.0, f32::max);
     // Text padding, then `menu_frame`'s margin and its 1-point stroke on each
     // side: without the stroke the widest label lost its last letters.
-    widest + if icons { 26.0 } else { 0.0 } + 20.0 + MENU_FRAME_EXTRA
+    let fit = widest + if icons { 26.0 } else { 0.0 } + 20.0 + MENU_FRAME_EXTRA;
+    let room = ui.ctx().content_rect().width() - MENU_FRAME_EXTRA - 2.0 * SUBMENU_WINDOW_GAP;
+    fit.min(room.max(0.0))
 }
 
 /// What `menu_frame` adds to a menu's width: its 6-point margin and its
@@ -2349,14 +2352,16 @@ mod tests {
     }
 
     /// Opens a submenu of `items` in a window `window` points wide, and
-    /// returns its rows' rect with what `menu_width` asks for them.
-    fn shown_submenu(items: &[&str], window: f32) -> (Rect, f32) {
+    /// returns its rows' rect, what `menu_width` asks for them, and how wide
+    /// the widest label is with no ceiling.
+    fn shown_submenu(items: &[&str], window: f32) -> (Rect, f32, f32) {
         let palette = Palette::dark();
         let ctx = egui::Context::default();
         let row = pos2(60.0, 60.0);
         let frame = |events| {
             let mut shown = None;
             let mut expected = 0.0;
+            let mut natural = 0.0;
             let mut output = ctx.run_ui(
                 egui::RawInput {
                     screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, vec2(window, 800.0))),
@@ -2365,6 +2370,19 @@ mod tests {
                 },
                 |ui| {
                     expected = menu_width(ui, items, true);
+                    natural = items
+                        .iter()
+                        .map(|label| {
+                            ui.painter()
+                                .layout_no_wrap(
+                                    (*label).to_string(),
+                                    theme::regular(13.5),
+                                    Color32::WHITE,
+                                )
+                                .size()
+                                .x
+                        })
+                        .fold(0.0, f32::max);
                     let button = ui.button("Menu");
                     egui::Popup::menu(&button)
                         .open_memory(Some(egui::SetOpenCommand::Bool(true)))
@@ -2382,7 +2400,7 @@ mod tests {
                 },
             );
             output.textures_delta.clear();
-            shown.map(|rect| (rect, expected))
+            shown.map(|rect| (rect, expected, natural))
         };
         frame(vec![]);
         let mut shown = None;
@@ -2398,7 +2416,7 @@ mod tests {
     #[test]
     fn a_submenu_is_as_wide_as_its_labels() {
         let items = ["Default", "Choose a file…"];
-        let (rect, expected) = shown_submenu(&items, 1600.0);
+        let (rect, expected, _) = shown_submenu(&items, 1600.0);
         assert!(
             (rect.width() - expected).abs() <= 4.0,
             "a submenu for {items:?} is {} points wide, not about {expected}",
@@ -2413,8 +2431,13 @@ mod tests {
         let long = "a very long notification sound file name ".repeat(12) + ".ogg";
         let items = ["Default", long.as_str()];
         let window = 500.0;
-        let (rect, expected) = shown_submenu(&items, window);
-        assert!(expected > window, "the label is wider than the window");
+        let (rect, _, natural) = shown_submenu(&items, window);
+        assert!(natural > window, "the label is wider than the window");
+        assert!(
+            rect.width() <= window,
+            "a submenu is {:.0} points wide in a {window}-point window",
+            rect.width()
+        );
         assert!(
             rect.left() >= 0.0 && rect.right() <= window,
             "a submenu at {rect:?} runs off a {window}-point window"

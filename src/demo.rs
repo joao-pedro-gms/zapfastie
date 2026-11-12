@@ -22405,6 +22405,41 @@ mod tests {
         }
     }
 
+    /// A floating scroll bar allocates no width of its own, so the field keeps
+    /// a gutter for it: the draft wraps short of the bar instead of under it,
+    /// and the wrap point stays put when a long draft starts to scroll.
+    #[test]
+    fn the_composer_keeps_a_gutter_for_its_scroll_bar() {
+        let kept = f32::from(crate::ui::conversation::COMPOSER_SCROLL_GUTTER);
+        for draft in [
+            "One line",
+            "A draft long enough to pass the six-line cap of the composer, with \
+             words after that keep coming so that the field has to scroll to \
+             show the rest of what was typed.",
+        ] {
+            let mut app = app();
+            app.composer = draft.into();
+            let ctx = egui::Context::default();
+            app.attach(&ctx);
+            for _ in 0..4 {
+                frame_sized(&mut app, &ctx, 780.0, Vec::new());
+            }
+            let (wrap, viewport) = ctx.data(|data| {
+                (
+                    data.get_temp::<f32>(crate::ui::conversation::composer_wrap_id()),
+                    data.get_temp::<egui::Rect>(crate::ui::conversation::composer_viewport_id()),
+                )
+            });
+            let wrap = wrap.expect("the field wraps its draft");
+            let viewport = viewport.expect("the field is drawn");
+            let gutter = viewport.width() - wrap;
+            assert!(
+                (gutter - kept).abs() < 1.0,
+                "the bar has {gutter} of gutter, want {kept}: {draft:?}"
+            );
+        }
+    }
+
     /// A keystroke that wraps the draft onto another line, or joins it back,
     /// shows the grown field in that same frame: sizing it from the frame
     /// before made the field and its text jump while typing.
