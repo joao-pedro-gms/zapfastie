@@ -196,6 +196,29 @@ others arrive the same way. A pin leaves when it expires, and a message
 deleted here or for everyone stops being a pin, even if its pin arrives
 again later.
 
+## Notes
+
+The notebook icon in the rail opens **Notes**, kept on this computer and
+nowhere else: one encrypted database in the state folder, with a key of its
+own in your OS keyring, so unlinking a number does not take them with it.
+
+**+** starts a note and puts the keys in it. A note is markdown written in
+place and saved as you type, a few hundred bytes at a time; its name is the
+first line with something in it, and a heading, a bullet, a quote or a
+numbered item names it without its marker. **Pin** keeps a note at the top of
+the list, the search field reads titles and bodies, and **Delete** removes the
+note and what it cited.
+
+A note can cite a message: right-click a message and choose **Save to a
+note**. The note opens with the message quoted and a chip under its title
+naming the chat it came from; click the chip to go back to the message, which
+opens its chat first if you wrote the note from another one. The note keeps
+its citation even if the message is later deleted: the chip still names the
+chat, and the note still reads.
+
+`Escape` closes the note you are reading, and `Ctrl+F` puts the keys in the
+notes search while the tab is open.
+
 ## Stickers
 
 The sticker tab works like WhatsApp's: a row of tabs holds **Recent**
