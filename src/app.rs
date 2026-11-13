@@ -14,8 +14,8 @@ use crate::i18n::Locale;
 use crate::image_preview::PreviewState;
 use crate::model::{
     AccountId, Action, Chat, ChatFilter, ChatId, ChatMedia, Contact, Content, Delivery, Dialog,
-    Gif, GifError, InfoPanel, InfoView, Label, Media, MediaState, Message, Page, PickerTab, Scroll,
-    SidebarDisplayMode, StickerPack, StickerShelf, Toast, ToastKind,
+    Gif, GifError, InfoPanel, InfoView, Label, Media, MediaState, Message, Page, PickerTab,
+    QuickStickers, Scroll, SidebarDisplayMode, StickerPack, StickerShelf, Toast, ToastKind,
 };
 use crate::nav::{History, Location};
 use crate::paths::AppDirs;
@@ -604,6 +604,8 @@ pub struct App {
     pub picker_recent: Option<Vec<String>>,
     /// Whether the newly opened picker should focus search.
     pub picker_focus: bool,
+    /// The quick sticker picker, when it is open.
+    pub quick_stickers: Option<QuickStickers>,
     /// Message the full emoji reaction picker is targeting.
     pub reaction_target: Option<(ChatId, String)>,
     /// Control that opened the reaction picker.
@@ -1637,6 +1639,7 @@ impl App {
             picker_search: String::new(),
             picker_recent: None,
             picker_focus: false,
+            quick_stickers: None,
             reaction_target: None,
             reaction_anchor: None,
             reaction_beside_menu: false,
@@ -2012,6 +2015,7 @@ impl App {
         self.reaction_target = None;
         self.reaction_anchor = None;
         self.picker = None;
+        self.quick_stickers = None;
         // GIF results and their cached previews belong to the account whose
         // backend fetched them.
         self.gif_query.clear();
@@ -2185,6 +2189,9 @@ impl App {
     pub fn window_gone(&mut self) {
         self.flush_open_draft();
         self.clear_chat_lock_entry();
+        // The sticker picker goes with the window and the lock screen: its
+        // sticker would otherwise still be one Enter away after unlocking.
+        self.quick_stickers = None;
         if self.dialog == Some(Dialog::UnlockLockedChats) {
             self.dialog = None;
         }
@@ -8782,6 +8789,34 @@ impl App {
                     }
                 }
             }
+            Action::ToggleQuickStickers => {
+                if self.quick_stickers.is_some() {
+                    self.quick_stickers = None;
+                    self.refocus_composer(ctx);
+                } else if self.open_chat.is_some() {
+                    self.picker = None;
+                    self.reaction_target = None;
+                    self.reaction_anchor = None;
+                    self.composer_tools_open = false;
+                    self.emoji_start = None;
+                    self.mention_start = None;
+                    // The lists may have moved on since the sticker tab last
+                    // asked for them: a sticker sent from the phone, say.
+                    self.stickers_pending = self.stickers.is_empty()
+                        && self.stickers_saved.is_empty()
+                        && self.sticker_packs.is_empty();
+                    self.backend.send(Command::RecentStickers);
+                    self.quick_stickers = Some(QuickStickers::default());
+                    // The composer would keep the Enter that sends the
+                    // sticker the picker has selected.
+                    self.focus_composer = false;
+                }
+            }
+            Action::CloseQuickStickers => {
+                if self.quick_stickers.take().is_some() {
+                    self.refocus_composer(ctx);
+                }
+            }
             Action::ClosePicker => {
                 let was_reaction = self.reaction_target.is_some();
                 if let Some((chat, message)) = &self.reaction_target {
@@ -10700,6 +10735,9 @@ impl App {
         self.dropping = false;
         self.notifications.clear_all();
         self.clear_chat_lock_entry();
+        // The sticker picker goes with the window and the lock screen: its
+        // sticker would otherwise still be one Enter away after unlocking.
+        self.quick_stickers = None;
         if self.dialog == Some(Dialog::UnlockLockedChats) {
             self.dialog = None;
         }
@@ -14889,6 +14927,39 @@ mod tests {
             );
             assert!(!app.reaction_from_list, "{close}: the flag is gone");
         }
+    }
+
+    /// The quick sticker picker opens over an open chat, closes on its own
+    /// action and on the message field's shortcut coming back, and never
+    /// opens with no chat to send a sticker to.
+    #[test]
+    fn the_quick_sticker_picker_opens_over_a_chat_and_closes_with_its_action() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, _events) =
+            App::headless(AppDirs::under(directory.path()), Settings::default());
+        let (backend, _commands) = Backend::recording();
+        app.backend = backend;
+        let ctx = egui::Context::default();
+        app.apply(Action::ToggleQuickStickers, &ctx);
+        assert!(
+            app.quick_stickers.is_none(),
+            "no chat, so nowhere to send the sticker"
+        );
+        let chat = "peer@s.whatsapp.net";
+        app.chats.push(Chat::new(chat.into(), "Peer".into()));
+        app.open_chat = Some(chat.into());
+        app.apply(Action::TogglePicker(PickerTab::Emoji), &ctx);
+        app.apply(Action::ToggleQuickStickers, &ctx);
+        assert!(app.quick_stickers.is_some());
+        assert_eq!(app.picker, None, "the sticker picker takes the tab's place");
+        app.focus_composer = false;
+        app.apply(Action::CloseQuickStickers, &ctx);
+        assert!(app.quick_stickers.is_none());
+        assert!(app.focus_composer, "the field takes the keys back");
+        // The same shortcut closes it again.
+        app.apply(Action::ToggleQuickStickers, &ctx);
+        app.apply(Action::ToggleQuickStickers, &ctx);
+        assert!(app.quick_stickers.is_none());
     }
 
     /// A message menu asked for and not drawn yet is not opened on another

@@ -1793,7 +1793,7 @@ fn sticker_grid(
 
 /// Draws one sticker tile. Only visible animated stickers decode, and they
 /// keep a still first frame until the focused pointer hovers the tile.
-fn paint_tile(
+pub(crate) fn paint_tile(
     ui: &mut egui::Ui,
     palette: &Palette,
     path: &Path,

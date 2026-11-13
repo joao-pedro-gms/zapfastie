@@ -225,6 +225,16 @@ Type in the search field to find stickers by emoji (😂), by a word that names
 an emoji ("laugh", "duck"), or by pack name. Stickers carry the emojis they
 express in their metadata, as WhatsApp's own stickers do.
 
+### Quick stickers
+
+Press `Ctrl+Shift+S` in a chat for the stickers alone, without the emoji and
+GIF tabs: a search field over one grid of every sticker you can send,
+Favorites and Recent first, then your packs and the ones people sent you. The
+field has the keys as it opens, so typing narrows the grid at once. The arrow
+keys walk it a row at a time, Enter sends the highlighted sticker, Escape
+closes, and a click sends right away. Lottie (`.was`) stickers are left out
+here, as they are receive-only.
+
 Under **+**, paste a `signal.art` link from
 [signalstickers.org](https://signalstickers.org) (or click **Find packs**), or
 open a `.wastickers` file, to import a pack. Signal packs keep each sticker's

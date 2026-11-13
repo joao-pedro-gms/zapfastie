@@ -28,6 +28,10 @@ pub fn handle(app: &mut App, ctx: &egui::Context) {
         sticker_view_keys(app, ctx);
         return;
     }
+    if app.quick_stickers.is_some() {
+        quick_sticker_keys(app, ctx);
+        return;
+    }
     let editing_text = ctx.text_edit_focused();
     let find = find_action(app);
     let archive = archive_action(app);
@@ -101,6 +105,22 @@ pub fn handle(app: &mut App, ctx: &egui::Context) {
             && app.recording.is_none()
         {
             key(Modifiers::COMMAND, Key::L, Action::FocusComposer);
+        }
+        // The sticker half of the picker on its own, for a reader who knows
+        // which sticker they want: Ctrl+Shift+S, free in the app and in the
+        // chat list's own keys.
+        if app.is_linked()
+            && app.chat_view()
+            && app.open_chat.is_some()
+            && app.dialog.is_none()
+            && !app.show_update
+            && app.recording.is_none()
+        {
+            key(
+                Modifiers::COMMAND | Modifiers::SHIFT,
+                Key::S,
+                Action::ToggleQuickStickers,
+            );
         }
         if let Some(archive) = archive {
             key(Modifiers::COMMAND, Key::E, archive);
@@ -991,6 +1011,55 @@ fn sticker_view_keys(app: &mut App, ctx: &egui::Context) {
     }
 }
 
+/// Handles keys while the quick sticker picker is open: the arrows walk the
+/// grid a row at a time, Enter sends the highlighted sticker, Escape closes,
+/// and no other shortcut or typing reaches the chat behind it. Typed text is
+/// the search field's own.
+fn quick_sticker_keys(app: &mut App, ctx: &egui::Context) {
+    let mut close = false;
+    let mut enter = false;
+    let mut step = 0i32;
+    ctx.input_mut(|input| {
+        close = input.consume_key(Modifiers::NONE, Key::Escape);
+        // A sticker is sent once, however long Enter is held.
+        enter = take_plain_once(input, Key::Enter);
+        if input.consume_key(Modifiers::NONE, Key::ArrowDown) {
+            step += 1;
+        }
+        if input.consume_key(Modifiers::NONE, Key::ArrowUp) {
+            step -= 1;
+        }
+    });
+    if close {
+        app.actions.push(Action::CloseQuickStickers);
+        return;
+    }
+    let Some(state) = app.quick_stickers.as_ref() else {
+        return;
+    };
+    // The stickers the field's text gives now, so a sticker typed a moment
+    // ago is the one Enter sends.
+    let list = super::sticker_quick::results(app, &state.search);
+    if list.is_empty() {
+        return;
+    }
+    let mut selected = state.selected.min(list.len() - 1);
+    if step != 0 {
+        let columns = super::sticker_quick::COLUMNS as i32;
+        let moved = selected as i32 + step * columns;
+        selected = moved.clamp(0, list.len() as i32 - 1) as usize;
+    }
+    let sending = enter.then(|| list[selected].clone());
+    if let Some(state) = &mut app.quick_stickers {
+        state.selected = selected;
+        state.scroll_to |= step != 0;
+    }
+    if let Some(path) = sending {
+        app.actions.push(Action::SendSticker(path));
+        app.actions.push(Action::CloseQuickStickers);
+    }
+}
+
 /// Ctrl+F searches the open chat, as in WhatsApp, the chat list when no
 /// chat is open, and the settings on the Settings page.
 fn find_action(app: &App) -> Action {
@@ -1082,6 +1151,7 @@ pub const SHORTCUTS: &[(&str, &str)] = &[
         "Walk the open chat's search results and jump to one",
     ),
     ("Ctrl+L", "Focus the message input"),
+    ("Ctrl+Shift+S", "Quick stickers, on their own"),
     ("Alt+↑ / Alt+↓", "Previous / next chat"),
     ("Ctrl+Shift+[ / ]", "Previous / next chat, as in WhatsApp"),
     ("Ctrl+1..9", "Open a chat by its position in the chat list"),
@@ -2695,5 +2765,99 @@ mod tests {
             assert!(press(&mut app, &ctx, key, Modifiers::NONE));
             assert!(app.actions.is_empty());
         }
+    }
+
+    /// Presses one key with the app's keys handled, as the window does.
+    fn press_key(
+        app: &mut App,
+        ctx: &egui::Context,
+        modifiers: Modifiers,
+        key: Key,
+    ) -> Vec<Action> {
+        app.actions.clear();
+        let mut output = ctx.run_ui(
+            egui::RawInput {
+                events: vec![
+                    egui::Event::ModifiersChanged(modifiers),
+                    egui::Event::Key {
+                        key,
+                        physical_key: None,
+                        pressed: true,
+                        repeat: false,
+                        modifiers,
+                    },
+                ],
+                ..Default::default()
+            },
+            |ui| handle(app, ui.ctx()),
+        );
+        output.textures_delta.clear();
+        std::mem::take(&mut app.actions)
+    }
+
+    /// The quick sticker picker is the keys' own while it is open: the arrows
+    /// walk the grid, Enter sends the highlighted sticker and closes it, and
+    /// Escape closes it without sending.
+    #[test]
+    fn ctrl_shift_s_opens_the_quick_stickers_and_the_arrows_walk_them() {
+        let root = tempfile::tempdir().unwrap();
+        let mut app = App::headless(
+            crate::paths::AppDirs::under(root.path()),
+            crate::settings::Settings::default(),
+        )
+        .0;
+        app.link = crate::backend::LinkStatus::Connected;
+        app.page = Page::Chats;
+        app.open_chat = Some("1@s.whatsapp.net".to_owned());
+        let ctx = egui::Context::default();
+        app.attach(&ctx);
+        let opened = press_key(
+            &mut app,
+            &ctx,
+            Modifiers::COMMAND | Modifiers::SHIFT,
+            Key::S,
+        );
+        assert!(
+            opened.contains(&Action::ToggleQuickStickers),
+            "Ctrl+Shift+S opens the quick sticker picker"
+        );
+        let stickers = [
+            std::path::PathBuf::from("/stickers/one.webp"),
+            std::path::PathBuf::from("/stickers/two.webp"),
+        ];
+        app.stickers = stickers.to_vec();
+        app.quick_stickers = Some(crate::model::QuickStickers::default());
+        // A row down is the second sticker, the last one there is.
+        let down = press_key(&mut app, &ctx, Modifiers::NONE, Key::ArrowDown);
+        assert!(down.is_empty(), "walking the grid sends nothing");
+        assert_eq!(app.quick_stickers.as_ref().expect("open").selected, 1);
+        let sent = press_key(&mut app, &ctx, Modifiers::NONE, Key::Enter);
+        assert!(sent.contains(&Action::SendSticker(stickers[1].clone())));
+        assert!(sent.contains(&Action::CloseQuickStickers));
+        let closed = press_key(&mut app, &ctx, Modifiers::NONE, Key::Escape);
+        assert_eq!(closed, [Action::CloseQuickStickers]);
+    }
+
+    /// The picker is not opened without a chat to send the sticker to, and
+    /// not with a dialog over the chat either.
+    #[test]
+    fn the_quick_sticker_keys_need_an_open_chat() {
+        let root = tempfile::tempdir().unwrap();
+        let mut app = App::headless(
+            crate::paths::AppDirs::under(root.path()),
+            crate::settings::Settings::default(),
+        )
+        .0;
+        app.link = crate::backend::LinkStatus::Connected;
+        app.page = Page::Chats;
+        let ctx = egui::Context::default();
+        app.attach(&ctx);
+        let pressed = press_key(
+            &mut app,
+            &ctx,
+            Modifiers::COMMAND | Modifiers::SHIFT,
+            Key::S,
+        );
+        assert!(pressed.is_empty(), "there is no chat to send a sticker to");
     }
 }

@@ -28,6 +28,7 @@ enum Overlay {
     Viewer,
     Editor,
     Sticker,
+    QuickStickers,
     Reactions,
     Picker,
 }
@@ -40,16 +41,18 @@ impl Overlay {
             Self::Viewer => super::image_preview::modal_id(),
             Self::Editor => super::image_editor::area_id(),
             Self::Sticker => super::image_preview::sticker_modal_id(),
+            Self::QuickStickers => super::sticker_quick::modal_id(),
             Self::Reactions => super::picker::reaction_area_id(),
             Self::Picker => super::picker::area_id(),
         }
     }
 
     /// Whether closing it gives focus back to its opener. The emoji picker
-    /// leaves the reader in the message field its emoji went to, and the
-    /// reaction picker on its message, as they always did.
+    /// leaves the reader in the message field its emoji went to, the quick
+    /// sticker picker in the field the sticker went to, and the reaction
+    /// picker on its message, as they always did.
     fn returns(&self) -> bool {
-        !matches!(self, Self::Reactions | Self::Picker)
+        !matches!(self, Self::Reactions | Self::Picker | Self::QuickStickers)
     }
 
     /// The control focus enters on, when it is not the first one: the
@@ -104,6 +107,8 @@ fn current(app: &App) -> Option<Overlay> {
         Some(Overlay::Viewer)
     } else if app.sticker_view.is_some() {
         Some(Overlay::Sticker)
+    } else if app.quick_stickers.is_some() {
+        Some(Overlay::QuickStickers)
     } else if let Some(dialog) = &app.dialog {
         Some(Overlay::Dialog(dialog.clone()))
     } else if app.reaction_target.is_some() {

@@ -2073,6 +2073,23 @@ pub enum StickerShelf {
     Add,
 }
 
+/// The quick sticker picker: a search field and a grid of stickers, with no
+/// tab strip, opened from the keys over the open chat. Only stickers appear
+/// here: no emoji and no GIFs. The stickers themselves are the app's, listed
+/// by [`crate::sticker_search::quick`] for whatever is in the field.
+#[derive(Clone, Debug, Default)]
+pub struct QuickStickers {
+    /// What was typed into the search field.
+    pub search: String,
+    /// Which of the listed stickers Enter sends.
+    pub selected: usize,
+    /// Whether the search field has taken focus since the picker opened.
+    pub focused: bool,
+    /// A key moved the selection: the grid brings that sticker into view
+    /// once, and leaves the scroll alone after that.
+    pub scroll_to: bool,
+}
+
 /// A square region of a picture, in its pixels.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct StickerCrop {
@@ -3066,6 +3083,13 @@ pub enum Action {
     },
     /// Toggles a picker tab.
     TogglePicker(PickerTab),
+    /// Opens the quick sticker picker over the open chat, or closes it. The
+    /// picker shows stickers alone, in one grid with a search field, so
+    /// sending one takes a keystroke and a word rather than a tab strip.
+    ToggleQuickStickers,
+    /// Closes the quick sticker picker and gives the message field its focus
+    /// back.
+    CloseQuickStickers,
     ClosePicker,
     /// Opens the full emoji picker to react to a message. `beside_menu` keeps
     /// the message's context menu open next to it, as when the picker comes

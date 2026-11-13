@@ -3922,6 +3922,20 @@ pub fn apply_flags(app: &mut App, page: Option<&str>) {
             }
             "sticker-search" => sticker_sample(app, crate::model::StickerShelf::Recent, "laugh"),
             "sticker-animated" => animated_sticker_sample(app),
+            // The quick picker: stickers alone, with the search field empty.
+            "sticker-quick" => {
+                sticker_sample(app, crate::model::StickerShelf::Recent, "");
+                app.picker = None;
+                app.quick_stickers = Some(crate::model::QuickStickers::default());
+            }
+            "sticker-quick-search" => {
+                sticker_sample(app, crate::model::StickerShelf::Recent, "");
+                app.picker = None;
+                app.quick_stickers = Some(crate::model::QuickStickers {
+                    search: "laugh".to_owned(),
+                    ..Default::default()
+                });
+            }
             "sticker-add" => sticker_sample(app, crate::model::StickerShelf::Add, ""),
             // A received sticker shown large, not yet a favorite.
             "sticker-view" => {
@@ -9786,6 +9800,8 @@ mod tests {
             "sticker-pack",
             "sticker-search",
             "sticker-animated",
+            "sticker-quick",
+            "sticker-quick-search",
             "sticker-add",
             "sticker-view",
             "sticker-pack-message",

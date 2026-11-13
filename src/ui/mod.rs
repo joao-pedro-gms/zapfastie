@@ -28,6 +28,7 @@ pub mod picker;
 pub mod polls;
 pub mod rail;
 pub mod settings;
+pub mod sticker_quick;
 pub mod update;
 mod voice_bar;
 pub mod widgets;
@@ -69,6 +70,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
         && app.image_preview.is_none()
         && app.picture_edit.is_none()
         && app.sticker_view.is_none()
+        && app.quick_stickers.is_none()
         && app.emoji_start.is_none()
         && app.mention_start.is_none()
         // Selection keeps egui's order so Tab can reach message checkboxes.
@@ -120,6 +122,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     dialogs::show(app, ctx);
     image_preview::show(app, ctx);
     image_preview::show_sticker(app, ctx);
+    sticker_quick::show(app, ctx);
     call::show(app, ctx);
     image_editor::show(app, ctx);
     overlay::finish(ctx);

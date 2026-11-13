@@ -5,7 +5,7 @@
 //! typing part of a pack's name lists that pack.
 
 use std::collections::{HashMap, HashSet};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::model::StickerPack;
 
@@ -43,6 +43,39 @@ pub struct Library<'a> {
     pub packs: &'a [StickerPack],
     pub received: &'a [PathBuf],
     pub emojis: &'a HashMap<PathBuf, Vec<String>>,
+}
+
+/// Whether a sticker can be sent from here. Native Lottie (`.was`) stickers
+/// are receive-only: the picker draws them, and the send path takes WebP
+/// bytes.
+fn sendable(path: &Path) -> bool {
+    path.extension().is_none_or(|extension| extension != "was")
+}
+
+/// Every sticker a picker can offer, favorites and recent ones first, then
+/// each pack, then the ones people sent us: each once.
+fn ordered(library: &Library<'_>) -> Vec<PathBuf> {
+    let mut seen = HashSet::new();
+    library
+        .favorites
+        .iter()
+        .chain(library.recent)
+        .chain(library.packs.iter().flat_map(|pack| &pack.stickers))
+        .chain(library.received)
+        .filter(|path| seen.insert((*path).clone()))
+        .cloned()
+        .collect()
+}
+
+/// The quick picker's list: every sendable sticker, or the ones matching
+/// `query`, in the same order.
+pub fn quick(library: &Library<'_>, query: &str) -> Vec<PathBuf> {
+    let found = if query.trim().is_empty() {
+        ordered(library)
+    } else {
+        search(library, query)
+    };
+    found.into_iter().filter(|path| sendable(path)).collect()
 }
 
 /// Stickers matching `query`, favorites and recent ones first, received ones
@@ -190,5 +223,59 @@ mod tests {
     #[test]
     fn a_sticker_only_in_received_is_found() {
         assert_eq!(library_search("🐱"), vec!["/received/cat.webp"]);
+    }
+
+    /// The quick picker's list: the same library, with nothing Lottie in it,
+    /// each sticker once, favorites first and received last.
+    fn library_quick(query: &str) -> Vec<String> {
+        let emojis = HashMap::new();
+        let favorites = [
+            PathBuf::from("/fav/laugh.webp"),
+            PathBuf::from("/fav/lottie.was"),
+        ];
+        let recent = [
+            PathBuf::from("/recent/frog.webp"),
+            PathBuf::from("/fav/laugh.webp"),
+        ];
+        let packs = [pack("Ducks", &["/packs/Ducks/1.webp", "/recent/frog.webp"])];
+        let received = [PathBuf::from("/received/cat.webp")];
+        quick(
+            &Library {
+                recent: &recent,
+                favorites: &favorites,
+                packs: &packs,
+                received: &received,
+                emojis: &emojis,
+            },
+            query,
+        )
+        .into_iter()
+        .map(|path| path.display().to_string())
+        .collect()
+    }
+
+    #[test]
+    fn the_quick_list_starts_with_favorites_and_leaves_lottie_out() {
+        assert_eq!(
+            library_quick(""),
+            vec![
+                "/fav/laugh.webp",
+                // Lottie is receive-only, so the favorite is not offered.
+                "/recent/frog.webp",
+                "/packs/Ducks/1.webp",
+                "/received/cat.webp",
+            ]
+        );
+        // A blank query lists everything, as the field starts out.
+        assert_eq!(library_quick("   "), library_quick(""));
+    }
+
+    #[test]
+    fn a_quick_search_keeps_the_order_and_the_lottie_rule() {
+        // The pack's name matches, so its stickers come in their own order.
+        assert_eq!(
+            library_quick("duck"),
+            vec!["/packs/Ducks/1.webp", "/recent/frog.webp"]
+        );
     }
 }
