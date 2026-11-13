@@ -22,6 +22,7 @@ pub(crate) use encryption::open_own_database;
 #[cfg(test)]
 pub(crate) use encryption::open_own_database_in;
 pub use encryption::{archive_key_identity, copy_archive_key, forget_archive_key};
+pub(crate) use encryption::{forget_secret, save_secret, stored_secret};
 mod favorites;
 pub use favorites::Favorite;
 mod labels;

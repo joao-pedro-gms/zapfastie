@@ -94,6 +94,10 @@ getrandom = "0.4"
 zeroize = "1"
 rand = "0.10"
 # The updater's HTTP client, with the proxy setting.
+# Mail: the account the reader configures is read over IMAP and written over
+# SMTP, through rustls streams the app already carries, and MIME is parsed
+# here rather than by a web view.
+mail-parser = { version = "1", default-features = false }
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "socks"] }
 qrcode = { version = "0.14", default-features = false }
 # Downloads profile pictures. The protocol library already includes this crate

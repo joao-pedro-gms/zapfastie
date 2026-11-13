@@ -10,6 +10,9 @@ use zeroize::Zeroizing;
 
 const HEADER: &[u8; 16] = b"SQLite format 3\0";
 
+/// The keyring service every secret of this app is filed under.
+const SERVICE: &str = "rocks.zapfastie.ZapFastie";
+
 fn plaintext(path: &Path) -> Result<bool> {
     let mut file = match fs::File::open(path) {
         Ok(file) => file,
@@ -34,7 +37,7 @@ fn key_for_in(path: &Path, store: &dyn CredentialStoreApi) -> Result<Zeroizing<[
     let parent = path.parent().context("Archive has no parent directory")?;
     fs::create_dir_all(parent)?;
     let entry = store
-        .build("rocks.zapfastie.ZapFastie", &identity_for(parent)?, None)
+        .build(SERVICE, &identity_for(parent)?, None)
         .map_err(keyring_error)
         .context("The OS keyring could not open ZapFastie's archive key")?;
     key_from_entry(path, &entry)
@@ -67,11 +70,7 @@ fn copy_archive_key_in(
         return Ok(());
     }
     let old_entry = store
-        .build(
-            "rocks.zapfastie.ZapFastie",
-            &identity_for(old_parent)?,
-            None,
-        )
+        .build(SERVICE, &identity_for(old_parent)?, None)
         .map_err(keyring_error)
         .context("The OS keyring could not open ZapFastie's archive key")?;
     let key = match old_entry.get_secret() {
@@ -97,11 +96,7 @@ fn copy_archive_key_in(
         }
     };
     let new_entry = store
-        .build(
-            "rocks.zapfastie.ZapFastie",
-            &identity_for(new_parent)?,
-            None,
-        )
+        .build(SERVICE, &identity_for(new_parent)?, None)
         .map_err(keyring_error)
         .context("The OS keyring could not open ZapFastie's archive key")?;
     new_entry
@@ -122,11 +117,63 @@ fn copy_archive_key_in(
     Ok(())
 }
 
+/// A secret the app keeps in the OS keyring under `identity`, such as a mail
+/// account's password. `None` when the keyring has no such entry.
+pub(crate) fn stored_secret(identity: &str) -> Result<Option<Zeroizing<Vec<u8>>>> {
+    let store = platform_store()?;
+    let entry = store
+        .build(SERVICE, identity, None)
+        .map_err(keyring_error)
+        .context("The OS keyring could not be opened")?;
+    match entry.get_secret() {
+        Ok(secret) => Ok(Some(Zeroizing::new(secret))),
+        Err(keyring_core::Error::NoEntry) => Ok(None),
+        Err(error) => Err(keyring_error(error)).context("Unlock your OS keyring and try again"),
+    }
+}
+
+/// Keeps a secret in the OS keyring under `identity`, and reads it back before
+/// anything relies on it: a password that did not survive the store would
+/// fail on the next connection instead of now.
+pub(crate) fn save_secret(identity: &str, secret: &[u8]) -> Result<()> {
+    let store = platform_store()?;
+    let entry = store
+        .build(SERVICE, identity, None)
+        .map_err(keyring_error)
+        .context("The OS keyring could not be opened")?;
+    entry
+        .set_secret(secret)
+        .map_err(keyring_error)
+        .context("Could not save the secret in the OS keyring")?;
+    let saved = Zeroizing::new(
+        entry
+            .get_secret()
+            .map_err(keyring_error)
+            .context("Could not verify the saved secret")?,
+    );
+    ensure!(
+        saved.as_slice() == secret,
+        "The OS keyring did not retain the secret"
+    );
+    Ok(())
+}
+
+/// Drops a secret from the OS keyring. A missing entry is not an error.
+pub(crate) fn forget_secret(identity: &str) -> Result<()> {
+    let entry = platform_store()?
+        .build(SERVICE, identity, None)
+        .map_err(keyring_error)?;
+    match entry.delete_credential() {
+        Ok(()) | Err(keyring_core::Error::NoEntry) => Ok(()),
+        Err(error) => Err(keyring_error(error)),
+    }
+}
+
 /// Deletes the keyring entry of an archive folder that is gone for good,
 /// such as a removed account's. Never call it while the archive exists.
 pub fn forget_archive_key(identity: &str) -> Result<()> {
     let entry = platform_store()?
-        .build("rocks.zapfastie.ZapFastie", identity, None)
+        .build(SERVICE, identity, None)
         .map_err(keyring_error)?;
     match entry.delete_credential() {
         Ok(()) | Err(keyring_core::Error::NoEntry) => Ok(()),
