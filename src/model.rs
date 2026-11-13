@@ -2029,6 +2029,8 @@ pub enum Page {
     Chats,
     /// Every call of the account, newest first.
     Calls,
+    /// Notes kept on this computer, beside the chats and, later, the mail.
+    Notes,
     Settings,
     Wallpaper,
 }
@@ -3080,6 +3082,25 @@ pub enum Action {
         width: usize,
         height: usize,
         rgba: Vec<u8>,
+    },
+    /// Opens the notes tab's note `id` in the reader beside its list.
+    OpenNote(i64),
+    /// Closes the note the reader shows, back to the list.
+    CloseNote,
+    /// Reads the notes again for the search text as it stands.
+    RefreshNotes,
+    /// Puts the keys in the notes tab's search field.
+    FocusNotesSearch,
+    /// Starts a note and opens it, ready to type.
+    NewNote,
+    /// Writes the note in the reader with the text as it stands.
+    SaveNote,
+    /// Removes a note, and what it cited.
+    DeleteNote(i64),
+    /// Pins a note to the top of the list, or unpins it.
+    PinNote {
+        id: i64,
+        pinned: bool,
     },
     /// Toggles a picker tab.
     TogglePicker(PickerTab),

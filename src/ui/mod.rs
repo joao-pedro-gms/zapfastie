@@ -22,6 +22,7 @@ pub mod lock;
 pub mod login;
 pub mod message_info;
 pub mod new_group;
+pub mod notes;
 pub(crate) mod overlay;
 pub mod pane;
 pub mod picker;
@@ -140,6 +141,7 @@ fn list_pane_only(app: &App) -> bool {
     match app.page {
         Page::Chats => app.current_chat().is_none(),
         Page::Calls => app.current_chat().is_none() || !app.call_picked(),
+        Page::Notes => false,
         Page::Settings | Page::Wallpaper => false,
     }
 }
@@ -174,9 +176,12 @@ fn main_view(app: &mut App, ui: &mut egui::Ui, list_only: bool) {
         title_strip(app, ui);
     }
     let rail_drawn = !narrow(ui.ctx()) && !crowded;
+    // The notes tab keeps the rail and its own columns: the chat list and the
+    // chats' avatars have nothing to say there.
+    let notes = app.page == Page::Notes;
     if rail_drawn {
-        rail::show(app, ui, !full_list);
-        if full_list {
+        rail::show(app, ui, !full_list && !notes);
+        if full_list && !notes {
             chats::show(app, ui);
         }
     }
@@ -195,6 +200,7 @@ fn main_view(app: &mut App, ui: &mut egui::Ui, list_only: bool) {
             match app.page {
                 Page::Settings => settings::show(app, ui),
                 Page::Chats => conversation::show(app, ui),
+                Page::Notes => notes::show(app, ui),
                 // The open chat stays beside the call history.
                 Page::Calls if app.current_chat().is_some() => conversation::show(app, ui),
                 Page::Calls => {

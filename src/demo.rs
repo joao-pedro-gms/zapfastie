@@ -1003,6 +1003,69 @@ pub fn populate(app: &mut App) {
     app.focus_composer = false;
 }
 
+/// The notes tab on one of its pages: the list with a few notes, an empty
+/// store, or a note open in the reader. The store lives in memory, so the
+/// demo and the headless layout tests need no keyring.
+fn notes_sample(app: &mut App, part: &str) {
+    use crate::notes::{Note, NoteStore};
+    app.page = crate::model::Page::Notes;
+    let store = NoteStore::in_memory().expect("an in-memory notes store");
+    if part != "notes-empty" {
+        let written = [
+            (
+                "Rust Berlin",
+                "# Rust Berlin\n\nThursday, 19:00, at c-base. Ada is bringing the projector.\n\nThings to ask:\n- who signs the lease\n- the sticker budget",
+                true,
+            ),
+            (
+                "Lease renewal",
+                "# Lease renewal\n\nReply to Frau Weber before the 20th. The rent goes up by 3 percent, and the deposit stays the same.",
+                false,
+            ),
+            (
+                "Reading list",
+                "# Reading list\n\n- The Soul of a New Machine\n- A Philosophy of Software Design\n- The Making of Prince of Persia",
+                false,
+            ),
+            (
+                "Recipe: the good one",
+                "# Recipe\n\n400 g flour, 250 ml water, 8 g salt, 2 g yeast. Fold every 40 minutes, four times.",
+                false,
+            ),
+        ];
+        let mut ids = Vec::new();
+        for (title, body, pinned) in written {
+            let mut note = Note {
+                title: title.to_owned(),
+                body: body.to_owned(),
+                pinned,
+                ..Note::new()
+            };
+            store.save(&mut note).expect("saves a note");
+            ids.push(note.id);
+        }
+        // The first note cites the message the group was talking about.
+        store
+            .link(
+                ids[0],
+                &crate::notes::NoteRef::Message {
+                    chat: SAMPLES[1].id.to_owned(),
+                    message: "group-reply".to_owned(),
+                },
+            )
+            .expect("links a message");
+    }
+    app.notes = Some(store);
+    app.notes_loaded = false;
+    app.open_note = None;
+    app.refresh_notes();
+    if part == "note-open"
+        && let Some(first) = app.notes_list.first()
+    {
+        app.actions.push(crate::model::Action::OpenNote(first.id));
+    }
+}
+
 /// A WhatsApp sticker pack shared by Ada, and with `open`, its stickers in
 /// the dialog that adds it.
 fn shared_pack_sample(app: &mut App, open: bool) {
@@ -3522,6 +3585,9 @@ pub fn apply_flags(app: &mut App, page: Option<&str>) {
                 app.reply_to = Some("ada-photo".into());
                 app.focus_composer = true;
             }
+            // The notes tab: a store of its own, in memory so a screenshot
+            // and the layout tests need no keyring to draw it.
+            "notes" | "notes-empty" | "note-open" => notes_sample(app, part),
             // What Arrow Up does in an empty composer when the chat ends on
             // someone else's message: the composer quotes it. The group is
             // the sample where a member spoke last.
@@ -9816,6 +9882,9 @@ mod tests {
             "sticker-quick",
             "sticker-quick-search",
             "quote-previous",
+            "notes",
+            "notes-empty",
+            "note-open",
             "sticker-add",
             "sticker-view",
             "sticker-pack-message",
@@ -17982,7 +18051,15 @@ mod tests {
             .filter(|node| node.label() == Some("Mute notifications"))
             .map(|node| node.toggled() == Some(egui::accesskit::Toggled::True))
             .collect();
-        assert_eq!(bells, [false, true], "one bell per account, the second on");
+        // The tree hands its nodes back in the map's order, not the
+        // switcher's, so the bells are counted rather than read in sequence;
+        // the row that says it is muted names the account below.
+        assert_eq!(bells.len(), 2, "one bell per account: {bells:?}");
+        assert_eq!(
+            bells.iter().filter(|on| **on).count(),
+            1,
+            "exactly one account is muted: {bells:?}"
+        );
         // Only the muted account's row says so, not the one on screen.
         let said: Vec<_> = nodes
             .iter()
@@ -22844,6 +22921,7 @@ mod tests {
                 Stop::Messages,
                 Stop::Chats,
                 Stop::Calls,
+                Stop::Notes,
                 Stop::Starred,
                 Stop::Archived,
                 Stop::Locked,
@@ -22961,6 +23039,7 @@ mod tests {
                         Stop::Messages,
                         Stop::Chats,
                         Stop::Calls,
+                        Stop::Notes,
                         Stop::Starred,
                         Stop::Archived,
                         Stop::Locked,
@@ -25857,6 +25936,7 @@ mod rail_tests {
                     let mut expected = vec![
                         Stop::Chats,
                         Stop::Calls,
+                        Stop::Notes,
                         Stop::Starred,
                         Stop::Archived,
                         Stop::Locked,

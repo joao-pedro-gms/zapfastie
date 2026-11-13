@@ -39,6 +39,7 @@ pub mod model;
 pub mod motion;
 pub mod nav;
 pub mod new_group;
+pub mod notes;
 pub mod notify;
 pub mod opener;
 pub mod paths;

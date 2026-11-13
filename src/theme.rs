@@ -937,6 +937,7 @@ fastframe_icons::icons! {
         Monitor => lucide "monitor",
         Moon => lucide "moon",
         Music => "music",
+        Notebook => "notebook",
         PanelLeft => lucide "panel-left",
         Paperclip => "paperclip",
         Pause => lucide "pause",

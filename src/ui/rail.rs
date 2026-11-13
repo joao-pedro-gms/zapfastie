@@ -68,6 +68,7 @@ pub enum Destination {
     Archived,
     Locked,
     Settings,
+    Notes,
 }
 
 impl Destination {
@@ -81,6 +82,7 @@ impl Destination {
             Self::Archived => chats && app.show_archived,
             Self::Locked => chats && app.locked_folder_open(),
             Self::Settings => matches!(app.page, Page::Settings | Page::Wallpaper),
+            Self::Notes => app.page == Page::Notes,
         }
     }
 
@@ -146,6 +148,11 @@ impl Destination {
                 }
             }
             Self::Settings => actions.push(Action::ToggleSettings),
+            Self::Notes => {
+                if app.page != Page::Notes {
+                    actions.push(Action::Open(Page::Notes));
+                }
+            }
         }
         actions
     }
@@ -210,7 +217,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui, hidden: bool) {
                 // the content keeps its minimum height and scrolls instead
                 // of leaving the bottom buttons beyond the window.
                 ui.set_height(height);
-                for destination in [Destination::Chats, Destination::Calls] {
+                for destination in [Destination::Chats, Destination::Calls, Destination::Notes] {
                     destination_button(app, ui, &palette, destination, CELL);
                 }
                 if hidden {
@@ -329,6 +336,11 @@ fn destination_button(
             gettext(app.locale, "Locked").into_owned(),
         ),
         // Same as before the rail: the label says what the click does now.
+        Destination::Notes => (
+            Icon::Notebook,
+            Stop::Notes,
+            gettext(app.locale, "Notes").into_owned(),
+        ),
         Destination::Settings => (
             Icon::Settings,
             Stop::Settings,

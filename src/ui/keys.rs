@@ -277,6 +277,9 @@ pub fn handle(app: &mut App, ctx: &egui::Context) {
             actions.push(Action::CloseDialog);
         } else if app.recording.is_some() {
             actions.push(Action::CancelRecording);
+        } else if app.page == Page::Notes && app.open_note.is_some() {
+            // The note goes back to the list, and Escape again leaves the tab.
+            actions.push(Action::CloseNote);
         } else if app.picker.is_some() || app.reaction_target.is_some() {
             actions.push(Action::ClosePicker);
         } else if app.selection.is_some() {
@@ -1066,6 +1069,7 @@ fn quick_sticker_keys(app: &mut App, ctx: &egui::Context) {
 fn find_action(app: &App) -> Action {
     match app.page {
         Page::Settings => Action::FocusSettingsSearch,
+        Page::Notes => Action::FocusNotesSearch,
         Page::Chats | Page::Calls if app.open_chat.is_some() => Action::OpenChatSearch,
         _ => Action::FocusSearch,
     }

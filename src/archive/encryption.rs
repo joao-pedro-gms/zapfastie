@@ -25,9 +25,14 @@ fn plaintext(path: &Path) -> Result<bool> {
 }
 
 pub(super) fn key_for(path: &Path) -> Result<Zeroizing<[u8; 32]>> {
+    key_for_in(path, &*platform_store()?)
+}
+
+/// [`key_for`] against a chosen credential store, for tests: the platform's
+/// own keyring is not there on the machine that builds this.
+fn key_for_in(path: &Path, store: &dyn CredentialStoreApi) -> Result<Zeroizing<[u8; 32]>> {
     let parent = path.parent().context("Archive has no parent directory")?;
     fs::create_dir_all(parent)?;
-    let store = platform_store()?;
     let entry = store
         .build("rocks.zapfastie.ZapFastie", &identity_for(parent)?, None)
         .map_err(keyring_error)
@@ -277,6 +282,26 @@ fn unlock(connection: Connection, key: &[u8; 32]) -> Result<Connection> {
         .context("The archive could not be unlocked with its OS keyring key")?;
     connection.pragma_update(None, "temp_store", "MEMORY")?;
     Ok(connection)
+}
+
+/// Opens one of the app's own small databases, such as the notes one, under a
+/// key of its own in the OS keyring. It is the archive's [`open`] for a folder
+/// that belongs to no account: same keyring, same encryption, same migration
+/// of a database written before it was encrypted.
+pub(crate) fn open_own_database(path: &Path) -> Result<Connection> {
+    let key = key_for(path)?;
+    open(path, &key)
+}
+
+/// [`open_own_database`] against a chosen credential store, so a test can keep
+/// its key in memory instead of asking the machine for a keyring.
+#[cfg(test)]
+pub(crate) fn open_own_database_in(
+    path: &Path,
+    store: &dyn CredentialStoreApi,
+) -> Result<Connection> {
+    let key = key_for_in(path, store)?;
+    open(path, &key)
 }
 
 fn private_file(path: &Path) -> Result<()> {

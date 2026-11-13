@@ -606,6 +606,27 @@ pub struct App {
     pub picker_focus: bool,
     /// The quick sticker picker, when it is open.
     pub quick_stickers: Option<QuickStickers>,
+    /// The notes of this computer, opened the first time the tab is used.
+    pub notes: Option<crate::notes::NoteStore>,
+    /// Why the notes could not be opened, shown in the tab rather than
+    /// stopping the app: a locked keyring must not cost the reader their chats.
+    pub notes_error: Option<String>,
+    /// What the notes tab's list shows, as of the last refresh.
+    pub notes_list: Vec<crate::notes::NoteSummary>,
+    /// Whether the notes list was filled since the app started.
+    pub notes_loaded: bool,
+    /// The note the tab reads, body and all.
+    pub open_note: Option<crate::notes::Note>,
+    /// The search text of the notes tab.
+    pub notes_search: String,
+    /// One shot: the notes tab's search field takes the keys when it is next
+    /// drawn.
+    pub notes_focus: bool,
+    /// The text of the note being read, kept apart from the saved copy until
+    /// a change is written.
+    pub note_draft: String,
+    /// One shot: the note's editor takes the keys when it is next drawn.
+    pub note_editing: bool,
     /// Message the full emoji reaction picker is targeting.
     pub reaction_target: Option<(ChatId, String)>,
     /// Control that opened the reaction picker.
@@ -1640,6 +1661,15 @@ impl App {
             picker_recent: None,
             picker_focus: false,
             quick_stickers: None,
+            notes: None,
+            notes_error: None,
+            notes_list: Vec::new(),
+            notes_loaded: false,
+            open_note: None,
+            notes_search: String::new(),
+            notes_focus: false,
+            note_draft: String::new(),
+            note_editing: false,
             reaction_target: None,
             reaction_anchor: None,
             reaction_beside_menu: false,
@@ -6401,6 +6431,43 @@ impl App {
         }
     }
 
+    /// Opens the notes database the first time it is needed. A keyring that
+    /// will not open is remembered as the tab's error, not raised: the chats
+    /// keep working without notes.
+    fn open_notes(&mut self) -> Option<&crate::notes::NoteStore> {
+        if self.notes.is_none() && self.notes_error.is_none() {
+            let path = self.dirs.state.join("notes").join("notes.db");
+            match crate::notes::NoteStore::open(&path) {
+                Ok(store) => self.notes = Some(store),
+                Err(error) => self.notes_error = Some(format!("{error}")),
+            }
+        }
+        self.notes.as_ref()
+    }
+
+    /// Reads the notes list for the search text as it stands, and forgets the
+    /// note the reader had open when it is no longer in the list.
+    pub(crate) fn refresh_notes(&mut self) {
+        let search = self.notes_search.clone();
+        let found = match self.open_notes() {
+            Some(store) => store.search(&search),
+            None => return,
+        };
+        match found {
+            Ok(list) => {
+                self.notes_list = list;
+                self.notes_error = None;
+            }
+            Err(error) => self.notes_error = Some(format!("{error}")),
+        }
+        self.notes_loaded = true;
+        if let Some(note) = &self.open_note
+            && !self.notes_list.iter().any(|summary| summary.id == note.id)
+        {
+            self.open_note = None;
+        }
+    }
+
     /// What Arrow Up acts on in an empty composer: the newest message of the
     /// open chat that the key can act on, ours to edit or someone else's to
     /// quote. A chat where the last word was the other person's quotes it,
@@ -7462,6 +7529,11 @@ impl App {
             }
             Action::Open(page) => {
                 let opens_chats = page == Page::Chats;
+                // The notes tab reads its list as it opens, from wherever the
+                // reader left the search field.
+                if page == Page::Notes && self.page != Page::Notes {
+                    self.refresh_notes();
+                }
                 // Privacy can change on the phone at any time, and nothing
                 // announces it: read it again whenever Settings opens.
                 if page == Page::Settings && self.page != Page::Settings && self.is_connected() {
@@ -8794,6 +8866,119 @@ impl App {
                         self.actions.push(Action::SearchGifs(String::new()));
                     }
                 }
+            }
+            Action::OpenNote(id) => {
+                let read = match self.open_notes() {
+                    Some(store) => store.get(id),
+                    None => return,
+                };
+                match read {
+                    Ok(Some(note)) => {
+                        self.note_draft = note.body.clone();
+                        self.open_note = Some(note);
+                        // Typing follows the click, as it does in a text
+                        // editor: the note is where the keys go.
+                        self.note_editing = true;
+                    }
+                    Ok(None) => {
+                        self.note_draft.clear();
+                        self.open_note = None;
+                    }
+                    Err(error) => self.notes_error = Some(format!("{error}")),
+                }
+            }
+            Action::CloseNote => {
+                self.open_note = None;
+                self.note_draft.clear();
+            }
+            Action::NewNote => {
+                let mut note = crate::notes::Note::new();
+                // The row exists before the first keystroke, so the list has
+                // something to open and the note has an id to be written by.
+                let created = match self.open_notes() {
+                    Some(store) => store.save(&mut note),
+                    None => return,
+                };
+                match created {
+                    Ok(()) => {
+                        self.note_draft.clear();
+                        self.open_note = Some(note);
+                        self.note_editing = true;
+                        self.refresh_notes();
+                    }
+                    Err(error) => self.notes_error = Some(format!("{error}")),
+                }
+            }
+            Action::SaveNote => {
+                let Some(mut note) = self.open_note.clone() else {
+                    return;
+                };
+                note.body = self.note_draft.clone();
+                note.title = crate::notes::Note::title_from(&note.body);
+                let written = match self.open_notes() {
+                    Some(store) => store.save(&mut note),
+                    None => return,
+                };
+                match written {
+                    Ok(()) => {
+                        self.notes_error = None;
+                        self.open_note = Some(note);
+                        // The row's title and excerpt follow what was typed.
+                        self.refresh_notes();
+                    }
+                    Err(error) => self.notes_error = Some(format!("{error}")),
+                }
+            }
+            Action::DeleteNote(id) => {
+                let deleted = match self.open_notes() {
+                    Some(store) => store.delete(id),
+                    None => return,
+                };
+                match deleted {
+                    Ok(()) => {
+                        if self.open_note.as_ref().is_some_and(|note| note.id == id) {
+                            self.open_note = None;
+                            self.note_draft.clear();
+                        }
+                        self.refresh_notes();
+                    }
+                    Err(error) => self.notes_error = Some(format!("{error}")),
+                }
+            }
+            Action::PinNote { id, pinned } => {
+                let read = match self.open_notes() {
+                    Some(store) => store.get(id),
+                    None => return,
+                };
+                let mut note = match read {
+                    Ok(Some(note)) => note,
+                    Ok(None) => return,
+                    Err(error) => {
+                        self.notes_error = Some(format!("{error}"));
+                        return;
+                    }
+                };
+                note.pinned = pinned;
+                let written = match self.open_notes() {
+                    Some(store) => store.save(&mut note),
+                    None => return,
+                };
+                match written {
+                    Ok(()) => {
+                        if self.open_note.as_ref().is_some_and(|open| open.id == id) {
+                            self.open_note = Some(note);
+                        }
+                        self.refresh_notes();
+                    }
+                    Err(error) => self.notes_error = Some(format!("{error}")),
+                }
+            }
+            Action::RefreshNotes => self.refresh_notes(),
+            Action::FocusNotesSearch => {
+                if self.page != Page::Notes {
+                    self.actions.push(Action::Open(Page::Notes));
+                }
+                self.notes_focus = true;
             }
             Action::ToggleQuickStickers => {
                 if self.quick_stickers.is_some() {
@@ -14933,6 +15118,76 @@ mod tests {
             );
             assert!(!app.reaction_from_list, "{close}: the flag is gone");
         }
+    }
+
+    /// A note is created, written, pinned and deleted through the tab's
+    /// actions, and the list follows each change.
+    #[test]
+    fn notes_are_created_written_pinned_and_deleted() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, _events) =
+            App::headless(AppDirs::under(directory.path()), Settings::default());
+        app.notes = Some(crate::notes::NoteStore::in_memory().expect("a store"));
+        let ctx = egui::Context::default();
+        app.apply(Action::Open(Page::Notes), &ctx);
+        app.apply(Action::NewNote, &ctx);
+        let id = app.open_note.as_ref().expect("a new note").id;
+        assert_eq!(app.notes_list.len(), 1, "the row exists before typing");
+        // Typing writes as it goes, and the title is the first line.
+        app.note_draft = "Bread\nflour, water, salt".to_owned();
+        app.apply(Action::SaveNote, &ctx);
+        let saved = app.open_note.as_ref().expect("the note stays open");
+        assert_eq!(saved.body, "Bread\nflour, water, salt");
+        assert_eq!(saved.title, "Bread");
+        assert_eq!(app.notes_list[0].title, "Bread", "the row follows the text");
+        let stored = app
+            .notes
+            .as_ref()
+            .unwrap()
+            .get(id)
+            .expect("reads")
+            .expect("the note is on disk");
+        assert_eq!(stored.body, "Bread\nflour, water, salt");
+        app.apply(Action::PinNote { id, pinned: true }, &ctx);
+        assert!(app.notes_list[0].pinned);
+        app.apply(Action::DeleteNote(id), &ctx);
+        assert!(app.notes_list.is_empty());
+        assert!(app.open_note.is_none(), "a deleted note closes");
+        assert!(app.notes.as_ref().unwrap().get(id).unwrap().is_none());
+    }
+
+    /// The notes tab reads its list as it opens, opens a note into the
+    /// reader, and closes the note the search leaves out of the list.
+    #[test]
+    fn the_notes_tab_reads_its_list_and_opens_a_note() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, _events) =
+            App::headless(AppDirs::under(directory.path()), Settings::default());
+        let store = crate::notes::NoteStore::in_memory().expect("an in-memory store");
+        let mut note = crate::notes::Note {
+            title: "First".to_owned(),
+            body: "milk".to_owned(),
+            ..crate::notes::Note::new()
+        };
+        store.save(&mut note).expect("saves");
+        app.notes = Some(store);
+        let ctx = egui::Context::default();
+        app.apply(Action::Open(Page::Notes), &ctx);
+        assert_eq!(app.notes_list.len(), 1, "the list is read as the tab opens");
+        assert_eq!(app.notes_list[0].title, "First");
+        app.apply(Action::OpenNote(note.id), &ctx);
+        assert_eq!(
+            app.open_note.as_ref().map(|note| note.body.as_str()),
+            Some("milk")
+        );
+        app.apply(Action::CloseNote, &ctx);
+        assert!(app.open_note.is_none());
+        // A search that leaves the open note out closes it.
+        app.apply(Action::OpenNote(note.id), &ctx);
+        app.notes_search = "nothing matches this".to_owned();
+        app.apply(Action::RefreshNotes, &ctx);
+        assert!(app.notes_list.is_empty());
+        assert!(app.open_note.is_none());
     }
 
     /// Arrow Up in an empty composer takes the chat's newest message: our own
