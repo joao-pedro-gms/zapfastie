@@ -425,11 +425,12 @@ pub fn handle(app: &mut App, ctx: &egui::Context) {
             }
         }
     }
-    // Arrow Up in an empty, focused composer edits the user's most recent
-    // message, as WhatsApp does. The key keeps its normal meaning everywhere
-    // else: it navigates open overlays and moves the cursor in a non-empty
-    // field.
-    let edit_previous = composer_focused
+    // Arrow Up in an empty, focused composer acts on the chat's newest
+    // message: it edits one of ours, as WhatsApp does, and quotes one of
+    // theirs, which is the faster way to answer what was just said. The key
+    // keeps its normal meaning everywhere else: it navigates open overlays
+    // and moves the cursor in a non-empty field.
+    let previous_message = composer_focused
         && app.chat_view()
         && app.open_chat.is_some()
         && app
@@ -447,8 +448,8 @@ pub fn handle(app: &mut App, ctx: &egui::Context) {
         && app.recording.is_none()
         && !menu_open
         && ctx.input_mut(|input| take_plain(input, Key::ArrowUp));
-    if let Some(id) = edit_previous.then(|| app.previous_own_editable()).flatten() {
-        actions.push(Action::Edit(id));
+    if previous_message && let Some(action) = app.previous_message_action() {
+        actions.push(action);
     }
     app.actions.extend(actions);
 }
@@ -1157,7 +1158,10 @@ pub const SHORTCUTS: &[(&str, &str)] = &[
     ("Ctrl+1..9", "Open a chat by its position in the chat list"),
     ("Ctrl+Shift+1", "Chats"),
     ("Ctrl+Shift+2", "Calls"),
-    ("↑", "Edit the previous message (when the input is empty)"),
+    (
+        "↑",
+        "Edit your last message, or quote theirs (when the input is empty)",
+    ),
     ("Enter", "Send (Shift+Enter for a new line)"),
     (
         "Escape",
@@ -2859,5 +2863,74 @@ mod tests {
             Key::S,
         );
         assert!(pressed.is_empty(), "there is no chat to send a sticker to");
+    }
+
+    /// One message of the open chat, as the tests below lay the chat out.
+    fn line(chat: &str, id: &str, from_me: bool, timestamp: i64) -> crate::model::Message {
+        crate::model::Message {
+            id: id.into(),
+            chat: chat.into(),
+            sender: chat.into(),
+            sender_name: None,
+            from_me,
+            timestamp,
+            content: crate::model::Content::text(id),
+            status: crate::model::Delivery::None,
+            delivered_at: None,
+            read_at: None,
+            quoted: None,
+            reactions: Vec::new(),
+            edited: false,
+            mentions: Vec::new(),
+            forwarded: false,
+            thumbnail: None,
+            history_order: None,
+        }
+    }
+
+    /// Arrow Up in an empty, focused composer quotes what the other person
+    /// said last, and edits our own text when that is what the chat ends on.
+    #[test]
+    fn arrow_up_quotes_the_newest_message_when_it_is_not_ours() {
+        let root = tempfile::tempdir().unwrap();
+        let mut app = App::headless(
+            crate::paths::AppDirs::under(root.path()),
+            crate::settings::Settings::default(),
+        )
+        .0;
+        app.link = crate::backend::LinkStatus::Connected;
+        app.page = Page::Chats;
+        let chat = "1@s.whatsapp.net";
+        app.chats.push(Chat::new(chat.into(), "Peer".into()));
+        app.open_chat = Some(chat.into());
+        let now = crate::util::now();
+        app.conversations
+            .entry(chat.into())
+            .or_default()
+            .messages
+            .extend([
+                line(chat, "mine", true, now - 20),
+                line(chat, "theirs", false, now),
+            ]);
+        let ctx = egui::Context::default();
+        app.attach(&ctx);
+        let composer = egui::Id::new("composer-text");
+        ctx.memory_mut(|memory| memory.request_focus(composer));
+        let quoted = press_key(&mut app, &ctx, Modifiers::NONE, Key::ArrowUp);
+        assert_eq!(
+            quoted,
+            [Action::Reply("theirs".into())],
+            "the message they sent last is quoted"
+        );
+        // The chat ending on our own text still opens it for editing.
+        app.conversations.get_mut(chat).unwrap().messages.push(line(
+            chat,
+            "mine-last",
+            true,
+            now + 10,
+        ));
+        ctx.memory_mut(|memory| memory.request_focus(composer));
+        let edited = press_key(&mut app, &ctx, Modifiers::NONE, Key::ArrowUp);
+        assert_eq!(edited, [Action::Edit("mine-last".into())]);
     }
 }

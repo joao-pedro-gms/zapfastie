@@ -3522,6 +3522,19 @@ pub fn apply_flags(app: &mut App, page: Option<&str>) {
                 app.reply_to = Some("ada-photo".into());
                 app.focus_composer = true;
             }
+            // What Arrow Up does in an empty composer when the chat ends on
+            // someone else's message: the composer quotes it. The group is
+            // the sample where a member spoke last.
+            "quote-previous" => {
+                app.open_chat = Some(SAMPLES[1].id.to_owned());
+                app.composer.clear();
+                app.pending.clear();
+                app.focus_composer = true;
+                // The action the key pushes, queued as the key would.
+                if let Some(action) = app.previous_message_action() {
+                    app.actions.push(action);
+                }
+            }
             "private-reply" | "private-reply-menu" | "private-reply-locked-source" => {
                 let group = SAMPLES[1].id;
                 app.open_chat = Some(group.into());
@@ -9802,6 +9815,7 @@ mod tests {
             "sticker-animated",
             "sticker-quick",
             "sticker-quick-search",
+            "quote-previous",
             "sticker-add",
             "sticker-view",
             "sticker-pack-message",

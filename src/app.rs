@@ -6401,17 +6401,23 @@ impl App {
         }
     }
 
-    /// The most recent own text message in the open chat, for Arrow-Up
-    /// editing. Non-text and revoked messages cannot be edited and are
-    /// skipped.
-    pub(crate) fn previous_own_editable(&self) -> Option<String> {
+    /// What Arrow Up acts on in an empty composer: the newest message of the
+    /// open chat that the key can act on, ours to edit or someone else's to
+    /// quote. A chat where the last word was the other person's quotes it,
+    /// as the reply menu does; one that ends on our own text edits it.
+    /// Messages that can do neither are walked past: a sticker of ours, a
+    /// revoked one, a call record.
+    pub(crate) fn previous_message_action(&self) -> Option<Action> {
         let conversation = self.conversations.get(self.open_chat.as_deref()?)?;
-        conversation
-            .messages
-            .iter()
-            .rev()
-            .find(|message| self.can_edit(message))
-            .map(|message| message.id.clone())
+        conversation.messages.iter().rev().find_map(|message| {
+            if message.from_me {
+                self.can_edit(message)
+                    .then(|| Action::Edit(message.id.clone()))
+            } else {
+                crate::ui::conversation::can_reply(&message.content)
+                    .then(|| Action::Reply(message.id.clone()))
+            }
+        })
     }
 
     /// Asks for a preview of the composer's link once its text has rested
@@ -14927,6 +14933,54 @@ mod tests {
             );
             assert!(!app.reaction_from_list, "{close}: the flag is gone");
         }
+    }
+
+    /// Arrow Up in an empty composer takes the chat's newest message: our own
+    /// last text opens for editing, one the other person sent is quoted, and
+    /// a row that can do neither is walked past.
+    #[test]
+    fn the_newest_message_is_edited_when_ours_and_quoted_when_theirs() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, _events) =
+            App::headless(AppDirs::under(directory.path()), Settings::default());
+        let chat = "peer@s.whatsapp.net";
+        app.chats.push(Chat::new(chat.into(), "Peer".into()));
+        app.open_chat = Some(chat.into());
+        let now = crate::util::now();
+        let mut mine = message(chat, "mine", now - 20);
+        mine.from_me = true;
+        app.conversations
+            .entry(chat.into())
+            .or_default()
+            .merge(vec![message(chat, "theirs", now - 30), mine], false);
+        assert_eq!(
+            app.previous_message_action(),
+            Some(Action::Edit("mine".into())),
+            "the chat ends on our own text"
+        );
+        // What they said last is what the key quotes.
+        app.conversations
+            .get_mut(chat)
+            .unwrap()
+            .merge(vec![message(chat, "answer", now)], false);
+        assert_eq!(
+            app.previous_message_action(),
+            Some(Action::Reply("answer".into())),
+            "their message is quoted"
+        );
+        // A revoked row is nobody's to quote, so the key looks further back.
+        let mut revoked = message(chat, "gone", now + 10);
+        revoked.content = Content::Revoked;
+        app.conversations
+            .get_mut(chat)
+            .unwrap()
+            .messages
+            .push(revoked);
+        assert_eq!(
+            app.previous_message_action(),
+            Some(Action::Reply("answer".into())),
+            "a revoked message is walked past"
+        );
     }
 
     /// The quick sticker picker opens over an open chat, closes on its own
