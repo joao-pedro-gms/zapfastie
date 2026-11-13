@@ -4484,3 +4484,78 @@ msgstr ""
 
 #~ msgid "Next pinned message"
 #~ msgstr "Следующее закреплённое сообщение"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Notes"
+msgstr "Заметки"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Search notes"
+msgstr "Поиск по заметкам"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "New note"
+msgstr "Новая заметка"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Pick a note"
+msgstr "Выберите заметку"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "No notes yet."
+msgstr "Заметок пока нет."
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "No notes match your search."
+msgstr "Ни одна заметка не совпадает с поиском."
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Untitled note"
+msgstr "Заметка без названия"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Close the note"
+msgstr "Закрыть заметку"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Delete the note"
+msgstr "Удалить заметку"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Pin the note"
+msgstr "Закрепить заметку"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Unpin the note"
+msgstr "Открепить заметку"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Write a note"
+msgstr "Напишите заметку"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Save to a note"
+msgstr "Сохранить в заметку"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Open the message this note cites"
+msgstr "Открыть цитируемое сообщение"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Quoted from {chat}"
+msgstr "Цитата из {chat}"

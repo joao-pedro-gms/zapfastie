@@ -4344,3 +4344,78 @@ msgstr ""
 #, fuzzy
 #~ msgid "Next pinned message"
 #~ msgstr "{} 則未讀訊息"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Notes"
+msgstr "筆記"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Search notes"
+msgstr "搜尋筆記"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "New note"
+msgstr "新增筆記"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Pick a note"
+msgstr "選擇一則筆記"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "No notes yet."
+msgstr "還沒有筆記。"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "No notes match your search."
+msgstr "沒有符合搜尋的筆記。"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Untitled note"
+msgstr "無標題筆記"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Close the note"
+msgstr "關閉筆記"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Delete the note"
+msgstr "刪除筆記"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Pin the note"
+msgstr "釘選筆記"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Unpin the note"
+msgstr "取消釘選"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Write a note"
+msgstr "寫一則筆記"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Save to a note"
+msgstr "儲存到筆記"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Open the message this note cites"
+msgstr "開啟引用的訊息"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Quoted from {chat}"
+msgstr "引用自 {chat}"

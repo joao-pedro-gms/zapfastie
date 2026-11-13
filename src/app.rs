@@ -627,6 +627,8 @@ pub struct App {
     pub note_draft: String,
     /// One shot: the note's editor takes the keys when it is next drawn.
     pub note_editing: bool,
+    /// What the open note cites, oldest citation first.
+    pub note_links: Vec<crate::notes::NoteRef>,
     /// Message the full emoji reaction picker is targeting.
     pub reaction_target: Option<(ChatId, String)>,
     /// Control that opened the reaction picker.
@@ -1670,6 +1672,7 @@ impl App {
             notes_focus: false,
             note_draft: String::new(),
             note_editing: false,
+            note_links: Vec::new(),
             reaction_target: None,
             reaction_anchor: None,
             reaction_beside_menu: false,
@@ -8875,6 +8878,10 @@ impl App {
                 match read {
                     Ok(Some(note)) => {
                         self.note_draft = note.body.clone();
+                        self.note_links = match self.open_notes() {
+                            Some(store) => store.links(note.id).unwrap_or_default(),
+                            None => Vec::new(),
+                        };
                         self.open_note = Some(note);
                         // Typing follows the click, as it does in a text
                         // editor: the note is where the keys go.
@@ -8890,6 +8897,7 @@ impl App {
             Action::CloseNote => {
                 self.open_note = None;
                 self.note_draft.clear();
+                self.note_links.clear();
             }
             Action::NewNote => {
                 let mut note = crate::notes::Note::new();
@@ -8928,6 +8936,51 @@ impl App {
                     }
                     Err(error) => self.notes_error = Some(format!("{error}")),
                 }
+            }
+            Action::NoteFromMessage { chat, message } => {
+                let Some(found) = self
+                    .conversations
+                    .get(&chat)
+                    .and_then(|conversation| conversation.message(&message))
+                else {
+                    return;
+                };
+                let quoted = found.summary_in(self.locale);
+                let mut note = crate::notes::Note {
+                    body: format!("> {quoted}\n\n"),
+                    ..crate::notes::Note::new()
+                };
+                note.title = crate::notes::Note::title_from(&note.body);
+                let created = match self.open_notes() {
+                    Some(store) => store.save(&mut note),
+                    None => return,
+                };
+                match created {
+                    Ok(()) => {
+                        if let Some(store) = self.notes.as_ref() {
+                            let cited = crate::notes::NoteRef::Message {
+                                chat: chat.clone(),
+                                message: message.clone(),
+                            };
+                            if let Err(error) = store.link(note.id, &cited) {
+                                self.notes_error = Some(format!("{error}"));
+                            }
+                        }
+                        self.note_draft = note.body.clone();
+                        self.note_links = vec![crate::notes::NoteRef::Message { chat, message }];
+                        self.open_note = Some(note);
+                        self.note_editing = true;
+                        // The note is shown where it is written.
+                        self.actions.push(Action::Open(Page::Notes));
+                    }
+                    Err(error) => self.notes_error = Some(format!("{error}")),
+                }
+            }
+            Action::ShowNoteSource { chat, message } => {
+                if self.open_chat.as_deref() != Some(chat.as_str()) {
+                    self.actions.push(Action::OpenChat(chat));
+                }
+                self.actions.push(Action::ScrollTo(message));
             }
             Action::DeleteNote(id) => {
                 let deleted = match self.open_notes() {
@@ -15118,6 +15171,63 @@ mod tests {
             );
             assert!(!app.reaction_from_list, "{close}: the flag is gone");
         }
+    }
+
+    /// A message kept as a note quotes it, cites it, and opens the tab on the
+    /// note, so the reader can write under the quote.
+    #[test]
+    fn a_message_becomes_a_note_that_cites_it() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, _events) =
+            App::headless(AppDirs::under(directory.path()), Settings::default());
+        app.notes = Some(crate::notes::NoteStore::in_memory().expect("a store"));
+        let chat = "peer@s.whatsapp.net";
+        app.chats.push(Chat::new(chat.into(), "Peer".into()));
+        app.open_chat = Some(chat.into());
+        app.conversations
+            .entry(chat.into())
+            .or_default()
+            .messages
+            .push(message(chat, "the offer", crate::util::now()));
+        let ctx = egui::Context::default();
+        app.apply(Action::Open(Page::Chats), &ctx);
+        app.apply(
+            Action::NoteFromMessage {
+                chat: chat.into(),
+                message: "the offer".into(),
+            },
+            &ctx,
+        );
+        let note = app.open_note.as_ref().expect("the note opens");
+        assert!(
+            note.body.starts_with("> the offer"),
+            "the message is quoted: {:?}",
+            note.body
+        );
+        assert_eq!(note.title, "the offer");
+        assert_eq!(app.note_links.len(), 1);
+        assert!(
+            app.actions.contains(&Action::Open(Page::Notes)),
+            "the tab opens on the note"
+        );
+        // The citation is on the store, not only on the screen.
+        let stored = app
+            .notes
+            .as_ref()
+            .unwrap()
+            .notes_citing(chat, "the offer")
+            .expect("reads the citations");
+        assert_eq!(stored, vec![note.id]);
+        // Its chip goes back to the message.
+        app.apply(Action::Open(Page::Notes), &ctx);
+        app.apply(
+            Action::ShowNoteSource {
+                chat: chat.into(),
+                message: "the offer".into(),
+            },
+            &ctx,
+        );
+        assert!(app.actions.contains(&Action::ScrollTo("the offer".into())));
     }
 
     /// A note is created, written, pinned and deleted through the tab's

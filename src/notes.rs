@@ -84,7 +84,13 @@ impl Note {
             .map(str::trim)
             .find(|line| !line.is_empty())
             .unwrap_or_default();
-        let title = first.trim_start_matches('#').trim();
+        // The shape a note is written in is not part of its name: a heading,
+        // a quote, a bullet or a numbered item all start their line with a
+        // marker the title leaves out.
+        let title = first.trim_start_matches(['#', '>', '-', '*']).trim();
+        let title = title
+            .trim_start_matches(|c: char| c.is_ascii_digit() || c == '.')
+            .trim();
         title.chars().take(TITLE_LIMIT).collect()
     }
 
@@ -359,6 +365,13 @@ mod tests {
     #[test]
     fn a_note_without_a_title_takes_the_first_line_of_its_body() {
         assert_eq!(Note::title_from("  # Buy milk  \nand bread"), "Buy milk");
+        // A quoted message, a bullet and a numbered item name a note too.
+        assert_eq!(
+            Note::title_from("> the lease is signed"),
+            "the lease is signed"
+        );
+        assert_eq!(Note::title_from("- milk"), "milk");
+        assert_eq!(Note::title_from("1. milk"), "milk");
         assert_eq!(Note::title_from("\n\ntext"), "text");
         assert_eq!(Note::title_from(""), "");
         let long = "x".repeat(TITLE_LIMIT + 40);

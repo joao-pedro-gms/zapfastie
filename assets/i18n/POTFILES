@@ -16,6 +16,7 @@ src/app.rs
 src/ui/labels.rs
 src/ui/picker.rs
 src/ui/sticker_quick.rs
+src/ui/notes.rs
 src/ui/pane.rs
 src/privacy.rs
 src/ui/image_editor.rs

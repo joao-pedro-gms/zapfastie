@@ -7147,6 +7147,7 @@ fn message_menu_labels(locale: crate::i18n::Locale) -> Vec<String> {
         gettext(locale, "Unstar"),
         gettext(locale, "Pin message"),
         gettext(locale, "Unpin message"),
+        gettext(locale, "Save to a note"),
         gettext(locale, "Forward"),
         gettext(locale, "Open in the viewer"),
         gettext(locale, "Select"),
@@ -7508,6 +7509,20 @@ fn context_menu(
             starred: !starred,
         });
         ui.close();
+    }
+    // Nothing is quoted from a call record, and a deleted message has no text
+    // to keep.
+    if can_reply(&message.content)
+        && item(
+            ui,
+            Icon::Notebook,
+            &crate::i18n::gettext(view.locale, "Save to a note"),
+        )
+    {
+        actions.push(Action::NoteFromMessage {
+            chat: chat.clone(),
+            message: message.id.clone(),
+        });
     }
     let pinned = view.pins.is_some_and(|ids| ids.contains(&message.id));
     let pin_label = if pinned {

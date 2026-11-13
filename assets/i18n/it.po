@@ -4455,3 +4455,78 @@ msgstr ""
 
 #~ msgid "Next pinned message"
 #~ msgstr "Messaggio fissato successivo"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Notes"
+msgstr "Note"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Search notes"
+msgstr "Cerca nelle note"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "New note"
+msgstr "Nuova nota"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Pick a note"
+msgstr "Scegli una nota"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "No notes yet."
+msgstr "Ancora nessuna nota."
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "No notes match your search."
+msgstr "Nessuna nota corrisponde alla ricerca."
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Untitled note"
+msgstr "Nota senza titolo"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Close the note"
+msgstr "Chiudi la nota"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Delete the note"
+msgstr "Elimina la nota"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Pin the note"
+msgstr "Fissa la nota"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Unpin the note"
+msgstr "Non fissare la nota"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Write a note"
+msgstr "Scrivi una nota"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Save to a note"
+msgstr "Salva in una nota"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Open the message this note cites"
+msgstr "Apri il messaggio citato"
+
+#: src/ui/notes.rs
+#: src/ui/conversation.rs
+msgid "Quoted from {chat}"
+msgstr "Citato da {chat}"

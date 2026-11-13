@@ -292,6 +292,10 @@ fn note(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
             }
         });
     });
+    if !app.note_links.is_empty() {
+        ui.add_space(8.0);
+        citations(app, ui, palette);
+    }
     ui.add_space(10.0);
     if app.note_editing {
         ui.ctx()
@@ -313,6 +317,41 @@ fn note(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
                     editor(app, ui, palette, locale);
                 });
         });
+}
+
+/// What the open note cites, as a chip each: a message of a chat, and,
+/// once mail is read here, a mail. A chip takes the reader back to what it
+/// names.
+fn citations(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
+    let locale = app.locale;
+    let mut jump = None;
+    ui.horizontal_wrapped(|ui| {
+        for reference in app.note_links.clone() {
+            match reference {
+                crate::notes::NoteRef::Message { chat, message } => {
+                    let name = app
+                        .chat(&chat)
+                        .map(|chat| chat.name.clone())
+                        .unwrap_or_else(|| chat.clone());
+                    let label = gettext(locale, "Quoted from {chat}").replace("{chat}", &name);
+                    if theme::soft_button(ui, palette, Some(Icon::MessageCircle), &label, false)
+                        .on_hover_text(gettext(locale, "Open the message this note cites").as_ref())
+                        .clicked()
+                    {
+                        jump = Some(Action::ShowNoteSource { chat, message });
+                    }
+                }
+                crate::notes::NoteRef::Mail { account, .. } => {
+                    // No mail is read here yet, so the chip names the account
+                    // and goes nowhere.
+                    theme::soft_button(ui, palette, Some(Icon::FileText), &account, false);
+                }
+            }
+        }
+    });
+    if let Some(action) = jump {
+        app.actions.push(action);
+    }
 }
 
 /// The note's text, edited where it is read. A change is written as it is

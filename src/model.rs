@@ -3102,6 +3102,16 @@ pub enum Action {
         id: i64,
         pinned: bool,
     },
+    /// Starts a note that quotes a message, cites it, and opens the tab on it.
+    NoteFromMessage {
+        chat: ChatId,
+        message: String,
+    },
+    /// Takes the reader out of the notes tab to the message a note cites.
+    ShowNoteSource {
+        chat: ChatId,
+        message: String,
+    },
     /// Toggles a picker tab.
     TogglePicker(PickerTab),
     /// Opens the quick sticker picker over the open chat, or closes it. The
