@@ -4,7 +4,7 @@
 
 <h1 align="center">ZapFastie</h1>
 
-<p align="center"><strong>WhatsApp, native and fast.</strong><br>A lightweight WhatsApp app for Linux, macOS, and Windows.</p>
+<p align="center"><strong>WhatsApp, native and fast.</strong><br>A lightweight desktop app for your chats on Linux, macOS, and Windows, on its way to one window for chats, mail, and notes.</p>
 
 <p align="center">
   <a href="https://zapfast.rocks/download/"><strong>Download</strong></a> ·
@@ -27,6 +27,12 @@ companion device through
 engine. In our Linux test it opens in under a second and uses about 200 MB of
 idle RAM, against 1.13 GB for WhatsApp Web.
 [See the measurements](https://zapfast.rocks/benchmarks/).
+
+This fork is growing into a communication hub: the chats you have today, then
+a mail inbox built on the IMAP and SMTP accounts you already own, then notes
+kept on this computer that can cite a message or a mail. Chats come first and
+stay first. Nothing of mail or notes is built yet, and this page will say so
+until it is.
 
 The interface is available in English, Chinese (Simplified and Traditional),
 Dutch, French, German, Indonesian, Italian, Portuguese (Brazil), Russian,
@@ -57,6 +63,23 @@ https://github.com/user-attachments/assets/2bf86b54-45fc-4add-8de7-c426c3cdad9b
 | **Desktop controls** | Use keyboard shortcuts, select and copy text across messages, and stay linked in the tray with notifications. |
 | **Themes** | Choose light, dark, system appearance, or custom colours. On Omarchy, follow your desktop theme. |
 | **Privacy** | Hide locked chats behind a code, or the whole window behind an app lock. Nothing goes to a server of ours. |
+
+## Where this fork is going
+
+| Step | What it adds | State |
+|---|---|---|
+| **Notes** | A tab of notes kept on this computer, markdown, able to cite a message from a chat | Not started |
+| **Mail, reading** | Accounts you configure over IMAP, read offline from an encrypted archive beside the chat one | Not started |
+| **Mail, writing** | Reply, reply to all, forward and send over SMTP, with attachments | Not started |
+| **Together** | A note that points at a mail or a message and takes you back to it, and one search across the three | Not started |
+
+What the hub will not become, because the client is worth more than the
+feature list: no other chat networks, no bridge that turns a chat message into
+mail or the reverse, no web view and no HTML engine inside the app, and no
+server of ours anywhere in the path. Mail talks to your provider and to nobody
+else. A message that needs a layout this app does not draw opens in your
+browser, on purpose, one message at a time, because the alternative is shipping
+a browser engine inside a client that exists to not be one.
 
 ## Install
 
@@ -136,6 +159,10 @@ ZapFastie is an unofficial client and is not affiliated with WhatsApp or Meta.
 Using an unofficial client may be against WhatsApp's terms of service and
 could get an account suspended. Use it at your own risk. WhatsApp is a
 trademark of WhatsApp LLC.
+
+Mail, once it ships, reaches the account you configure and nothing else: no
+relay of ours, no copy on a server we run, and no analytics on what arrives.
+Notes stay on this computer.
 
 Licensed under the [MIT License](LICENSE).
 

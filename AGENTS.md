@@ -1,17 +1,35 @@
 # ZapFastie agent guide
 
-ZapFastie is a small native WhatsApp client: Rust, egui, and the
+ZapFastie is a native desktop communication hub: Rust, egui, and the
 [whatsapp-rust](https://github.com/oxidezap/whatsapp-rust) library for the
-protocol. These notes are for coding agents and new contributors.
+chat protocol. Its first surface is WhatsApp, which is what the app does
+today. The two that follow are a mail inbox built on the reader's own IMAP and
+SMTP accounts, and notes kept on this computer that can cite a message or a
+mail. These notes are for coding agents and new contributors.
+
+The order of that work, and where it stands: notes first, because they are
+local and need no network; then reading mail, with its own worker and its own
+encrypted archive beside the chat one; then sending mail and the threading
+around it; then the links between the three surfaces. Nothing of mail or notes
+is built yet, so no file in this repository pretends to be.
 
 ## Product boundaries
 
 - Keep it a small native client. No browser engine, no telemetry, no
   hosted backend, no ZapFastie-operated account system. Features never send
-  message content to a third party.
-- WhatsApp only. ZapFastie is a client for WhatsApp accounts and will not
-  speak other networks or protocols (Matrix, Signal, Telegram, IRC, XMPP)
-  or bridge to them.
+  message content, mail, or notes to a third party.
+- One window, three surfaces: WhatsApp chats as they are today, the mail
+  accounts the reader configures, and notes kept on this computer. Mail speaks
+  IMAP and SMTP to that account's own provider and to nobody else; a note never
+  leaves the machine.
+- No other chat networks. ZapFastie will not speak Matrix, Signal, Telegram,
+  IRC, XMPP, or another network that carries conversations, and it will not
+  bridge networks: a message does not become a mail, and a mail does not
+  become a message.
+- Mail is drawn here, by this client's own reader: text first, pictures from
+  the network left unloaded until the reader asks for them, and "open in
+  browser" for the message that needs a layout this app does not draw. An HTML
+  engine would undo the first bullet.
 - No automation, ever. ZapFastie is for a person reading and writing their
   own chats by hand. It will not have bots, an MCP server, or any API,
   command-line, plugin or scripting interface that reads, exports or sends
@@ -19,8 +37,9 @@ protocol. These notes are for coding agents and new contributors.
   WhatsApp's terms forbid automated use, and it bans accounts for it, so such
   a feature would put every user's account at risk. Opening a chat from a
   link or `zapfastie <number>`, which only shows the chat to the person, is
-  not automation.
-- Do not copy dependency source into this repository. For a dependency fix,
+  not automation. Mail carries the same rule: no filters or rules that
+  answer, no scheduled or bulk sending, no automatic replies.
+- Do not copy dependency source into this repository.
   use a fork under `github.com/crmne/` pinned to a commit and contribute the
   fix upstream; egui, winit and rodio already come from such
   forks. Only the maintainer creates those forks; in a contributor's pull
