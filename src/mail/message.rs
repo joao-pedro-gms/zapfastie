@@ -33,6 +33,10 @@ pub struct ParsedMail {
     pub date: i64,
     /// What the reader sees.
     pub text: String,
+    /// The HTML part as it arrived, empty when the sender wrote none. The
+    /// reader opens it in the browser when the message needs more layout than
+    /// this client draws.
+    pub html: String,
     /// Whether [`Self::text`] came from an HTML part, which the reader offers
     /// to open in the browser.
     pub from_html: bool,
@@ -55,12 +59,15 @@ pub fn parse(raw: &[u8]) -> Option<ParsedMail> {
         .filter(|part| part.content_type().is_none_or(|content| !is_html(&content)))
         .find_map(|part| part.text())
         .filter(|text| !text.trim().is_empty());
+    let html = message
+        .html_body()
+        .find_map(|part| part.text())
+        .map(|html| html.into_owned())
+        .unwrap_or_default();
     let (text, from_html) = match plain {
         Some(text) => (text.into_owned(), false),
-        None => match message.html_body().find_map(|part| part.text()) {
-            Some(html) => (html_to_text(&html), true),
-            None => (String::new(), false),
-        },
+        None if !html.is_empty() => (html_to_text(&html), true),
+        None => (String::new(), false),
     };
     let from = message
         .from()
@@ -102,6 +109,7 @@ pub fn parse(raw: &[u8]) -> Option<ParsedMail> {
         to,
         date: message.date().map(|date| date.to_timestamp()).unwrap_or(0),
         text: collapse_blank_lines(&text),
+        html,
         from_html,
         parts,
         message_id: message.message_id().unwrap_or_default().to_owned(),
@@ -392,6 +400,11 @@ mod tests {
                     <ul><li>one</li><li>two</li></ul></body></html>";
         let mail = parse(raw).expect("a message");
         assert!(mail.from_html, "the words came from HTML");
+        assert!(
+            mail.html.contains("<b>Ada</b>"),
+            "the source is kept for the browser: {:?}",
+            mail.html
+        );
         assert!(mail.text.contains("Hello Ada,"), "{:?}", mail.text);
         assert!(
             mail.text.contains("the price is £5 & up."),

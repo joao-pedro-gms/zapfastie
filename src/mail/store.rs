@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS mail (
     has_parts INTEGER NOT NULL DEFAULT 0,
     preview TEXT NOT NULL DEFAULT '',
     text TEXT,
+    html TEXT,
     from_html INTEGER NOT NULL DEFAULT 0,
     parts TEXT NOT NULL DEFAULT '[]',
     PRIMARY KEY (folder, uid)
@@ -87,6 +88,9 @@ impl MailSummary {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct MailBody {
     pub text: String,
+    /// The HTML part as it arrived, kept so the reader can open the message in
+    /// their browser when its layout is more than this reader draws.
+    pub html: String,
     /// Whether the words came from an HTML part.
     pub from_html: bool,
     /// The attachments, as JSON the parser wrote, read back when shown.
@@ -241,13 +245,19 @@ impl MailStore {
         Ok(self
             .connection
             .query_row(
-                "SELECT text, from_html, parts FROM mail WHERE folder = ?1 AND uid = ?2",
+                "SELECT text, from_html, parts, html FROM mail WHERE folder = ?1 AND uid = ?2",
                 params![folder, uid],
                 |row| {
-                    Ok(row.get::<_, Option<String>>(0)?.map(|text| MailBody {
+                    let text: Option<String> = row.get(0)?;
+                    Ok(text.map(|text| MailBody {
                         text,
                         from_html: row.get::<_, bool>(1).unwrap_or(false),
                         parts: row.get::<_, String>(2).unwrap_or_else(|_| "[]".to_owned()),
+                        html: row
+                            .get::<_, Option<String>>(3)
+                            .ok()
+                            .flatten()
+                            .unwrap_or_default(),
                     }))
                 },
             )
@@ -258,9 +268,16 @@ impl MailStore {
     /// Keeps a fetched body, and marks the message read.
     pub fn save_body(&mut self, folder: &str, uid: u32, body: &MailBody) -> Result<()> {
         self.connection.execute(
-            "UPDATE mail SET text = ?3, from_html = ?4, parts = ?5, seen = 1
+            "UPDATE mail SET text = ?3, from_html = ?4, parts = ?5, html = ?6, seen = 1
              WHERE folder = ?1 AND uid = ?2",
-            params![folder, uid, body.text, body.from_html, body.parts],
+            params![
+                folder,
+                uid,
+                body.text,
+                body.from_html,
+                body.parts,
+                body.html
+            ],
         )?;
         self.count_unread(folder)?;
         Ok(())
@@ -393,6 +410,7 @@ mod tests {
                 1,
                 &MailBody {
                     text: "the words".to_owned(),
+                    html: "<p>the words</p>".to_owned(),
                     from_html: true,
                     parts: "[]".to_owned(),
                 },
@@ -405,6 +423,10 @@ mod tests {
             .expect("writes");
         let body = store.body("INBOX", 1).expect("reads").expect("a body");
         assert_eq!(body.text, "the words");
+        assert_eq!(
+            body.html, "<p>the words</p>",
+            "the source is kept for the browser"
+        );
         assert!(body.from_html);
         assert_eq!(store.folders().expect("reads")[0].unread, 1);
         assert!(store.list("INBOX", 1).expect("reads")[0].body_here);
