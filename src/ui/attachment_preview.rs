@@ -408,3 +408,25 @@ fn file_size(ctx: &egui::Context, path: &std::path::Path) -> Option<u64> {
         });
     None
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn only_photos_sent_as_photos_enter_the_cropper() {
+        let photo = std::path::PathBuf::from("/fixtures/holiday.png");
+        assert!(editable(&Pending::File(photo.clone())));
+        assert!(!editable(&Pending::Document(photo)));
+        assert!(!editable(&Pending::File(std::path::PathBuf::from(
+            "/fixtures/notes.pdf"
+        ))));
+    }
+
+    #[test]
+    fn a_file_is_named_by_its_name_alone() {
+        let path = std::path::PathBuf::from("/home/someone/Documents/report.pdf");
+        assert_eq!(file_name(&Pending::Document(path.clone())), "report.pdf");
+        assert_eq!(file_name(&Pending::File(path)), "report.pdf");
+    }
+}

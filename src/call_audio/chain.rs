@@ -348,3 +348,32 @@ impl Chain {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The call runs a tuned AEC3: a 60-block main filter and an adaptive
+    /// tail that starts at a second, measured on desk speakers in a room
+    /// (11 dB of echo removed stock, 26 with these; a fixed long tail
+    /// suppressed double talk instead).
+    #[test]
+    fn the_call_keeps_the_measured_configuration() {
+        let config = tuned();
+        assert_eq!(config.filter.refined.length_blocks, 60);
+        assert_eq!(config.ep_strength.default_len, -0.985);
+    }
+
+    #[test]
+    fn a_setting_is_named_and_checked() {
+        let mut config = tuned();
+        assert!(apply_setting(&mut config, "filter.refined.length_blocks", "48").is_ok());
+        assert_eq!(config.filter.refined.length_blocks, 48);
+        assert!(apply_setting(&mut config, "filter.refined.length_blocks", "many").is_err());
+        assert!(apply_setting(&mut config, "no.such.setting", "1").is_err());
+        assert_eq!(
+            config.filter.refined.length_blocks, 48,
+            "a refused value changes nothing"
+        );
+    }
+}

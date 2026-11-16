@@ -2085,7 +2085,6 @@ mod tests {
         );
     }
 
-    #[test]
     /// Each named step is the value its name says, and every one is on the
     /// scale, so a step cannot drift away from the list it belongs to.
     #[test]
@@ -2155,6 +2154,7 @@ mod tests {
         }
     }
 
+    #[test]
     fn readable_on_leaves_a_readable_colour_alone() {
         let light = Palette::light();
         assert_eq!(

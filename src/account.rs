@@ -398,3 +398,57 @@ fn resolve_wallpaper_path(dirs: &AccountDirs, settings: &mut AccountSettings) {
         settings.wallpaper_image = None;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn detached() -> Account {
+        let root = std::env::temp_dir().join(format!(
+            "zapfastie-account-{}-{:?}",
+            std::process::id(),
+            std::thread::current().id()
+        ));
+        Account::detached(
+            &crate::paths::AppDirs::under(&root),
+            AccountId::parse("1").unwrap(),
+            crate::settings::AccountSettings::default(),
+        )
+        .expect("an account that needs no keyring")
+        .0
+    }
+
+    /// The switcher names the account by the profile name, else the number,
+    /// else its own id.
+    #[test]
+    fn the_switcher_names_the_account_by_what_it_knows() {
+        let mut account = detached();
+        let locale = crate::i18n::Locale::English;
+        assert_eq!(account.display_label(locale), "Account 1");
+        account.me = Some("5511999998888@s.whatsapp.net".into());
+        let phone = account.phone().expect("a number");
+        assert_eq!(account.display_label(locale), phone);
+        account.me_name = Some("  Ada Lovelace  ".into());
+        assert_eq!(account.display_label(locale), "Ada Lovelace");
+        // A name of spaces is no name at all.
+        account.me_name = Some("   ".into());
+        assert_eq!(account.display_label(locale), account.phone().unwrap());
+    }
+
+    /// Only chats with something to read count toward the badge.
+    #[test]
+    fn the_unread_count_sees_every_unread_chat() {
+        let mut account = detached();
+        account.chats = vec![
+            crate::model::Chat {
+                unread: 2,
+                ..crate::model::Chat::new("a@s.whatsapp.net".into(), "Ada".into())
+            },
+            crate::model::Chat {
+                unread: 0,
+                ..crate::model::Chat::new("b@s.whatsapp.net".into(), "Grace".into())
+            },
+        ];
+        assert_eq!(account.unread_chat_count(), 1, "chats, not messages");
+    }
+}
