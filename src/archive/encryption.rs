@@ -678,4 +678,50 @@ mod tests {
         fs::remove_dir(path.with_extension("db.encrypting")).unwrap();
         assert_eq!(read_secret(&open(&path, &[9; 32]).unwrap()), "keep me");
     }
+
+    /// An archive written before the SQLCipher 4.20 port still opens, still
+    /// holds what it held, and can take new rows: a reader who updates keeps
+    /// their history. The fixture's README says how it was made.
+    #[test]
+    fn archive_sqlcipher_4_14_opens_unchanged() {
+        let directory = directory();
+        let path = directory.path().join("archive.db");
+        let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/archive/from-sqlcipher-4.14.db");
+        fs::copy(&fixture, &path).unwrap();
+        let key = [0x5a; 32];
+        let connection = open(&path, &key).unwrap();
+        assert_eq!(read_secret(&connection), "written before the port");
+        let version: i64 = connection
+            .query_row("PRAGMA user_version", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(version, 9);
+        let application: i64 = connection
+            .query_row("PRAGMA application_id", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(application, 42);
+        connection
+            .execute("INSERT INTO secrets VALUES ('written after the port')", [])
+            .unwrap();
+        assert_eq!(
+            connection
+                .query_row("SELECT count(*) FROM secrets", [], |row| row
+                    .get::<_, i64>(0))
+                .unwrap(),
+            2
+        );
+        // The port exists for the SQLite under SQLCipher: 3.54.0 is the first
+        // release that cannot return another page's bytes from a WAL mismatch
+        // (RUSTSEC-2026-0459), and a downgrade must fail here rather than ship.
+        let sqlite: String = connection
+            .query_row("SELECT sqlite_version()", [], |row| row.get(0))
+            .unwrap();
+        let version = |text: &str| -> Vec<u32> {
+            text.split('.').map(|part| part.parse().unwrap()).collect()
+        };
+        assert!(
+            version(&sqlite) >= version("3.54.0"),
+            "SQLite {sqlite} predates the CVE-2026-119375 fix"
+        );
+    }
 }
