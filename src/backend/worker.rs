@@ -10828,7 +10828,7 @@ impl Worker {
                     let _ = commands.send(Command::AvatarFetched { id, full, path });
                 }
                 Err(error) => {
-                    log::debug!("no picture for {id} yet: {error}");
+                    log::debug!("no picture yet: {error}");
                     let _ = commands.send(Command::AvatarFailed { id, full });
                 }
             }
