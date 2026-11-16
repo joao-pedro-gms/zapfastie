@@ -62,14 +62,21 @@ pin together. Applications need no packaging Gemfile, lockfile or Ruby wrapper.
 
 [`snapshot.yml`](.github/workflows/snapshot.yml) builds Linux x86_64 and
 Windows x64 in release mode on every push to `main` that touches code, and
-replaces the three assets of one prerelease, tagged `snapshot`, on every run.
-It is not a release: no version bump, no note file, no attestation, and
-prereleases never become "Latest", so the updater ignores them. Windows
-binaries are unsigned, because the `windows-signing` environment trusts only
-`v*` tags; macOS is left out because notarizing every push spends the Apple
-quota releases need. The tarball carries what the release tarball carries, and
-the prerelease's notes name the commit, the last release tag it sits on, and
-the commits since.
+replaces the assets of one prerelease, tagged `snapshot`, on every run. It is
+not a release: no version bump, no note file, no attestation, and prereleases
+never become "Latest", so the updater ignores them. Windows binaries are
+unsigned, because the `windows-signing` environment trusts only `v*` tags;
+macOS is left out because notarizing every push spends the Apple quota
+releases need.
+
+Each run names its build the next patch as an rc of it, numbered by the run:
+main at 0.22.0 builds as `0.22.1-rc.<run>`. That sorts above 0.22.0, so
+`dnf install ./zapfastie-*.rpm` upgrades a reader's release, and below 0.22.1,
+so the release still upgrades over it. The RPM comes from the same Linux
+tarball a release packages, through this file's configuration
+(`native-packages build --target linux-amd64 --format rpm --defer-recipes`),
+so a snapshot package and a release package differ only in their version. The
+job checks the built RPM with `rpm -qip` before it is published.
 
 A versioned release still starts with a tag. See [Releasing](AGENTS.md) for
 the order: the version bump, the metainfo entry and the note file go in one

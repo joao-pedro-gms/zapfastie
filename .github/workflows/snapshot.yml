@@ -3,16 +3,20 @@ name: Snapshot
 # Binaries for every change that reaches main, without cutting a release.
 # A versioned release stays a deliberate act (AGENTS.md, Releasing): it needs
 # a version bump, a reviewed note file and a tag. This workflow instead keeps
-# one rolling prerelease, tagged `snapshot`, whose three assets are replaced
-# by each run, so a link to it always downloads the newest build of main and
-# the changelog gains no entry. Prereleases never become "Latest", so the
-# app's updater ignores them and installs nothing from here.
+# one rolling prerelease, tagged `snapshot`, whose assets each run replaces,
+# so a link always downloads the newest build of main, the changelog gains no
+# entry, and the updater ignores it because prereleases never become Latest.
 #
-# Two targets, not the release's five: the account's hosted runners are shared
-# by every repository (ci.yml records what a full matrix per push cost), and
-# the other three change nothing about whether a change compiles. A snapshot
-# is for trying a change, not for shipping one. Extend the matrix when that
-# is worth the minutes.
+# The version each build carries is the next patch as an rc of it, numbered by
+# the run: main at 0.22.0 builds as 0.22.1-rc.<run>. That sorts above 0.22.0,
+# so installing the RPM upgrades a reader's release, and below 0.22.1, so the
+# release still upgrades over it; rpm and deb read the same order from the
+# tilde nfpm writes for it.
+#
+# Linux x86_64, the RPM from it, and Windows x64: the account's hosted runners
+# are shared by every repository (ci.yml records what a full matrix per push
+# cost), and the other targets would not change whether a change compiles. A
+# snapshot is for trying a change, not for shipping one.
 #
 # Windows binaries are unsigned: the windows-signing environment that holds
 # the certificate trusts only v* tags, and a snapshot is not a release, so
@@ -40,8 +44,34 @@ env:
   ZAPFASTIE_GIPHY_KEY: ${{ secrets.ZAPFASTIE_GIPHY_KEY || secrets.FASTSAPP_GIPHY_KEY }}
 
 jobs:
+  # One place decides the version, so the tarball, the zip and the RPM cannot
+  # disagree about which build they are.
+  prepare:
+    name: Name this build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: version
+        run: |
+          base=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -n 1)
+          base=${base%%-*}
+          major=${base%%.*}
+          rest=${base#*.}
+          minor=${rest%%.*}
+          patch=${rest#*.}
+          patch=${patch%%[!0-9]*}
+          version="${major}.${minor}.$((patch + 1))-rc.${GITHUB_RUN_NUMBER}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "this run builds $version from ${GITHUB_SHA:0:7}"
+
   build:
     name: build (${{ matrix.target }})
+    needs: prepare
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container }}
     timeout-minutes: 90
@@ -73,12 +103,13 @@ jobs:
       # this commit, not from objects restored out of a cache.
       - run: cargo build --locked --release --target ${{ matrix.target }}
 
-      # The same files the release tarball carries, under a fixed name so each
-      # run replaces the last one on the prerelease instead of piling up.
+      # The release's own layout, under the version this run named, so the
+      # tarball is exactly what native-packages reads for the RPM and carries
+      # the files the release tarball carries.
       - name: Package
         shell: bash
         run: |
-          name="zapfastie-snapshot-${{ matrix.target }}"
+          name="zapfastie-${{ needs.prepare.outputs.tag }}-${{ matrix.target }}"
           mkdir -p "dist/$name"
           if [ "${{ runner.os }}" = "Windows" ]; then
             cp "target/${{ matrix.target }}/release/zapfastie.exe" "dist/$name/"
@@ -105,9 +136,60 @@ jobs:
             dist/*.zip
           if-no-files-found: error
 
+  # The RPM from that same tarball, through the configuration a release uses
+  # (native-packages.yaml), so a snapshot package and a release package differ
+  # only in their version. nFPM 2.47.0 and native-packages 0.11.0 are pinned
+  # there; --defer-recipes leaves the AUR and Homebrew recipes to releases.
+  rpm:
+    name: RPM (linux amd64)
+    needs: [prepare, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+      # bsdtar unpacks the tarball native-packages reads.
+      - name: Package tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libarchive-tools
+          curl -sSLo /tmp/nfpm.tgz \
+            "https://github.com/goreleaser/nfpm/releases/download/v2.47.0/nfpm_2.47.0_Linux_x86_64.tar.gz"
+          sudo tar xzf /tmp/nfpm.tgz -C /usr/local/bin nfpm
+          nfpm --version
+          gem install native-packages --version 0.11.0 --no-document
+      - uses: actions/download-artifact@v7
+        with:
+          name: x86_64-unknown-linux-gnu
+          path: dist
+      - name: Build the RPM
+        run: |
+          native-packages build \
+            --version "${{ needs.prepare.outputs.version }}" \
+            --target linux-amd64 --format rpm --defer-recipes
+      - name: Check what it says about itself
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          rpm=$(find "dist/packages/$version" -name '*.rpm' | head -n 1)
+          test -n "$rpm"
+          rpm -qip "$rpm"
+          rpm -qlp "$rpm"
+          test "$(rpm -qp --qf '%{NAME}' "$rpm")" = zapfastie
+          # nfpm writes the rc as a tilde, which is what makes rpm order it
+          # below the release it waits for.
+          test "$(rpm -qp --qf '%{VERSION}' "$rpm")" = "${version/-rc./~rc.}"
+          cp "$rpm" dist/
+      - uses: actions/upload-artifact@v7
+        with:
+          name: rpm
+          path: dist/*.rpm
+          if-no-files-found: error
+
   publish:
     name: Roll the snapshot release
-    needs: build
+    needs: [prepare, build, rpm]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -130,8 +212,12 @@ jobs:
           {
             echo "Automatic build of \`${GITHUB_REF_NAME}\` at $short, $(date -u '+%Y-%m-%d %H:%M UTC')."
             echo
-            echo "Not a release: no notes, no version bump, Windows binaries unsigned,"
-            echo "macOS left out. Nothing here reaches the updater. Built by run"
+            echo "Version \`${{ needs.prepare.outputs.version }}\`: the next patch as an rc,"
+            echo "so dnf and apt read it as newer than the release before it and older"
+            echo "than the release it waits for."
+            echo
+            echo "Not a release: no notes, no macOS build, Windows binaries unsigned."
+            echo "Nothing here reaches the updater. Built by run"
             echo "[${{ github.run_id }}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${{ github.run_id }})."
             echo
             last=$(git describe --tags --abbrev=0 --match 'v*' HEAD 2>/dev/null || true)
@@ -163,7 +249,7 @@ jobs:
           gh release delete snapshot --yes --cleanup-tag || true
           gh release create snapshot \
             --target "$GITHUB_SHA" \
-            --title "Snapshot ${GITHUB_SHA:0:7}" \
+            --title "Snapshot ${GITHUB_SHA:0:7} (${{ needs.prepare.outputs.version }})" \
             --notes-file release-notes.md \
             --prerelease \
             dist/*

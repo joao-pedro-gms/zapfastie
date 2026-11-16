@@ -15,8 +15,8 @@ libraries:
     rpm: pipewire-libs
 nfpm:
   name: zapfastie
-  maintainer: Carmine Paolino <carmine@paolino.me>
-  homepage: https://zapfast.rocks
+  maintainer: João Pedro Guimarães <joaopedroguimaraes@protonmail.com>
+  homepage: https://github.com/joao-pedro-gms/zapfastie
   description: Fast native WhatsApp client
   license: MIT
   provides: [fastsapp]
