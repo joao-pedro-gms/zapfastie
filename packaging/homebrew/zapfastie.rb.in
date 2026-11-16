@@ -5,7 +5,7 @@ cask "zapfastie" do
   url "https://github.com/joao-pedro-gms/zapfastie/releases/download/v#{version}/zapfast-v#{version}-macos-universal.dmg"
   name "ZapFastie"
   desc "Native WhatsApp client"
-  homepage "https://zapfast.rocks"
+  homepage "https://github.com/joao-pedro-gms/zapfastie"
 
   livecheck do
     url :url

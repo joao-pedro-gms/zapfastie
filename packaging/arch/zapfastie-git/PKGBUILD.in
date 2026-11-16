@@ -1,10 +1,10 @@
-# Maintainer: Carmine Paolino <carmine@paolino.me>
+# Maintainer: João Pedro Guimarães <joaopedroguimaraes@protonmail.com>
 pkgname=zapfastie-git
 pkgver=@VERSION@
 pkgrel=1
 pkgdesc="Fast native WhatsApp client built with Rust and egui"
 arch=('x86_64' 'aarch64')
-url="https://zapfast.rocks"
+url="https://github.com/joao-pedro-gms/zapfastie"
 license=('MIT' 'GPL-2.0-only')
 install="${pkgname}.install"
 depends=('alsa-lib' 'libpipewire' 'libglvnd' 'libxkbcommon' 'libxkbcommon-x11' 'wayland' 'libx11' 'libxcb' 'libxcursor' 'libxi' 'libxrandr')

@@ -3,8 +3,8 @@
   <id>rocks.zapfastie.ZapFastie</id>
   <name>ZapFastie</name>
   <summary>A native WhatsApp client</summary>
-  <developer id="me.paolino">
-    <name>Carmine Paolino</name>
+  <developer id="io.github.joaopedrogms">
+    <name>João Pedro Guimarães</name>
   </developer>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT AND GPL-2.0-only</project_license>
@@ -17,9 +17,9 @@
     with WhatsApp or Meta.</p>
   </description>
   <launchable type="desktop-id">rocks.zapfastie.ZapFastie.desktop</launchable>
-  <url type="homepage">https://zapfast.rocks/</url>
+  <url type="homepage">https://github.com/joao-pedro-gms/zapfastie</url>
   <url type="bugtracker">https://github.com/joao-pedro-gms/zapfastie/issues</url>
-  <url type="help">https://zapfast.rocks/getting-started/</url>
+  <url type="help">https://github.com/joao-pedro-gms/zapfastie/blob/main/docs/_guide/getting-started.md</url>
   <url type="vcs-browser">https://github.com/joao-pedro-gms/zapfastie</url>
   <screenshots>
     <screenshot type="default">

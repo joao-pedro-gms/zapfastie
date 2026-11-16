@@ -12,7 +12,7 @@ zapfastie setup:
 
   Colour emoji have a bundled fallback; GIFs play in the app.
 
-Docs: https://zapfast.rocks
+Docs: https://github.com/joao-pedro-gms/zapfastie/tree/main/docs
 EOF2
 }
 

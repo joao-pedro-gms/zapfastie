@@ -1,4 +1,4 @@
-# ZapFastie built from its release source, for Fedora COPR (paolino/zapfastie) and
+# ZapFastie built from its release source, for a Fedora COPR and
 # openSUSE OBS. Cargo fetches the locked dependencies while building, so the
 # COPR project and the OBS package need network access during builds.
 
@@ -7,7 +7,7 @@ Version:        @VERSION@
 Release:        1%{?dist}
 Summary:        Fast native WhatsApp client
 License:        MIT
-URL:            https://zapfast.rocks
+URL:            https://github.com/joao-pedro-gms/zapfastie
 Source0:        https://github.com/joao-pedro-gms/zapfastie/archive/refs/tags/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
 # ring compiles its own C, and LTO objects in its archive leave the link
@@ -76,5 +76,5 @@ install -Dm755 contrib/omarchy/zapfastie-theme %{buildroot}%{_datadir}/zapfastie
 %{_datadir}/zapfastie/
 
 %changelog
-* @DATE@ Carmine Paolino <carmine@paolino.me> - @VERSION@-1
-- ZapFast @VERSION@: https://github.com/joao-pedro-gms/zapfastie/releases/tag/v@VERSION@
+* @DATE@ João Pedro Guimarães <joaopedroguimaraes@protonmail.com> - @VERSION@-1
+- ZapFastie @VERSION@: https://github.com/joao-pedro-gms/zapfastie/releases/tag/v@VERSION@
