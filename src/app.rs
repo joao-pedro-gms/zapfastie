@@ -622,6 +622,8 @@ pub struct App {
     /// One shot: the notes tab's search field takes the keys when it is next
     /// drawn.
     pub notes_focus: bool,
+    /// The note's title as the reader is typing it.
+    pub note_title: String,
     /// The text of the note being read, kept apart from the saved copy until
     /// a change is written.
     pub note_draft: String,
@@ -629,6 +631,8 @@ pub struct App {
     pub note_editing: bool,
     /// What the open note cites, oldest citation first.
     pub note_links: Vec<crate::notes::NoteRef>,
+    /// Whether the open note is read rather than written.
+    pub note_read: bool,
     /// Message the full emoji reaction picker is targeting.
     pub reaction_target: Option<(ChatId, String)>,
     /// Control that opened the reaction picker.
@@ -1671,8 +1675,10 @@ impl App {
             notes_search: String::new(),
             notes_focus: false,
             note_draft: String::new(),
+            note_title: String::new(),
             note_editing: false,
             note_links: Vec::new(),
+            note_read: false,
             reaction_target: None,
             reaction_anchor: None,
             reaction_beside_menu: false,
@@ -6464,11 +6470,8 @@ impl App {
             Err(error) => self.notes_error = Some(format!("{error}")),
         }
         self.notes_loaded = true;
-        if let Some(note) = &self.open_note
-            && !self.notes_list.iter().any(|summary| summary.id == note.id)
-        {
-            self.open_note = None;
-        }
+        // A search filters the list; the note the reader has open stays open,
+        // even when the search leaves it out.
     }
 
     /// What Arrow Up acts on in an empty composer: the newest message of the
@@ -8878,17 +8881,21 @@ impl App {
                 match read {
                     Ok(Some(note)) => {
                         self.note_draft = note.body.clone();
+                        self.note_title = note.title.clone();
                         self.note_links = match self.open_notes() {
                             Some(store) => store.links(note.id).unwrap_or_default(),
                             None => Vec::new(),
                         };
                         self.open_note = Some(note);
+                        // A note opens for writing; Ctrl+E reads it.
+                        self.note_read = false;
                         // Typing follows the click, as it does in a text
                         // editor: the note is where the keys go.
                         self.note_editing = true;
                     }
                     Ok(None) => {
                         self.note_draft.clear();
+                        self.note_title.clear();
                         self.open_note = None;
                     }
                     Err(error) => self.notes_error = Some(format!("{error}")),
@@ -8897,7 +8904,114 @@ impl App {
             Action::CloseNote => {
                 self.open_note = None;
                 self.note_draft.clear();
+                self.note_title.clear();
                 self.note_links.clear();
+                self.note_read = false;
+            }
+            Action::RenameNote { id, title } => {
+                let renamed = match self.open_notes() {
+                    Some(store) => store.rename(id, &title),
+                    None => return,
+                };
+                match renamed {
+                    Ok(()) => {
+                        if let Some(note) = self.open_note.as_mut() {
+                            note.title = title;
+                            note.title_set = true;
+                        }
+                        self.refresh_notes();
+                    }
+                    Err(error) => self.notes_error = Some(format!("{error}")),
+                }
+            }
+            Action::DuplicateNote(id) => {
+                let copied = match self.open_notes() {
+                    Some(store) => store.duplicate(id),
+                    None => return,
+                };
+                match copied {
+                    Ok(Some(copy)) => {
+                        self.refresh_notes();
+                        self.actions.push(Action::OpenNote(copy));
+                    }
+                    Ok(None) => {}
+                    Err(error) => self.notes_error = Some(format!("{error}")),
+                }
+            }
+            Action::ExportNote(id) => {
+                let note = match self
+                    .notes
+                    .as_ref()
+                    .and_then(|store| store.get(id).ok().flatten())
+                {
+                    Some(note) => note,
+                    None => return,
+                };
+                // The folder the reader chose for downloads, else the one the
+                // system offers, else where the notes live.
+                let folder = self
+                    .settings
+                    .download_folder
+                    .clone()
+                    .or_else(|| {
+                        directories::UserDirs::new()
+                            .and_then(|dirs| dirs.download_dir().map(std::path::Path::to_path_buf))
+                    })
+                    .unwrap_or_else(|| self.dirs.state.clone());
+                let path = crate::notes::export_path(&folder, &note.title);
+                match std::fs::write(&path, &note.body) {
+                    Ok(()) => {
+                        let said = crate::i18n::gettext(self.locale, "Saved to {path}")
+                            .replace("{path}", &path.display().to_string());
+                        self.toast(said);
+                    }
+                    Err(error) => self.notes_error = Some(format!("{error}")),
+                }
+            }
+            Action::RemoveNoteCitation { note, reference } => {
+                let removed = match self.open_notes() {
+                    Some(store) => store.unlink(note, &reference),
+                    None => return,
+                };
+                match removed {
+                    Ok(()) => {
+                        self.note_links = match self.notes.as_ref() {
+                            Some(store) => store.links(note).unwrap_or_default(),
+                            None => Vec::new(),
+                        };
+                    }
+                    Err(error) => self.notes_error = Some(format!("{error}")),
+                }
+            }
+            Action::ToggleNoteRead => {
+                if self.open_note.is_some() {
+                    self.note_read = !self.note_read;
+                }
+            }
+            Action::ToggleNoteTask { id, marker } => {
+                let Some(mut note) = self.open_note.clone() else {
+                    return;
+                };
+                if note.id != id {
+                    return;
+                }
+                let body = crate::notes::markdown::toggle_task(&self.note_draft, &marker);
+                if body == self.note_draft {
+                    return;
+                }
+                note.body = body.clone();
+                let written = match self.open_notes() {
+                    Some(store) => store.save(&mut note),
+                    None => return,
+                };
+                match written {
+                    Ok(()) => {
+                        self.note_draft = body;
+                        self.open_note = Some(note);
+                        self.refresh_notes();
+                    }
+                    Err(error) => self.notes_error = Some(format!("{error}")),
+                }
             }
             Action::NewNote => {
                 let mut note = crate::notes::Note::new();
@@ -8910,7 +9024,9 @@ impl App {
                 match created {
                     Ok(()) => {
                         self.note_draft.clear();
+                        self.note_title.clear();
                         self.open_note = Some(note);
+                        self.note_read = false;
                         self.note_editing = true;
                         self.refresh_notes();
                     }
@@ -8922,7 +9038,9 @@ impl App {
                     return;
                 };
                 note.body = self.note_draft.clone();
-                note.title = crate::notes::Note::title_from(&note.body);
+                if note.title_set {
+                    note.title = self.note_title.clone();
+                }
                 let written = match self.open_notes() {
                     Some(store) => store.save(&mut note),
                     None => return,
@@ -8969,6 +9087,7 @@ impl App {
                         self.note_draft = note.body.clone();
                         self.note_links = vec![crate::notes::NoteRef::Message { chat, message }];
                         self.open_note = Some(note);
+                        self.note_read = false;
                         self.note_editing = true;
                         // The note is shown where it is written.
                         self.actions.push(Action::Open(Page::Notes));
@@ -8992,6 +9111,8 @@ impl App {
                         if self.open_note.as_ref().is_some_and(|note| note.id == id) {
                             self.open_note = None;
                             self.note_draft.clear();
+                            self.note_title.clear();
+                            self.note_read = false;
                         }
                         self.refresh_notes();
                     }
@@ -15276,6 +15397,8 @@ mod tests {
         let store = crate::notes::NoteStore::in_memory().expect("an in-memory store");
         let mut note = crate::notes::Note {
             title: "First".to_owned(),
+            // Named by hand, so it keeps the name the body does not give it.
+            title_set: true,
             body: "milk".to_owned(),
             ..crate::notes::Note::new()
         };
@@ -15292,12 +15415,253 @@ mod tests {
         );
         app.apply(Action::CloseNote, &ctx);
         assert!(app.open_note.is_none());
-        // A search that leaves the open note out closes it.
+        // A search that leaves the open note out filters the list and keeps
+        // the note where the reader is writing.
         app.apply(Action::OpenNote(note.id), &ctx);
         app.notes_search = "nothing matches this".to_owned();
         app.apply(Action::RefreshNotes, &ctx);
         assert!(app.notes_list.is_empty());
-        assert!(app.open_note.is_none());
+        assert!(app.open_note.is_some());
+    }
+
+    /// A note is named by hand, copied with its words, and saved to a file
+    /// without writing over one already there.
+    #[test]
+    fn renaming_duplicating_and_exporting_a_note() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, _events) =
+            App::headless(AppDirs::under(directory.path()), Settings::default());
+        app.notes = Some(crate::notes::NoteStore::in_memory().expect("a store"));
+        let ctx = egui::Context::default();
+        app.apply(Action::Open(Page::Notes), &ctx);
+        app.apply(Action::NewNote, &ctx);
+        let id = app.open_note.as_ref().expect("a new note").id;
+        app.note_draft = "milk and bread".to_owned();
+        app.apply(Action::SaveNote, &ctx);
+
+        // A name given by hand survives an edit of the body.
+        app.note_title = "Shopping".to_owned();
+        app.apply(
+            Action::RenameNote {
+                id,
+                title: "Shopping".to_owned(),
+            },
+            &ctx,
+        );
+        app.note_draft = "milk, bread and salt".to_owned();
+        app.apply(Action::SaveNote, &ctx);
+        let stored = app
+            .notes
+            .as_ref()
+            .unwrap()
+            .get(id)
+            .unwrap()
+            .expect("the note");
+        assert_eq!(stored.title, "Shopping");
+        assert_eq!(stored.body, "milk, bread and salt");
+
+        // The copy keeps the words and says it is a copy.
+        app.apply(Action::DuplicateNote(id), &ctx);
+        let copy = app
+            .notes
+            .as_ref()
+            .unwrap()
+            .list()
+            .unwrap()
+            .into_iter()
+            .find(|summary| summary.title == "Shopping (copy)")
+            .expect("the copy is in the list")
+            .id;
+
+        // Exporting writes the markdown where downloads go, and a second
+        // export takes a new name rather than the first one's.
+        app.settings.download_folder = Some(directory.path().to_path_buf());
+        app.apply(Action::ExportNote(copy), &ctx);
+        let first = directory.path().join("Shopping (copy).md");
+        assert_eq!(
+            std::fs::read_to_string(&first).expect("the exported note"),
+            "milk, bread and salt"
+        );
+        app.apply(Action::ExportNote(copy), &ctx);
+        assert!(directory.path().join("Shopping (copy) 2.md").exists());
+    }
+
+    /// Deleting a note is asked for, and nothing is lost before the answer.
+    #[test]
+    fn deleting_a_note_asks_first() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, _events) =
+            App::headless(AppDirs::under(directory.path()), Settings::default());
+        app.notes = Some(crate::notes::NoteStore::in_memory().expect("a store"));
+        let ctx = egui::Context::default();
+        app.apply(Action::Open(Page::Notes), &ctx);
+        app.apply(Action::NewNote, &ctx);
+        let id = app.open_note.as_ref().expect("a new note").id;
+        app.note_draft = "keep me".to_owned();
+        app.apply(Action::SaveNote, &ctx);
+
+        app.apply(Action::ShowDialog(Dialog::ConfirmDeleteNote(id)), &ctx);
+        assert!(matches!(app.dialog, Some(Dialog::ConfirmDeleteNote(_))));
+        assert!(
+            app.notes.as_ref().unwrap().get(id).unwrap().is_some(),
+            "nothing is gone while the question stands"
+        );
+        app.apply(Action::DeleteNote(id), &ctx);
+        assert!(app.notes.as_ref().unwrap().get(id).unwrap().is_none());
+    }
+
+    /// A note keeps citing a message whose chat this computer no longer has.
+    #[test]
+    fn a_citation_of_a_deleted_chat_still_reads() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, _events) =
+            App::headless(AppDirs::under(directory.path()), Settings::default());
+        let store = crate::notes::NoteStore::in_memory().expect("a store");
+        let mut note = crate::notes::Note {
+            body: "who said that".to_owned(),
+            ..crate::notes::Note::new()
+        };
+        store.save(&mut note).expect("saves");
+        store
+            .link(
+                note.id,
+                &crate::notes::NoteRef::Message {
+                    chat: "gone@s.whatsapp.net".to_owned(),
+                    message: "3EB0".to_owned(),
+                },
+            )
+            .expect("links");
+        app.notes = Some(store);
+        let ctx = egui::Context::default();
+        app.apply(Action::Open(Page::Notes), &ctx);
+        app.apply(Action::OpenNote(note.id), &ctx);
+        assert_eq!(app.note_links.len(), 1, "the citation is kept");
+        assert_eq!(
+            app.open_note.as_ref().expect("open").body,
+            "who said that",
+            "and the note still opens"
+        );
+    }
+
+    /// Taking one citation off a note leaves the others.
+    #[test]
+    fn removing_one_citation_keeps_the_others() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, _events) =
+            App::headless(AppDirs::under(directory.path()), Settings::default());
+        let store = crate::notes::NoteStore::in_memory().expect("a store");
+        let mut note = crate::notes::Note {
+            body: "two sources".to_owned(),
+            ..crate::notes::Note::new()
+        };
+        store.save(&mut note).expect("saves");
+        let first = crate::notes::NoteRef::Message {
+            chat: "a@s.whatsapp.net".to_owned(),
+            message: "1".to_owned(),
+        };
+        let second = crate::notes::NoteRef::Message {
+            chat: "b@s.whatsapp.net".to_owned(),
+            message: "2".to_owned(),
+        };
+        store.link(note.id, &first).expect("links");
+        store.link(note.id, &second).expect("links");
+        app.notes = Some(store);
+        let ctx = egui::Context::default();
+        app.apply(Action::Open(Page::Notes), &ctx);
+        app.apply(Action::OpenNote(note.id), &ctx);
+        assert_eq!(app.note_links.len(), 2);
+
+        app.apply(
+            Action::RemoveNoteCitation {
+                note: note.id,
+                reference: first,
+            },
+            &ctx,
+        );
+        assert_eq!(app.note_links.len(), 1);
+        assert!(
+            matches!(&app.note_links[0], crate::notes::NoteRef::Message { chat, .. } if chat == "b@s.whatsapp.net"),
+            "{:?}",
+            app.note_links[0]
+        );
+    }
+
+    /// A search filters the list and leaves the note the reader has open
+    /// alone.
+    #[test]
+    fn searching_keeps_the_open_note() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, _events) =
+            App::headless(AppDirs::under(directory.path()), Settings::default());
+        let store = crate::notes::NoteStore::in_memory().expect("an in-memory store");
+        let mut note = crate::notes::Note {
+            body: "milk".to_owned(),
+            ..crate::notes::Note::new()
+        };
+        store.save(&mut note).expect("saves");
+        app.notes = Some(store);
+        let ctx = egui::Context::default();
+        app.apply(Action::Open(Page::Notes), &ctx);
+        app.apply(Action::OpenNote(note.id), &ctx);
+        app.notes_search = "nothing matches this".to_owned();
+        app.apply(Action::RefreshNotes, &ctx);
+        assert!(app.notes_list.is_empty(), "the search filters the list");
+        assert!(app.open_note.is_some(), "and leaves the note open");
+    }
+
+    /// A checklist item ticked in the reading view is written back into the
+    /// note's own text, and ticking it again takes the mark off.
+    #[test]
+    fn toggling_a_task_writes_the_source() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, _events) =
+            App::headless(AppDirs::under(directory.path()), Settings::default());
+        let store = crate::notes::NoteStore::in_memory().expect("an in-memory store");
+        let mut note = crate::notes::Note {
+            body: "- [ ] the budget".to_owned(),
+            ..crate::notes::Note::new()
+        };
+        store.save(&mut note).expect("saves");
+        app.notes = Some(store);
+        let ctx = egui::Context::default();
+        app.apply(Action::Open(Page::Notes), &ctx);
+        app.apply(Action::OpenNote(note.id), &ctx);
+        assert_eq!(app.note_draft, "- [ ] the budget");
+        let marker = |app: &App| {
+            crate::notes::markdown::parse(&app.note_draft)
+                .into_iter()
+                .find_map(|block| match block.kind {
+                    crate::notes::markdown::Kind::Task { marker, .. } => Some(marker),
+                    _ => None,
+                })
+                .expect("a task marker")
+        };
+        let range = marker(&app);
+        app.apply(
+            Action::ToggleNoteTask {
+                id: note.id,
+                marker: range,
+            },
+            &ctx,
+        );
+        assert_eq!(app.note_draft, "- [x] the budget");
+        let stored = app
+            .notes
+            .as_ref()
+            .unwrap()
+            .get(note.id)
+            .expect("reads")
+            .expect("the note");
+        assert_eq!(stored.body, "- [x] the budget");
+        let range = marker(&app);
+        app.apply(
+            Action::ToggleNoteTask {
+                id: note.id,
+                marker: range,
+            },
+            &ctx,
+        );
+        assert_eq!(app.note_draft, "- [ ] the budget");
     }
 
     /// Arrow Up in an empty composer takes the chat's newest message: our own

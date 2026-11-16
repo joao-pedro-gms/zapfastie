@@ -41,9 +41,10 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
                 Dialog::NewContact => 380.0,
                 Dialog::NewChat => 420.0,
                 Dialog::UnlockLockedChats | Dialog::ConfirmLockChat(_) => 380.0,
-                Dialog::ConfirmDeleteChat(_) | Dialog::JoinGroup | Dialog::ConfirmStartOver => {
-                    380.0
-                }
+                Dialog::ConfirmDeleteChat(_)
+                | Dialog::ConfirmDeleteNote(_)
+                | Dialog::JoinGroup
+                | Dialog::ConfirmStartOver => 380.0,
                 Dialog::ConfirmClearChat(_) => 380.0,
                 Dialog::ExportChat { .. } => {
                     380.0_f32.min((ui.ctx().content_rect().width() - 48.0).max(180.0))
@@ -100,6 +101,7 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
                 Dialog::UnlockLockedChats => unlock_locked_chats(app, ui),
                 Dialog::ConfirmLockChat(id) => confirm_lock_chat(app, ui, &id),
                 Dialog::ConfirmDeleteChat(id) => confirm_delete_chat(app, ui, &id),
+                Dialog::ConfirmDeleteNote(id) => confirm_delete_note(app, ui, id),
                 Dialog::ConfirmClearChat(id) => confirm_clear_chat(app, ui, &id),
                 Dialog::ExportChat {
                     chat,
@@ -1147,6 +1149,32 @@ fn confirm_delete_chat(app: &mut App, ui: &mut egui::Ui, id: &str) {
         &[&body],
         &crate::i18n::gettext(locale, "Delete"),
         [Action::DeleteChat(id.to_owned())],
+    );
+}
+
+/// Asks before a note is lost: it lives in this computer's own database, and
+/// nothing else holds a copy.
+fn confirm_delete_note(app: &mut App, ui: &mut egui::Ui, id: i64) {
+    let locale = app.locale;
+    let title = app
+        .notes
+        .as_ref()
+        .and_then(|store| store.get(id).ok().flatten())
+        .map(|note| note.title)
+        .filter(|title| !title.trim().is_empty())
+        .unwrap_or_else(|| crate::i18n::gettext(locale, "this note").into_owned());
+    let body = crate::i18n::gettext(
+        locale,
+        "This deletes \"{title}\" and what it cites, on this computer. It cannot be undone.",
+    )
+    .replace("{title}", &title);
+    confirm_destructive(
+        app,
+        ui,
+        &crate::i18n::gettext(locale, "Delete note?"),
+        &[&body],
+        &crate::i18n::gettext(locale, "Delete"),
+        [Action::DeleteNote(id)],
     );
 }
 

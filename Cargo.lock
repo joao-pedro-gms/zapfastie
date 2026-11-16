@@ -5539,6 +5539,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pulldown-cmark"
+version = "0.13.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3db2be46835f013dd3f4fa7f5f7402c537787b54ebb6fe2b94bbdd7e2669bb7b"
+dependencies = [
+ "bitflags 2.13.1",
+ "memchr",
+ "unicase",
+]
+
+[[package]]
 name = "pulseaudio"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9050,6 +9061,7 @@ dependencies = [
  "openh264-sys2",
  "opus",
  "png 0.18.1",
+ "pulldown-cmark",
  "qrcode",
  "rand 0.10.3",
  "rasterlottie",

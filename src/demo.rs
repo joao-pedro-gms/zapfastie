@@ -1014,22 +1014,22 @@ fn notes_sample(app: &mut App, part: &str) {
         let written = [
             (
                 "Rust Berlin",
-                "# Rust Berlin\n\nThursday, 19:00, at c-base. Ada is bringing the projector.\n\nThings to ask:\n- who signs the lease\n- the sticker budget",
+                "Thursday, 19:00, at c-base. Ada is bringing the projector.\n\nThings to ask:\n- who signs the lease\n- the sticker budget\n\n- [ ] book the room\n- [x] ask Ada about the laptop",
                 true,
             ),
             (
                 "Lease renewal",
-                "# Lease renewal\n\nReply to Frau Weber before the 20th. The rent goes up by 3 percent, and the deposit stays the same.",
+                "Reply to **Frau Weber** before the 20th. The rent goes up by 3 percent, and the deposit stays the same.\n\n> the lease is signed until March",
                 false,
             ),
             (
                 "Reading list",
-                "# Reading list\n\n- The Soul of a New Machine\n- A Philosophy of Software Design\n- The Making of Prince of Persia",
+                "- The Soul of a New Machine\n- A Philosophy of Software Design\n- ~~The Making of Prince of Persia~~",
                 false,
             ),
             (
                 "Recipe: the good one",
-                "# Recipe\n\n400 g flour, 250 ml water, 8 g salt, 2 g yeast. Fold every 40 minutes, four times.",
+                "400 g flour, 250 ml water, 8 g salt, 2 g yeast. Fold every 40 minutes, four times.\n\n```\n00:00 mix\n00:40 fold\n01:20 fold\n```",
                 false,
             ),
         ];
@@ -1037,6 +1037,8 @@ fn notes_sample(app: &mut App, part: &str) {
         for (title, body, pinned) in written {
             let mut note = Note {
                 title: title.to_owned(),
+                // The samples are named by hand, as a reader names them.
+                title_set: true,
                 body: body.to_owned(),
                 pinned,
                 ..Note::new()
@@ -1059,10 +1061,15 @@ fn notes_sample(app: &mut App, part: &str) {
     app.notes_loaded = false;
     app.open_note = None;
     app.refresh_notes();
-    if part == "note-open"
+    if matches!(part, "note-open" | "notes-read" | "notes-narrow")
         && let Some(first) = app.notes_list.first()
     {
         app.actions.push(crate::model::Action::OpenNote(first.id));
+        if part == "notes-read" {
+            // The reading view is what Ctrl+E shows, asked for after the note
+            // opens.
+            app.actions.push(crate::model::Action::ToggleNoteRead);
+        }
     }
 }
 
@@ -3587,7 +3594,9 @@ pub fn apply_flags(app: &mut App, page: Option<&str>) {
             }
             // The notes tab: a store of its own, in memory so a screenshot
             // and the layout tests need no keyring to draw it.
-            "notes" | "notes-empty" | "note-open" => notes_sample(app, part),
+            "notes" | "notes-empty" | "note-open" | "notes-read" | "notes-narrow" => {
+                notes_sample(app, part)
+            }
             // What Arrow Up does in an empty composer when the chat ends on
             // someone else's message: the composer quotes it. The group is
             // the sample where a member spoke last.
@@ -9885,6 +9894,8 @@ mod tests {
             "notes",
             "notes-empty",
             "note-open",
+            "notes-read",
+            "notes-narrow",
             "sticker-add",
             "sticker-view",
             "sticker-pack-message",
@@ -26370,5 +26381,108 @@ mod rail_tests {
         assert_eq!(app.page, Page::Calls);
         assert!(app.open_chat.is_none());
         assert!(rail_rect(&ctx).is_some() && list_header(&ctx).is_some());
+    }
+
+    /// The note's page is as wide as reading allows, centred in its column and
+    /// filling it down to the line that counts the note.
+    #[test]
+    fn the_note_column_is_centred_and_full_height() {
+        let mut app = app();
+        apply_flags(&mut app, Some("note-open"));
+        let ctx = egui::Context::default();
+        app.attach(&ctx);
+        for _ in 0..3 {
+            frame_at(&mut app, &ctx, egui::vec2(1280.0, 800.0), Vec::new());
+        }
+        let surface = ctx
+            .data(|data| data.get_temp::<egui::Rect>(crate::ui::notes::surface_id()))
+            .expect("the writing surface");
+        let pane = ctx
+            .data(|data| data.get_temp::<egui::Rect>(crate::ui::notes::pane_id()))
+            .expect("the pane");
+        assert!(
+            (surface.center().x - pane.center().x).abs() <= 2.0,
+            "{surface:?} in {pane:?}"
+        );
+        assert!(surface.width() <= 720.5, "no wider than reading");
+        let below = pane.bottom() - surface.bottom();
+        assert!(
+            (below - 22.0).abs() <= 4.0,
+            "{below} left under the surface"
+        );
+    }
+
+    /// The note's actions keep clear of the caption buttons the window draws
+    /// over its top-right corner.
+    #[test]
+    fn the_note_header_leaves_the_caption_room() {
+        let mut app = app();
+        apply_flags(&mut app, Some("note-open"));
+        let ctx = egui::Context::default();
+        app.attach(&ctx);
+        crate::theme::preview_titlebar(
+            &ctx,
+            fastframe_titlebar::Footprint {
+                left: 0.0,
+                right: 138.0,
+                height: 40.0,
+            },
+        );
+        for _ in 0..3 {
+            frame_at(&mut app, &ctx, egui::vec2(1280.0, 800.0), Vec::new());
+        }
+        let actions = ctx
+            .data(|data| data.get_temp::<egui::Rect>(crate::ui::notes::actions_id()))
+            .expect("the note's actions");
+        let window = ctx.content_rect();
+        assert!(
+            window.right() - actions.right() >= 130.0,
+            "{actions:?} in {window:?}"
+        );
+    }
+
+    /// Narrow enough for one column: the note takes the window and the header
+    /// gives a way back to the list.
+    #[test]
+    fn a_narrow_window_shows_one_column_with_a_way_back() {
+        let mut app = app();
+        apply_flags(&mut app, Some("note-open"));
+        let ctx = egui::Context::default();
+        app.attach(&ctx);
+        for _ in 0..3 {
+            frame_at(&mut app, &ctx, egui::vec2(760.0, 680.0), Vec::new());
+        }
+        assert!(
+            ctx.data(|data| data.get_temp::<egui::Rect>(crate::ui::notes::list_id()))
+                .is_none(),
+            "the list steps aside"
+        );
+        assert!(
+            ctx.data(|data| data.get_temp::<egui::Rect>(crate::ui::notes::surface_id()))
+                .is_some(),
+            "the note is what is shown"
+        );
+        assert!(
+            ctx.data(|data| data.get_temp::<egui::Rect>(crate::ui::notes::back_id()))
+                .is_some(),
+            "with a way back to the list"
+        );
+    }
+
+    /// With no notes at all, the pane itself offers to start one.
+    #[test]
+    fn the_empty_pane_offers_a_new_note() {
+        let mut app = app();
+        apply_flags(&mut app, Some("notes-empty"));
+        let ctx = egui::Context::default();
+        app.attach(&ctx);
+        for _ in 0..3 {
+            frame_at(&mut app, &ctx, egui::vec2(1280.0, 800.0), Vec::new());
+        }
+        assert!(
+            ctx.data(|data| data.get_temp::<egui::Rect>(crate::ui::notes::new_note_id()))
+                .is_some(),
+            "the empty pane offers to start a note"
+        );
     }
 }

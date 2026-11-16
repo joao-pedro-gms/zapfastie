@@ -2520,6 +2520,8 @@ pub enum Dialog {
     Labels,
     /// Confirms deleting a chat, which cannot be undone.
     ConfirmDeleteChat(ChatId),
+    /// Confirms deleting a note, which cannot be undone.
+    ConfirmDeleteNote(i64),
     /// Confirms clearing a chat's messages, which cannot be undone.
     ConfirmClearChat(ChatId),
     ExportChat {
@@ -3087,6 +3089,28 @@ pub enum Action {
     OpenNote(i64),
     /// Closes the note the reader shows, back to the list.
     CloseNote,
+    /// Reads the open note rather than writing it, and back.
+    ToggleNoteRead,
+    /// Ticks or unticks one checklist item, named by the bytes of its box in
+    /// the note's own text.
+    ToggleNoteTask {
+        id: i64,
+        marker: std::ops::Range<usize>,
+    },
+    /// Names a note by hand, from the title field.
+    RenameNote {
+        id: i64,
+        title: String,
+    },
+    /// Copies a note, its pin and what it cites.
+    DuplicateNote(i64),
+    /// Saves a note's markdown to a file the reader can keep.
+    ExportNote(i64),
+    /// Takes one citation off a note, keeping the rest.
+    RemoveNoteCitation {
+        note: i64,
+        reference: crate::notes::NoteRef,
+    },
     /// Reads the notes again for the search text as it stands.
     RefreshNotes,
     /// Puts the keys in the notes tab's search field.

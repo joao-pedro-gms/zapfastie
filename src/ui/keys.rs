@@ -33,6 +33,10 @@ pub fn handle(app: &mut App, ctx: &egui::Context) {
         return;
     }
     let editing_text = ctx.text_edit_focused();
+    // On the notes tab the formatting keys belong to the note being written:
+    // Ctrl+B, Ctrl+I, Ctrl+K and Ctrl+E format there, and must not reach the
+    // chat the window was showing before.
+    let notes = app.page == crate::model::Page::Notes;
     let find = find_action(app);
     let archive = archive_action(app);
     let next_account = next_account_action(app);
@@ -78,7 +82,9 @@ pub fn handle(app: &mut App, ctx: &egui::Context) {
                 Action::LockApp,
             );
         }
-        key(Modifiers::COMMAND, Key::K, Action::FocusSearch);
+        if !notes {
+            key(Modifiers::COMMAND, Key::K, Action::FocusSearch);
+        }
         if let Some(next_account) = next_account {
             key(Modifiers::COMMAND | Modifiers::SHIFT, Key::A, next_account);
         }
@@ -122,10 +128,12 @@ pub fn handle(app: &mut App, ctx: &egui::Context) {
                 Action::ToggleQuickStickers,
             );
         }
-        if let Some(archive) = archive {
-            key(Modifiers::COMMAND, Key::E, archive);
+        if !notes {
+            if let Some(archive) = archive {
+                key(Modifiers::COMMAND, Key::E, archive);
+            }
+            key(Modifiers::COMMAND, Key::B, Action::ToggleSidebar);
         }
-        key(Modifiers::COMMAND, Key::B, Action::ToggleSidebar);
         key(Modifiers::COMMAND, Key::Comma, Action::ToggleSettings);
         key(Modifiers::COMMAND, Key::Q, Action::Quit);
         key(Modifiers::COMMAND, Key::W, Action::CloseWindow);

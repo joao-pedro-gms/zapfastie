@@ -18,13 +18,18 @@ use rusqlite::{Connection, OptionalExtension, params};
 
 use crate::util::now;
 
-/// The tables of a notes database, created on open.
+pub mod edit;
+pub mod markdown;
+
+/// The tables of a notes database, created on open. `title_set` marks a title
+/// the reader wrote by hand; a note without it is named by its first line.
 const SCHEMA: &str = "
 CREATE TABLE IF NOT EXISTS notes (
     id INTEGER PRIMARY KEY,
     title TEXT NOT NULL DEFAULT '',
     body TEXT NOT NULL DEFAULT '',
     pinned INTEGER NOT NULL DEFAULT 0,
+    title_set INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
 );
@@ -38,6 +43,10 @@ CREATE TABLE IF NOT EXISTS note_links (
 CREATE INDEX IF NOT EXISTS note_links_note ON note_links (note);
 CREATE INDEX IF NOT EXISTS note_links_message ON note_links (chat, message);
 ";
+
+/// The newest shape of the database. A store older than this is migrated on
+/// open, keeping every note it holds.
+const SCHEMA_VERSION: i64 = 1;
 
 /// What a note was written about.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -58,6 +67,9 @@ pub struct Note {
     /// What the list shows. The first line of the body, unless the reader
     /// renamed it.
     pub title: String,
+    /// Whether the reader wrote the title by hand: such a note keeps it when
+    /// its body changes, and one without follows its first line.
+    pub title_set: bool,
     pub body: String,
     pub pinned: bool,
     pub created_at: i64,
@@ -112,6 +124,45 @@ pub struct NoteSummary {
     pub updated_at: i64,
     /// The first words of the body under the title, for the row's second line.
     pub excerpt: String,
+    /// Whether the note cites a message or a mail.
+    pub cited: bool,
+}
+
+/// The name a copy of a note takes.
+fn copy_title(title: &str) -> String {
+    let title = title.trim();
+    if title.is_empty() {
+        return String::new();
+    }
+    format!("{title} (copy)")
+}
+
+/// The file a note is exported to: its title made safe for a file name, and a
+/// number added rather than writing over a file that is already there.
+pub fn export_path(folder: &Path, title: &str) -> std::path::PathBuf {
+    let mut name: String = title
+        .chars()
+        .map(|character| match character {
+            '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' | '\n' | '\r' | '\t' => '-',
+            character => character,
+        })
+        .collect();
+    name = name.trim().trim_matches('.').to_owned();
+    if name.is_empty() {
+        name = "Note".to_owned();
+    }
+    // Long enough names are cut by characters, never in the middle of one.
+    if let Some((cut, _)) = name.char_indices().nth(80) {
+        name.truncate(cut);
+        name = name.trim_end().to_owned();
+    }
+    let mut path = folder.join(format!("{name}.md"));
+    let mut number = 2;
+    while path.exists() {
+        path = folder.join(format!("{name} {number}.md"));
+        number += 1;
+    }
+    path
 }
 
 /// How much of a note a list row quotes under its title.
@@ -137,14 +188,57 @@ impl NoteStore {
     fn prepare(connection: Connection) -> Result<Self> {
         connection.execute_batch("PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;")?;
         connection.execute_batch(SCHEMA)?;
+        Self::migrate(&connection)?;
         Ok(Self { connection })
+    }
+
+    /// Brings a database written by an older build up to [`SCHEMA_VERSION`],
+    /// keeping what it holds. Runs on every open, and changes nothing once the
+    /// database is current.
+    fn migrate(connection: &Connection) -> Result<()> {
+        let version: i64 = connection.query_row("PRAGMA user_version", [], |row| row.get(0))?;
+        if version >= SCHEMA_VERSION {
+            return Ok(());
+        }
+        if version < 1 {
+            // A title the reader writes by hand, told apart from the one the
+            // first line gives.
+            let has_title_set: i64 = connection.query_row(
+                "SELECT count(*) FROM pragma_table_info('notes') WHERE name = 'title_set'",
+                [],
+                |row| row.get(0),
+            )?;
+            if has_title_set == 0 {
+                connection.execute(
+                    "ALTER TABLE notes ADD COLUMN title_set INTEGER NOT NULL DEFAULT 0",
+                    [],
+                )?;
+            }
+            // One citation per subject: the store already refused a second
+            // one, and a database that holds one is folded rather than lost.
+            connection.execute(
+                "DELETE FROM note_links WHERE rowid NOT IN (
+                    SELECT min(rowid) FROM note_links
+                    GROUP BY note, chat, message, mail_account, mail_uid
+                 )",
+                [],
+            )?;
+            connection.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS note_links_unique
+                 ON note_links (note, chat, message, mail_account, mail_uid)",
+                [],
+            )?;
+        }
+        connection.execute_batch(&format!("PRAGMA user_version = {SCHEMA_VERSION}"))?;
+        Ok(())
     }
 
     /// Every note, pinned first and then the most recently written.
     pub fn list(&self) -> Result<Vec<NoteSummary>> {
         self.summaries(
-            "SELECT id, title, body, pinned, updated_at FROM notes
-             ORDER BY pinned DESC, updated_at DESC, id DESC",
+            "SELECT id, title, body, pinned, updated_at,
+                    EXISTS (SELECT 1 FROM note_links WHERE note = notes.id)
+             FROM notes ORDER BY pinned DESC, updated_at DESC, id DESC",
             [],
         )
     }
@@ -154,21 +248,14 @@ impl NoteStore {
         let mut statement = self.connection.prepare(sql)?;
         let rows = statement.query_map(params, |row| {
             let body: String = row.get(2)?;
+            let title: String = row.get(1)?;
             Ok(NoteSummary {
                 id: row.get(0)?,
-                title: row.get(1)?,
+                excerpt: markdown::excerpt(&body, &title, EXCERPT_CHARS),
+                title,
                 pinned: row.get(3)?,
                 updated_at: row.get(4)?,
-                excerpt: body
-                    .lines()
-                    .map(str::trim)
-                    .filter(|line| !line.is_empty())
-                    .skip(1)
-                    .collect::<Vec<_>>()
-                    .join(" ")
-                    .chars()
-                    .take(EXCERPT_CHARS)
-                    .collect(),
+                cited: row.get(5)?,
             })
         })?;
         Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
@@ -179,24 +266,36 @@ impl NoteStore {
         Ok(self
             .connection
             .query_row(
-                "SELECT id, title, body, pinned, created_at, updated_at FROM notes WHERE id = ?1",
+                "SELECT id, title, title_set, body, pinned, created_at, updated_at
+                 FROM notes WHERE id = ?1",
                 [id],
                 |row| {
                     Ok(Note {
                         id: row.get(0)?,
                         title: row.get(1)?,
-                        body: row.get(2)?,
-                        pinned: row.get(3)?,
-                        created_at: row.get(4)?,
-                        updated_at: row.get(5)?,
+                        title_set: row.get(2)?,
+                        body: row.get(3)?,
+                        pinned: row.get(4)?,
+                        created_at: row.get(5)?,
+                        updated_at: row.get(6)?,
                     })
                 },
             )
             .optional()?)
     }
 
-    /// Writes a note, inserting it when it has no id yet and returning the id
-    /// it was given. The title follows the body unless it was set by hand.
+    /// Names a note by hand: from then on the title stays what the reader
+    /// wrote, however its body changes.
+    pub fn rename(&self, id: i64, title: &str) -> Result<()> {
+        self.connection.execute(
+            "UPDATE notes SET title = ?2, title_set = 1, updated_at = ?3 WHERE id = ?1",
+            params![id, title, now()],
+        )?;
+        Ok(())
+    }
+
+    /// Writes a note, inserting it when it has no id yet. A note the reader
+    /// named keeps that title; one named by its first line follows its body.
     pub fn save(&self, note: &mut Note) -> Result<()> {
         let at = now();
         note.updated_at = at;
@@ -205,15 +304,16 @@ impl NoteStore {
         } else {
             note.created_at
         };
-        if note.title.trim().is_empty() {
+        if !note.title_set {
             note.title = Note::title_from(&note.body);
         }
         if note.id == 0 {
             self.connection.execute(
-                "INSERT INTO notes (title, body, pinned, created_at, updated_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5)",
+                "INSERT INTO notes (title, title_set, body, pinned, created_at, updated_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
                 params![
                     note.title,
+                    note.title_set,
                     note.body,
                     note.pinned,
                     note.created_at,
@@ -223,12 +323,35 @@ impl NoteStore {
             note.id = self.connection.last_insert_rowid();
         } else {
             self.connection.execute(
-                "UPDATE notes SET title = ?2, body = ?3, pinned = ?4, updated_at = ?5
-                 WHERE id = ?1",
-                params![note.id, note.title, note.body, note.pinned, note.updated_at],
+                "UPDATE notes SET title = ?2, title_set = ?3, body = ?4, pinned = ?5,
+                 updated_at = ?6 WHERE id = ?1",
+                params![
+                    note.id,
+                    note.title,
+                    note.title_set,
+                    note.body,
+                    note.pinned,
+                    note.updated_at
+                ],
             )?;
         }
         Ok(())
+    }
+
+    /// Copies a note, its pin and what it cites, naming the copy after the
+    /// original. Returns the copy's id, or `None` when the note is gone.
+    pub fn duplicate(&self, id: i64) -> Result<Option<i64>> {
+        let Some(mut copy) = self.get(id)? else {
+            return Ok(None);
+        };
+        copy.id = 0;
+        copy.title_set = true;
+        copy.title = copy_title(&copy.title);
+        self.save(&mut copy)?;
+        for reference in self.links(id)? {
+            self.link(copy.id, &reference)?;
+        }
+        Ok(Some(copy.id))
     }
 
     /// Removes a note and what it cited.
@@ -249,7 +372,9 @@ impl NoteStore {
         }
         let needle = format!("%{}%", query.replace('%', "\\%").replace('_', "\\_"));
         self.summaries(
-            "SELECT id, title, body, pinned, updated_at FROM notes
+            "SELECT id, title, body, pinned, updated_at,
+                    EXISTS (SELECT 1 FROM note_links WHERE note = notes.id)
+             FROM notes
              WHERE title LIKE ?1 ESCAPE '\\' OR body LIKE ?1 ESCAPE '\\'
              ORDER BY pinned DESC, updated_at DESC, id DESC",
             [&needle],
@@ -340,11 +465,91 @@ mod tests {
     fn written(store: &NoteStore, title: &str, body: &str) -> i64 {
         let mut note = Note {
             title: title.to_owned(),
+            // A test names its note by hand, so the title it passes stays.
+            title_set: !title.is_empty(),
             body: body.to_owned(),
             ..Note::new()
         };
         store.save(&mut note).expect("saves");
         note.id
+    }
+
+    #[test]
+    fn an_older_notes_database_gains_the_title_column() {
+        // The shape the store had before a note could be named by hand.
+        let connection = Connection::open_in_memory().expect("a database");
+        connection
+            .execute_batch(
+                "CREATE TABLE notes (
+                    id INTEGER PRIMARY KEY,
+                    title TEXT NOT NULL DEFAULT '',
+                    body TEXT NOT NULL DEFAULT '',
+                    pinned INTEGER NOT NULL DEFAULT 0,
+                    created_at INTEGER NOT NULL,
+                    updated_at INTEGER NOT NULL
+                 );
+                 CREATE TABLE note_links (
+                    note INTEGER NOT NULL,
+                    chat TEXT NOT NULL DEFAULT '',
+                    message TEXT NOT NULL DEFAULT '',
+                    mail_account TEXT NOT NULL DEFAULT '',
+                    mail_uid TEXT NOT NULL DEFAULT ''
+                 );",
+            )
+            .expect("the older tables");
+        connection
+            .execute(
+                "INSERT INTO notes (title, body, pinned, created_at, updated_at)
+                 VALUES ('Kept', 'the kept body', 0, 1700000000, 1700000000)",
+                [],
+            )
+            .expect("an older note");
+        let store = NoteStore::prepare(connection).expect("migrates on open");
+        let note = store.get(1).expect("reads").expect("the kept note");
+        assert_eq!(note.title, "Kept");
+        assert_eq!(note.body, "the kept body");
+        assert!(
+            !note.title_set,
+            "a title the first line gave is not one the reader wrote"
+        );
+        // A migration run again changes nothing.
+        NoteStore::migrate(&store.connection).expect("migrating twice is a no-op");
+        assert_eq!(store.count().expect("counts"), 1);
+    }
+
+    #[test]
+    fn renaming_a_note_survives_editing_its_body() {
+        let store = store();
+        let id = written(&store, "Groceries", "milk");
+        store.rename(id, "Weekly shop").expect("renames");
+        let mut note = store.get(id).expect("reads").expect("the note");
+        assert_eq!(note.title, "Weekly shop");
+        assert!(note.title_set);
+        note.body = "milk\nbread".into();
+        store.save(&mut note).expect("saves the new body");
+        let note = store.get(id).expect("reads").expect("the note");
+        assert_eq!(
+            note.title, "Weekly shop",
+            "the title stays what the reader wrote"
+        );
+        assert_eq!(note.body, "milk\nbread");
+        // A note nobody renamed is still named by its first line.
+        let mut fresh = Note {
+            body: "  # Buy milk  \nand bread".into(),
+            ..Note::new()
+        };
+        store.save(&mut fresh).expect("saves");
+        let fresh = store.get(fresh.id).expect("reads").expect("the note");
+        assert_eq!(fresh.title, "Buy milk");
+        assert!(!fresh.title_set);
+        // And it follows the body when that body changes.
+        let mut fresh = fresh;
+        fresh.body = "Bread instead".into();
+        store.save(&mut fresh).expect("saves");
+        assert_eq!(
+            store.get(fresh.id).expect("reads").expect("the note").title,
+            "Bread instead"
+        );
     }
 
     #[test]
@@ -397,6 +602,58 @@ mod tests {
             .collect();
         assert_eq!(listed, ["Pinned", "Newer", "Older"]);
         assert!(older < newer, "the ids follow the order they were written");
+    }
+
+    #[test]
+    fn an_excerpt_holds_no_markup() {
+        let store = store();
+        written(
+            &store,
+            "",
+            "# Rust Berlin\n\nThursday at c-base.\n\n- who signs the lease",
+        );
+        let summary = &store.list().expect("lists")[0];
+        assert_eq!(summary.title, "Rust Berlin");
+        assert!(!summary.excerpt.contains('#'), "{}", summary.excerpt);
+        assert!(
+            !summary.excerpt.contains("- "),
+            "no bullet survives: {}",
+            summary.excerpt
+        );
+        assert!(!summary.excerpt.contains("**"), "{}", summary.excerpt);
+        assert!(
+            summary.excerpt.starts_with("Thursday at c-base."),
+            "{}",
+            summary.excerpt
+        );
+    }
+
+    #[test]
+    fn a_exported_note_takes_a_safe_name() {
+        let folder = tempfile::tempdir().unwrap();
+        let path = export_path(folder.path(), "Ideias / 2026: o ano");
+        assert_eq!(
+            path.file_name().unwrap().to_str().unwrap(),
+            "Ideias - 2026- o ano.md",
+            "no path separator or colon survives"
+        );
+        // A title longer than the limit is cut by characters, not by bytes.
+        let long = "ç".repeat(200);
+        let cut = export_path(folder.path(), &long);
+        let name = cut.file_name().unwrap().to_str().unwrap();
+        assert!(name.chars().count() <= 84, "{}", name.chars().count());
+        assert!(name.ends_with(".md"));
+        // A note with no name still gets a file.
+        assert_eq!(
+            export_path(folder.path(), "   ").file_name().unwrap(),
+            "Note.md"
+        );
+        // A name already taken takes a number instead.
+        std::fs::write(folder.path().join("Notes.md"), "x").unwrap();
+        assert_eq!(
+            export_path(folder.path(), "Notes").file_name().unwrap(),
+            "Notes 2.md"
+        );
     }
 
     #[test]
