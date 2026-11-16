@@ -371,6 +371,15 @@ impl App {
     /// and the worker's updates move it on once its offer is out. A group's
     /// chat starts a call in the group, drawn as a group call from the start.
     fn place_call(&mut self, chat: ChatId, video: bool) {
+        if !self.is_connected() {
+            // The header's buttons are unavailable offline; a call started
+            // from the Calls page or a menu meets the same answer.
+            self.toast_error(crate::i18n::gettext(
+                self.locale,
+                "Connect to WhatsApp to call.",
+            ));
+            return;
+        }
         if self.blocklist.contains(&chat) {
             self.toast_error(crate::i18n::gettext(
                 self.locale,

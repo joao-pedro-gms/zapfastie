@@ -783,13 +783,26 @@ fn header(app: &mut App, ui: &mut egui::Ui, chat: &Chat) -> Rect {
                                 app.actions
                                     .push(Action::SetArchived(chat.id.clone(), !chat.archived));
                             }
-                            if widgets::menu_item_enabled(
+                            // A greyed row says why in its own name and on
+                            // hover, instead of leaving the reader guessing.
+                            let export_blocker = chat.locked.then(|| {
+                                crate::i18n::gettext(app.locale, "Locked chats cannot be exported.")
+                            });
+                            let export_name = match &export_blocker {
+                                Some(reason) => format!("{}, {reason}", export_label.as_ref()),
+                                None => export_label.to_string(),
+                            };
+                            let export = widgets::menu_item_named(
                                 ui,
                                 &palette,
                                 Some(Icon::Download),
                                 export_label.as_ref(),
-                                !chat.locked && app.chat_export.is_none(),
-                            ) {
+                                &export_name,
+                                export_blocker.is_none() && app.chat_export.is_none(),
+                            );
+                            if let Some(reason) = &export_blocker {
+                                export.on_disabled_hover_text(reason.as_ref());
+                            } else if export.clicked() {
                                 app.actions.push(Action::ShowDialog(Dialog::ExportChat {
                                     chat: chat.id.clone(),
                                     include_media: false,
@@ -798,13 +811,27 @@ fn header(app: &mut App, ui: &mut egui::Ui, chat: &Chat) -> Rect {
                             super::blocking::menu(app, ui, &chat.id);
                             // Clearing reaches the phone, so it waits for a
                             // connection, as deleting does in the chat list.
-                            if widgets::menu_item_enabled(
+                            let clear_blocker = (!app.is_connected()).then(|| {
+                                crate::i18n::gettext(
+                                    app.locale,
+                                    "Connect to WhatsApp to clear a chat.",
+                                )
+                            });
+                            let clear_name = match &clear_blocker {
+                                Some(reason) => format!("{}, {reason}", clear_label.as_ref()),
+                                None => clear_label.to_string(),
+                            };
+                            let clear = widgets::menu_item_named(
                                 ui,
                                 &palette,
                                 Some(Icon::Eraser),
                                 clear_label.as_ref(),
-                                app.is_connected(),
-                            ) {
+                                &clear_name,
+                                clear_blocker.is_none(),
+                            );
+                            if let Some(reason) = &clear_blocker {
+                                clear.on_disabled_hover_text(reason.as_ref());
+                            } else if clear.clicked() {
                                 app.actions
                                     .push(Action::ShowDialog(Dialog::ConfirmClearChat(
                                         chat.id.clone(),
@@ -865,14 +892,21 @@ fn header(app: &mut App, ui: &mut egui::Ui, chat: &Chat) -> Rect {
                             ui.add_space(BUTTON_GAP);
                         }
                         let call_glass = ui.painter().add(egui::Shape::Noop);
-                        let call_button = theme::icon_button(
-                            ui,
-                            call_icon,
-                            18.0,
-                            call_fill,
-                            palette.text,
-                            &call_tooltip,
-                        );
+                        // Placing a call needs the link; hanging one up does
+                        // not. Offline, the button is unavailable rather than
+                        // failing after the click.
+                        let call_button = ui
+                            .add_enabled_ui(app.is_connected() || call_here, |ui| {
+                                theme::icon_button(
+                                    ui,
+                                    call_icon,
+                                    18.0,
+                                    call_fill,
+                                    palette.text,
+                                    &call_tooltip,
+                                )
+                            })
+                            .inner;
                         if palette.vibrant() {
                             ui.painter()
                                 .set(call_glass, glass_button(&palette, call_button.rect));
@@ -886,14 +920,18 @@ fn header(app: &mut App, ui: &mut egui::Ui, chat: &Chat) -> Rect {
                                 ui.add_space(BUTTON_GAP);
                             }
                             let video_glass = ui.painter().add(egui::Shape::Noop);
-                            let video = theme::icon_button(
-                                ui,
-                                Icon::Video,
-                                18.0,
-                                palette.secondary,
-                                palette.text,
-                                &tip,
-                            );
+                            let video = ui
+                                .add_enabled_ui(app.is_connected(), |ui| {
+                                    theme::icon_button(
+                                        ui,
+                                        Icon::Video,
+                                        18.0,
+                                        palette.secondary,
+                                        palette.text,
+                                        &tip,
+                                    )
+                                })
+                                .inner;
                             if palette.vibrant() {
                                 ui.painter()
                                     .set(video_glass, glass_button(&palette, video.rect));

@@ -4546,3 +4546,12 @@ msgstr "Exportar…"
 
 msgid "Use at least {} characters."
 msgstr "Use pelo menos {} caracteres."
+
+msgid "Locked chats cannot be exported."
+msgstr "Conversas trancadas não podem ser exportadas."
+
+msgid "Connect to WhatsApp to clear a chat."
+msgstr "Conecte-se ao WhatsApp para limpar uma conversa."
+
+msgid "Connect to WhatsApp to call."
+msgstr "Conecte-se ao WhatsApp para ligar."
