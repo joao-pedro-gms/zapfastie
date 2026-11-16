@@ -7,15 +7,15 @@
 <p align="center"><strong>WhatsApp, native and fast.</strong><br>A lightweight desktop app for your chats on Linux, macOS, and Windows, on its way to one window for chats, mail, and notes.</p>
 
 <p align="center">
-  <a href="https://zapfast.rocks/download/"><strong>Download</strong></a> ·
-  <a href="https://zapfast.rocks/getting-started/">Getting started</a> ·
-  <a href="https://zapfast.rocks/using-zapfast/">User guide</a> ·
+  <a href="#install"><strong>Install</strong></a> ·
+  <a href="docs/_guide/getting-started.md">Getting started</a> ·
+  <a href="docs/_guide/using-zapfastie.md">User guide</a> ·
   <a href="CONTRIBUTING.md">Contribute</a>
 </p>
 
 <p align="center">
   <a href="Cargo.toml"><img src="https://img.shields.io/badge/Built_with-Rust-00a884" alt="Built with Rust"></a>
-  <a href="https://zapfast.rocks/download/"><img src="https://img.shields.io/badge/Linux_%C2%B7_macOS_%C2%B7_Windows-24292f" alt="Linux, macOS, and Windows"></a>
+  <a href="#install"><img src="https://img.shields.io/badge/Linux_%C2%B7_macOS_%C2%B7_Windows-24292f" alt="Linux, macOS, and Windows"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-00a884" alt="MIT license"></a>
 </p>
 
@@ -26,13 +26,15 @@ companion device through
 [whatsapp-rust](https://github.com/oxidezap/whatsapp-rust) and has no browser
 engine. In our Linux test it opens in under a second and uses about 200 MB of
 idle RAM, against 1.13 GB for WhatsApp Web.
-[See the measurements](https://zapfast.rocks/benchmarks/).
+[See the measurements](docs/_reference/benchmarks.md).
 
 This fork is growing into a communication hub: the chats you have today, then
 a mail inbox built on the IMAP and SMTP accounts you already own, then notes
 kept on this computer that can cite a message or a mail. Chats come first and
-stay first. Nothing of mail or notes is built yet, and this page will say so
-until it is.
+stay first. Notes are built and are their own tab, where a note in markdown
+can point at a message and take you back to it. Mail is not built yet: the
+account model, the reader that turns a mail into text, and the encrypted
+archive beside the chat one exist, with no screen and no IMAP connection.
 
 The interface is available in English, Chinese (Simplified and Traditional),
 Dutch, French, German, Indonesian, Italian, Portuguese (Brazil), Russian,
@@ -40,15 +42,8 @@ Spanish, and Turkish.
 
 <picture>
   <source media="(prefers-color-scheme: light)" srcset="docs/screenshot-light.png">
-  <img src="docs/screenshot.png" alt="ZapFastie showing a conversation with an attachment, voice messages, reactions, a quoted reply, and a link preview">
+  <img src="docs/screenshot.png" alt="ZapFastie showing a conversation with an attachment, voice messages, reactions, a quoted reply, and a link preview, beside the rail with chats, calls and notes">
 </picture>
-
-<details>
-<summary><strong>Watch ZapFastie in action</strong></summary>
-
-https://github.com/user-attachments/assets/2bf86b54-45fc-4add-8de7-c426c3cdad9b
-
-</details>
 
 [Features](#your-chats-on-your-desktop) · [Install](#install) · [Link your phone](#link-your-phone) · [Help](#guides-and-help)
 
@@ -59,6 +54,8 @@ https://github.com/user-attachments/assets/2bf86b54-45fc-4add-8de7-c426c3cdad9b
 | **Messages** | Send formatted text, replies, edits, reactions, forwards, pictures, files, stickers, GIFs, polls, and voice messages. |
 | **Media in the chat** | Play voice messages, videos, round video messages, GIFs, and animated stickers in place. |
 | **Your history** | Keep your chats in an encrypted archive on this computer, fetch older messages from your phone as you scroll, and export locally saved chat history as text or a ZIP with downloaded attachments. |
+| **Calls** | Place and answer voice and video calls, with your choice of microphone, speaker and camera. |
+| **Notes** | Write markdown notes kept on this computer, search them, and cite the message a note was written about. |
 | **Several numbers** | Link more than one WhatsApp number and switch between them in one window. |
 | **Desktop controls** | Use keyboard shortcuts, select and copy text across messages, and stay linked in the tray with notifications. |
 | **Themes** | Choose light, dark, system appearance, or custom colours. On Omarchy, follow your desktop theme. |
@@ -68,10 +65,10 @@ https://github.com/user-attachments/assets/2bf86b54-45fc-4add-8de7-c426c3cdad9b
 
 | Step | What it adds | State |
 |---|---|---|
-| **Notes** | A tab of notes kept on this computer, markdown, able to cite a message from a chat | Not started |
-| **Mail, reading** | Accounts you configure over IMAP, read offline from an encrypted archive beside the chat one | Not started |
+| **Notes** | A tab of notes kept on this computer, markdown, able to cite a message from a chat | **Built**: the tab, the search, and a note that points at a message and opens it |
+| **Mail, reading** | Accounts you configure over IMAP, read offline from an encrypted archive beside the chat one | Foundations: the account model, the text reader and the archive exist; the connection and the screen do not |
 | **Mail, writing** | Reply, reply to all, forward and send over SMTP, with attachments | Not started |
-| **Together** | A note that points at a mail or a message and takes you back to it, and one search across the three | Not started |
+| **Together** | A note that points at a mail or a message and takes you back to it, and one search across the three | A note already points at a chat message; the mail side waits for mail |
 
 What the hub will not become, because the client is worth more than the
 feature list: no other chat networks, no bridge that turns a chat message into
@@ -83,13 +80,17 @@ a browser engine inside a client that exists to not be one.
 
 ## Install
 
+This fork has not published a release, so there is no installer or package to
+download yet. Building it takes a few minutes once the dependencies are in
+place:
+
 | Platform | Installation |
 |---|---|
-| **macOS** | `brew install --cask crmne/tap/zapfast`, or [download the Mac app](https://zapfast.rocks/download/#macos). |
-| **Arch Linux** | `yay -S zapfastie-bin` |
-| **Windows** | Choose your build on the [Download page](https://zapfast.rocks/download/#windows). |
-| **Other Linux** | Find Nix, AppImage, and other options on the [Download page](https://zapfast.rocks/download/#linux). |
-| **From source** | Follow [Getting started](https://zapfast.rocks/getting-started/) for dependencies and commands. |
+| **From source** | Clone the repository, then `cargo install --path .` and start `zapfastie`. [Getting started](docs/_guide/getting-started.md) lists the build dependencies, for Arch, Debian and Ubuntu. |
+| **Linux, with a launcher entry** | `cargo build --release --locked`, then `packaging/install-user.sh`: it installs the binary, the icon and the desktop file under `~/.local`. |
+| **Arch Linux** | The recipe (`PKGBUILD.in`) is in `packaging/arch/zapfastie/`; the release workflow fills it in and publishes it to the AUR. It is not there yet. |
+| **Nix** | `nix run .#zapfastie` from a clone, or install the flake's package. There is a Home Manager module. |
+| **Prebuilt binaries** | None yet. [Releases](https://github.com/joao-pedro-gms/zapfastie/releases) is where the macOS app, the Windows installer, the packages and the Flatpak will land. |
 
 ## Link your phone
 
@@ -102,24 +103,28 @@ a browser engine inside a client that exists to not be one.
 
 The link survives restarts, and your phone does not need to stay online to
 read what ZapFastie has already stored. See
-[Getting started](https://zapfast.rocks/getting-started/) for the full
-walkthrough and [How it links](https://zapfast.rocks/how-it-links/) for the
+[Getting started](docs/_guide/getting-started.md) for the full
+walkthrough and [How it links](docs/_reference/how-it-links.md) for the
 details.
 
 ## Guides and help
 
-The complete guide lives at **[zapfast.rocks](https://zapfast.rocks/)**.
+The guide lives in [`docs/`](docs/), written for a site this fork has not
+published. The pages read as markdown here; the links between them assume that
+site, so some lead nowhere on GitHub.
 
 | You want to… | Read |
 |---|---|
-| Know what ZapFast does and does not do yet | [What is ZapFast?](https://zapfast.rocks/what-is-zapfast/) |
-| Link your phone or build from source | [Getting started](https://zapfast.rocks/getting-started/) |
-| Learn messages, stickers, polls, and shortcuts | [Using ZapFast](https://zapfast.rocks/using-zapfast/) |
-| Find settings, stored files, encryption, the app lock, and updates | [Settings and files](https://zapfast.rocks/settings-and-files/) |
-| Make your own theme | [Making a theme](https://zapfast.rocks/themes/) |
-| Understand what stays on this computer | [How it links](https://zapfast.rocks/how-it-links/) |
-| Understand account risk | [Account safety](https://zapfast.rocks/what-is-zapfast/#account-safety) |
-| Report a bug or propose a feature | Read [Contributing](CONTRIBUTING.md), then use the [issue forms](https://github.com/joao-pedro-gms/zapfastie/issues/new/choose). |
+| Know what ZapFastie does and does not do yet | [What is ZapFastie?](docs/_guide/what-is-zapfastie.md) |
+| Link your phone or build from source | [Getting started](docs/_guide/getting-started.md) |
+| Install it on Linux, and what the choices are | [WhatsApp on Linux](docs/_guide/whatsapp-on-linux.md) |
+| Learn messages, stickers, polls, and shortcuts | [Using ZapFastie](docs/_guide/using-zapfastie.md) |
+| Find settings, stored files, encryption, the app lock, and updates | [Settings and files](docs/_reference/settings-and-files.md) |
+| Make your own theme | [Making a theme](docs/_reference/themes.md) |
+| Understand what stays on this computer | [How it links](docs/_reference/how-it-links.md) |
+| See startup time and idle memory, and how they were measured | [Memory and startup measurements](docs/_reference/benchmarks.md) |
+| Understand account risk | [Account safety](docs/_guide/what-is-zapfastie.md#account-safety) |
+| Report a bug or propose a feature | Read [Contributing](CONTRIBUTING.md). GitHub issues on this fork are off, so there is no report form yet. |
 
 ## Contributing
 
@@ -155,10 +160,12 @@ ZapFastie uses [whatsapp-rust](https://github.com/oxidezap/whatsapp-rust),
 doodles. The notification sounds are [Pidgin](https://pidgin.im)'s, under the
 GPL-2.0 (see `assets/sounds/`).
 
-ZapFastie is an unofficial client and is not affiliated with WhatsApp or Meta.
-Using an unofficial client may be against WhatsApp's terms of service and
-could get an account suspended. Use it at your own risk. WhatsApp is a
-trademark of WhatsApp LLC.
+ZapFastie began as a fork of [ZapFast](https://github.com/crmne/zapfast), by
+Carmine Paolino, and keeps its architecture and most of its code. ZapFastie is
+an unofficial client and is not affiliated with WhatsApp or Meta. Using an
+unofficial client may be against WhatsApp's terms of service and could get an
+account suspended. Use it at your own risk. WhatsApp is a trademark of
+WhatsApp LLC.
 
 Mail, once it ships, reaches the account you configure and nothing else: no
 relay of ours, no copy on a server we run, and no analytics on what arrives.
@@ -168,9 +175,9 @@ Licensed under the [MIT License](LICENSE).
 
 ## Star history
 
-<a href="https://www.star-history.com/?repos=crmne%2Fzapfast&amp;type=date">
+<a href="https://www.star-history.com/?repos=joao-pedro-gms%2Fzapfastie&amp;type=date">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=joao-pedro-gms/zapfastie&amp;type=date&amp;theme=dark">
-    <img alt="ZapFast GitHub stars over time" src="https://api.star-history.com/chart?repos=joao-pedro-gms/zapfastie&amp;type=date">
+    <img alt="ZapFastie stars over time" src="https://api.star-history.com/chart?repos=joao-pedro-gms/zapfastie&amp;type=date">
   </picture>
 </a>
