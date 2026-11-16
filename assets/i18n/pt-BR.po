@@ -4735,3 +4735,8 @@ msgstr "Recebendo o histórico do seu celular: {}%"
 
 msgid "No emoji match your search."
 msgstr "Nenhum emoji corresponde à sua busca."
+
+msgid "{count} new message"
+msgid_plural "{count} new messages"
+msgstr[0] "{count} nova mensagem"
+msgstr[1] "{count} novas mensagens"

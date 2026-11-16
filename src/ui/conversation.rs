@@ -4532,6 +4532,18 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
             }
             .as_shape(button, CornerRadius::same(20)),
         );
+        // A screen reader cannot see the badge, so the count is in the name.
+        let newest_label = if unread > 0 {
+            crate::i18n::ngettext(
+                app.locale,
+                "{count} new message",
+                "{count} new messages",
+                unread,
+            )
+            .replace("{count}", &unread.to_string())
+        } else {
+            crate::i18n::gettext(app.locale, "Newest message").into_owned()
+        };
         if theme::circle_button(
             &mut child,
             Icon::ArrowDown,
@@ -4539,7 +4551,7 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
             palette.overlay,
             palette.surface_hover,
             palette.text,
-            &crate::i18n::gettext(app.locale, "Newest message"),
+            &newest_label,
         )
         .clicked()
         {
