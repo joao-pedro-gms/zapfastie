@@ -11284,6 +11284,9 @@ impl App {
                 }
                 self.settings.app_lock_hash = Some(verifier);
                 self.app_lock.note_input();
+                // A new password starts with a clean count.
+                self.app_lock.release();
+                self.remember_lock_wait();
                 self.save_settings();
                 self.toast(crate::i18n::gettext(self.locale, "App lock password saved"));
             }
@@ -11292,6 +11295,8 @@ impl App {
                     return;
                 }
                 self.settings.app_lock_hash = None;
+                self.app_lock.release();
+                self.remember_lock_wait();
                 self.save_settings();
                 self.toast(crate::i18n::gettext(self.locale, "App lock turned off"));
             }
@@ -11304,6 +11309,7 @@ impl App {
         self.app_lock.form = None;
         self.app_lock.deferred.clear();
         self.app_lock.release();
+        self.remember_lock_wait();
         if self.settings.app_lock_hash.take().is_some() {
             self.save_settings();
         }
