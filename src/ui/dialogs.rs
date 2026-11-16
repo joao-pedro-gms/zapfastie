@@ -11,27 +11,14 @@ pub(crate) fn modal_id() -> egui::Id {
     egui::Id::new("dialog")
 }
 
-pub fn show(app: &mut App, ctx: &egui::Context) {
-    let Some(dialog) = app.dialog.clone() else {
-        return;
-    };
-    let palette = app.palette;
-    let frame = Frame::new()
-        .fill(palette.overlay)
-        .stroke(Stroke::new(1.0, palette.outline))
-        .corner_radius(CornerRadius::same(theme::RADIUS + 4))
-        .inner_margin(Margin::same(if matches!(dialog, Dialog::Forward { .. }) {
-            12
-        } else {
-            22
-        }))
-        .shadow(palette.modal_shadow());
-    let response = egui::Modal::new(modal_id())
-        .frame(frame)
-        .backdrop_color(palette.shadow)
-        .show(ctx, |ui| {
-            ui.set_width(match dialog {
-                Dialog::Shortcuts => shortcuts_width(ui.ctx().content_rect().width()),
+/// How wide a dialog asks to be, in the window it opens in.
+///
+/// Whatever a dialog prefers, it never asks for more than the window can give
+/// it: the smallest window ZapFastie allows is 400 points wide, and every
+/// dialog keeps a margin inside it.
+fn dialog_width(dialog: &Dialog, content: f32) -> f32 {
+    let wanted = match dialog {
+                Dialog::Shortcuts => shortcuts_width(content),
                 Dialog::About => 380.0,
                 Dialog::ConfirmUnlink => 380.0,
                 Dialog::ConfirmRemoveAccount(_) => 380.0,
@@ -47,11 +34,11 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
                 | Dialog::ConfirmStartOver => 380.0,
                 Dialog::ConfirmClearChat(_) => 380.0,
                 Dialog::ExportChat { .. } => {
-                    380.0_f32.min((ui.ctx().content_rect().width() - 48.0).max(180.0))
+                    380.0_f32.min((content - 48.0).max(180.0))
                 }
                 Dialog::ConfirmBlock { .. } => 380.0,
                 Dialog::BlockedContacts => {
-                    420.0_f32.min((ui.ctx().content_rect().width() - 48.0).max(180.0))
+                    420.0_f32.min((content - 48.0).max(180.0))
                 }
                 Dialog::ConfirmDeleteMessage { .. } | Dialog::ConfirmDeleteSelection { .. } => {
                     380.0
@@ -60,7 +47,7 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
                 Dialog::StickerPack => 420.0,
                 Dialog::StickerMaker => 400.0,
                 Dialog::Forward { .. } => {
-                    let width = ui.ctx().content_rect().width();
+                    let width = content;
                     (width * 0.6)
                         .clamp(420.0, 760.0)
                         .min((width - 48.0).max(1.0))
@@ -70,12 +57,37 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
                 Dialog::PollResults { .. }
                 | Dialog::InteractiveList { .. }
                 | Dialog::MessageInfo { .. } => {
-                    420.0_f32.min((ui.ctx().content_rect().width() - 64.0).max(180.0))
+                    420.0_f32.min((content - 64.0).max(180.0))
                 }
                 Dialog::Labels => 460.0,
                 Dialog::AddGroupMembers(_) => 420.0,
                 Dialog::ConfirmResetInviteLink(_) | Dialog::ConfirmRemoveMember { .. } => 380.0,
-            });
+    };
+    let room = (content - 48.0).max(180.0);
+    wanted.min(room)
+}
+
+pub fn show(app: &mut App, ctx: &egui::Context) {
+    let Some(dialog) = app.dialog.clone() else {
+        return;
+    };
+    let palette = app.palette;
+    let frame = Frame::new()
+        .fill(palette.overlay)
+        .stroke(Stroke::new(1.0, palette.outline))
+        .corner_radius(CornerRadius::same(theme::RADIUS + 4))
+        .inner_margin(Margin::same(if matches!(dialog, Dialog::Forward { .. }) {
+            12
+        } else {
+            22
+        }))
+        .shadow(palette.modal_shadow());
+    let width = dialog_width(&dialog, ctx.content_rect().width());
+    let response = egui::Modal::new(modal_id())
+        .frame(frame)
+        .backdrop_color(palette.shadow)
+        .show(ctx, |ui| {
+            ui.set_width(width);
             ui.spacing_mut().item_spacing.y = 8.0;
             match dialog {
                 Dialog::CreatePoll(chat) => super::polls::create(app, ui, &chat),
@@ -2266,6 +2278,29 @@ mod tests {
     }
     use crate::model::{Chat, ChatKind};
     use crate::theme;
+
+    /// No dialog asks for more room than the smallest window leaves it: the
+    /// window floor is 400 points wide and every dialog keeps a margin.
+    #[test]
+    fn every_dialog_fits_the_smallest_window() {
+        use crate::model::Dialog;
+        for dialog in [
+            Dialog::NewChat,
+            Dialog::StickerPack,
+            Dialog::StickerMaker,
+            Dialog::CreatePoll("fixture".into()),
+            Dialog::SendLocation("fixture".into()),
+            Dialog::AddGroupMembers("fixture".into()),
+            Dialog::Labels,
+            Dialog::BlockedContacts,
+            Dialog::About,
+            Dialog::Shortcuts,
+        ] {
+            let width = super::dialog_width(&dialog, 400.0);
+            assert!(width <= 400.0 - 48.0, "{dialog:?} wants {width}");
+            assert!(width >= 180.0, "{dialog:?} asks for less than a usable width");
+        }
+    }
 
     /// The timer line stays inside the chat info dialog's own width whatever it
     /// has to say: a label longer than the dialog is cut, not laid out wider,
