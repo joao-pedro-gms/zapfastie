@@ -1,0 +1,169 @@
+name: Snapshot
+
+# Binaries for every change that reaches main, without cutting a release.
+# A versioned release stays a deliberate act (AGENTS.md, Releasing): it needs
+# a version bump, a reviewed note file and a tag. This workflow instead keeps
+# one rolling prerelease, tagged `snapshot`, whose three assets are replaced
+# by each run, so a link to it always downloads the newest build of main and
+# the changelog gains no entry. Prereleases never become "Latest", so the
+# app's updater ignores them and installs nothing from here.
+#
+# Two targets, not the release's five: the account's hosted runners are shared
+# by every repository (ci.yml records what a full matrix per push cost), and
+# the other three change nothing about whether a change compiles. A snapshot
+# is for trying a change, not for shipping one. Extend the matrix when that
+# is worth the minutes.
+#
+# Windows binaries are unsigned: the windows-signing environment that holds
+# the certificate trusts only v* tags, and a snapshot is not a release, so
+# SmartScreen warns. macOS is left out because signing and notarizing every
+# push spends the Apple quota that releases need.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - docs/**
+      - '**.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  # Baked into the binary by settings.rs, as in release.yml.
+  ZAPFASTIE_GIPHY_KEY: ${{ secrets.ZAPFASTIE_GIPHY_KEY || secrets.FASTSAPP_GIPHY_KEY }}
+
+jobs:
+  build:
+    name: build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+            container: debian:12
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    steps:
+      # Before checkout and rustup: the bare image has no curl, git or
+      # certificates. Steps run as root, without sudo.
+      - name: GUI build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            ca-certificates curl git build-essential pkg-config \
+            libxkbcommon-dev libwayland-dev libgl1-mesa-dev libasound2-dev \
+            libpipewire-0.3-dev clang libclang-dev cmake perl
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - run: rustup target add ${{ matrix.target }}
+
+      # No compiler cache: a binary handed out from here should be built from
+      # this commit, not from objects restored out of a cache.
+      - run: cargo build --locked --release --target ${{ matrix.target }}
+
+      # The same files the release tarball carries, under a fixed name so each
+      # run replaces the last one on the prerelease instead of piling up.
+      - name: Package
+        shell: bash
+        run: |
+          name="zapfastie-snapshot-${{ matrix.target }}"
+          mkdir -p "dist/$name"
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp "target/${{ matrix.target }}/release/zapfastie.exe" "dist/$name/"
+          else
+            cp "target/${{ matrix.target }}/release/zapfastie" "dist/$name/"
+          fi
+          cp README.md LICENSE THIRD-PARTY-NOTICES.md packaging/zapfastie-portable.txt "dist/$name/"
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            cp --parents packaging/applications/zapfastie.desktop packaging/icons/zapfastie.svg \
+              contrib/omarchy/zapfastie.json.tpl contrib/omarchy/zapfastie-theme "dist/$name/"
+          fi
+          cd dist
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            7z a "$name.zip" "$name"
+          else
+            tar czf "$name.tar.gz" "$name"
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.target }}
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+          if-no-files-found: error
+
+  publish:
+    name: Roll the snapshot release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Tags too: the notes say what changed since the last release.
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@v7
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Say which commit this is
+        run: |
+          mkdir -p dist
+          short=$(git rev-parse --short=12 HEAD)
+          {
+            echo "Automatic build of \`${GITHUB_REF_NAME}\` at $short, $(date -u '+%Y-%m-%d %H:%M UTC')."
+            echo
+            echo "Not a release: no notes, no version bump, Windows binaries unsigned,"
+            echo "macOS left out. Nothing here reaches the updater. Built by run"
+            echo "[${{ github.run_id }}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${{ github.run_id }})."
+            echo
+            last=$(git describe --tags --abbrev=0 --match 'v*' HEAD 2>/dev/null || true)
+            if [ -n "$last" ]; then
+              echo "Changes since $last:"
+              echo
+              commits=$(git log "$last..HEAD" --format='- %h %s')
+              if [ -n "$commits" ]; then
+                echo "$commits"
+              else
+                echo "- Nothing yet: this build is $last itself."
+              fi
+            else
+              echo "Recent commits:"
+              echo
+              git log -5 --format='- %h %s'
+            fi
+          } > snapshot.txt
+          cp snapshot.txt dist/snapshot.txt
+          mv snapshot.txt release-notes.md
+          cat release-notes.md
+
+      # Replaced, not added to: one tag that always names the commit its
+      # assets were built from, so a stale link cannot survive.
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete snapshot --yes --cleanup-tag || true
+          gh release create snapshot \
+            --target "$GITHUB_SHA" \
+            --title "Snapshot ${GITHUB_SHA:0:7}" \
+            --notes-file release-notes.md \
+            --prerelease \
+            dist/*

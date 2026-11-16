@@ -58,6 +58,23 @@ for commands and supported formats.
 To upgrade the tool, change `tool.version` in `native-packages.yaml`, the matching immutable workflow reference, and any release-job gem installation
 pin together. Applications need no packaging Gemfile, lockfile or Ruby wrapper.
 
+## Snapshot builds
+
+[`snapshot.yml`](.github/workflows/snapshot.yml) builds Linux x86_64 and
+Windows x64 in release mode on every push to `main` that touches code, and
+replaces the three assets of one prerelease, tagged `snapshot`, on every run.
+It is not a release: no version bump, no note file, no attestation, and
+prereleases never become "Latest", so the updater ignores them. Windows
+binaries are unsigned, because the `windows-signing` environment trusts only
+`v*` tags; macOS is left out because notarizing every push spends the Apple
+quota releases need. The tarball carries what the release tarball carries, and
+the prerelease's notes name the commit, the last release tag it sits on, and
+the commits since.
+
+A versioned release still starts with a tag. See [Releasing](AGENTS.md) for
+the order: the version bump, the metainfo entry and the note file go in one
+commit on `main`, then the tag.
+
 ## Automatic macOS notarization
 
 `packaging/macos/entitlements.plist` grants microphone access under the hardened
