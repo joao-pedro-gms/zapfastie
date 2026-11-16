@@ -18,50 +18,42 @@ pub(crate) fn modal_id() -> egui::Id {
 /// dialog keeps a margin inside it.
 fn dialog_width(dialog: &Dialog, content: f32) -> f32 {
     let wanted = match dialog {
-                Dialog::Shortcuts => shortcuts_width(content),
-                Dialog::About => 380.0,
-                Dialog::ConfirmUnlink => 380.0,
-                Dialog::ConfirmRemoveAccount(_) => 380.0,
-                Dialog::ConfirmClearMediaCache(_) => 380.0,
-                Dialog::ConfirmLeaveGroup(_) => 380.0,
-                Dialog::PairWithPhone => 380.0,
-                Dialog::NewContact => 380.0,
-                Dialog::NewChat => 420.0,
-                Dialog::UnlockLockedChats | Dialog::ConfirmLockChat(_) => 380.0,
-                Dialog::ConfirmDeleteChat(_)
-                | Dialog::ConfirmDeleteNote(_)
-                | Dialog::JoinGroup
-                | Dialog::ConfirmStartOver => 380.0,
-                Dialog::ConfirmClearChat(_) => 380.0,
-                Dialog::ExportChat { .. } => {
-                    380.0_f32.min((content - 48.0).max(180.0))
-                }
-                Dialog::ConfirmBlock { .. } => 380.0,
-                Dialog::BlockedContacts => {
-                    420.0_f32.min((content - 48.0).max(180.0))
-                }
-                Dialog::ConfirmDeleteMessage { .. } | Dialog::ConfirmDeleteSelection { .. } => {
-                    380.0
-                }
-                Dialog::ConfirmRemoveStickerPack { .. } => 380.0,
-                Dialog::StickerPack => 420.0,
-                Dialog::StickerMaker => 400.0,
-                Dialog::Forward { .. } => {
-                    let width = content;
-                    (width * 0.6)
-                        .clamp(420.0, 760.0)
-                        .min((width - 48.0).max(1.0))
-                }
-                Dialog::CreatePoll(_) => 420.0,
-                Dialog::SendLocation(_) => 420.0,
-                Dialog::PollResults { .. }
-                | Dialog::InteractiveList { .. }
-                | Dialog::MessageInfo { .. } => {
-                    420.0_f32.min((content - 64.0).max(180.0))
-                }
-                Dialog::Labels => 460.0,
-                Dialog::AddGroupMembers(_) => 420.0,
-                Dialog::ConfirmResetInviteLink(_) | Dialog::ConfirmRemoveMember { .. } => 380.0,
+        Dialog::Shortcuts => shortcuts_width(content),
+        Dialog::About => 380.0,
+        Dialog::ConfirmUnlink => 380.0,
+        Dialog::ConfirmRemoveAccount(_) => 380.0,
+        Dialog::ConfirmClearMediaCache(_) => 380.0,
+        Dialog::ConfirmLeaveGroup(_) => 380.0,
+        Dialog::PairWithPhone => 380.0,
+        Dialog::NewContact => 380.0,
+        Dialog::NewChat => 420.0,
+        Dialog::UnlockLockedChats | Dialog::ConfirmLockChat(_) => 380.0,
+        Dialog::ConfirmDeleteChat(_)
+        | Dialog::ConfirmDeleteNote(_)
+        | Dialog::JoinGroup
+        | Dialog::ConfirmStartOver => 380.0,
+        Dialog::ConfirmClearChat(_) => 380.0,
+        Dialog::ExportChat { .. } => 380.0_f32.min((content - 48.0).max(180.0)),
+        Dialog::ConfirmBlock { .. } => 380.0,
+        Dialog::BlockedContacts => 420.0_f32.min((content - 48.0).max(180.0)),
+        Dialog::ConfirmDeleteMessage { .. } | Dialog::ConfirmDeleteSelection { .. } => 380.0,
+        Dialog::ConfirmRemoveStickerPack { .. } => 380.0,
+        Dialog::StickerPack => 420.0,
+        Dialog::StickerMaker => 400.0,
+        Dialog::Forward { .. } => {
+            let width = content;
+            (width * 0.6)
+                .clamp(420.0, 760.0)
+                .min((width - 48.0).max(1.0))
+        }
+        Dialog::CreatePoll(_) => 420.0,
+        Dialog::SendLocation(_) => 420.0,
+        Dialog::PollResults { .. }
+        | Dialog::InteractiveList { .. }
+        | Dialog::MessageInfo { .. } => 420.0_f32.min((content - 64.0).max(180.0)),
+        Dialog::Labels => 460.0,
+        Dialog::AddGroupMembers(_) => 420.0,
+        Dialog::ConfirmResetInviteLink(_) | Dialog::ConfirmRemoveMember { .. } => 380.0,
     };
     let room = (content - 48.0).max(180.0);
     wanted.min(room)
@@ -1719,6 +1711,19 @@ pub(super) fn confirm_destructive(
     let cancel = crate::i18n::gettext(app.locale, "Cancel");
     ui.horizontal(|ui| {
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+            // Filled from the right, so Cancel is drawn first and sits at the
+            // right, as in the dialogs that offer a primary action; the
+            // destructive one is to its left, reached only after it in the
+            // Tab order.
+            let cancel_button = theme::pill_button(ui, &palette, &cancel, false);
+            // And it opens under the keys, so Enter cannot fire the
+            // destructive action by accident.
+            if ui.memory(|memory| memory.focused().is_none()) {
+                cancel_button.request_focus();
+            }
+            if cancel_button.clicked() {
+                app.actions.push(Action::CloseDialog);
+            }
             let enabled = !matches!(app.dialog, Some(Dialog::ConfirmBlock { .. }))
                 || (app.is_connected() && app.blocklist.editable());
             if ui
@@ -1727,9 +1732,6 @@ pub(super) fn confirm_destructive(
                 .clicked()
             {
                 app.actions.extend(actions);
-                app.actions.push(Action::CloseDialog);
-            }
-            if theme::pill_button(ui, &palette, &cancel, false).clicked() {
                 app.actions.push(Action::CloseDialog);
             }
         });
@@ -2298,7 +2300,10 @@ mod tests {
         ] {
             let width = super::dialog_width(&dialog, 400.0);
             assert!(width <= 400.0 - 48.0, "{dialog:?} wants {width}");
-            assert!(width >= 180.0, "{dialog:?} asks for less than a usable width");
+            assert!(
+                width >= 180.0,
+                "{dialog:?} asks for less than a usable width"
+            );
         }
     }
 

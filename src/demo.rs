@@ -23119,6 +23119,36 @@ mod tests {
         }
     }
 
+    /// A destructive confirmation opens with Cancel under the keys: Enter
+    /// closes the dialog instead of deleting anything.
+    #[test]
+    fn a_confirmation_opens_on_cancel() {
+        let mut app = app();
+        apply_flags(&mut app, Some("delete-chat"));
+        let ctx = egui::Context::default();
+        app.attach(&ctx);
+        for _ in 0..8 {
+            render(&mut app, &ctx);
+        }
+        assert!(app.dialog.is_some(), "the confirmation is open");
+        let chats = app.chats.len();
+        frame_sized(
+            &mut app,
+            &ctx,
+            780.0,
+            vec![egui::Event::Key {
+                key: egui::Key::Enter,
+                physical_key: None,
+                pressed: true,
+                repeat: false,
+                modifiers: egui::Modifiers::NONE,
+            }],
+        );
+        render(&mut app, &ctx);
+        assert!(app.dialog.is_none(), "Enter presses Cancel");
+        assert_eq!(app.chats.len(), chats, "and nothing is deleted");
+    }
+
     #[test]
     fn tab_still_completes_emoji_and_mentions_before_leaving_the_input() {
         for page in ["emoji-complete", "mention"] {
