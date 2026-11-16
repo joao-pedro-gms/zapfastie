@@ -386,13 +386,19 @@ fn header_button_row(app: &mut App, ui: &mut egui::Ui, buttons: &[HeaderButton],
     for button in buttons {
         match button {
             HeaderButton::NewChat => {
+                // The tooltip is also the name a screen reader reads.
+                let new_chat = if macos {
+                    crate::i18n::gettext(app.locale, "New chat (⌘N)")
+                } else {
+                    crate::i18n::gettext(app.locale, "New chat")
+                };
                 if theme::icon_button(
                     ui,
                     Icon::SquarePen,
                     HEADER_ICON,
                     palette.secondary,
                     palette.text,
-                    if macos { "New chat (⌘N)" } else { "New chat" },
+                    new_chat.as_ref(),
                 )
                 .tab_stop(Stop::NewChat)
                 .clicked()
@@ -933,30 +939,34 @@ fn list(app: &mut App, ui: &mut egui::Ui) {
     if chats.is_empty() {
         // The favorites title is translated, so it is bound here: the tuple
         // below borrows it for this frame, and every other arm stays a literal.
-        let favorites_title;
+        use crate::i18n::gettext;
+        let locale = app.locale;
         let (title, body) = if app.show_archived {
-            ("Nothing archived", "Archived chats appear here.")
+            (
+                gettext(locale, "Nothing archived"),
+                gettext(locale, "Archived chats appear here."),
+            )
         } else if app.chat_filter != ChatFilter::All {
             let title = match app.chat_filter {
-                ChatFilter::Unread => "No unread chats",
-                ChatFilter::Private => "No private chats",
-                ChatFilter::Channels => "No channels",
-                ChatFilter::Favorites => {
-                    favorites_title = crate::i18n::gettext(app.locale, "No favorites yet");
-                    favorites_title.as_ref()
-                }
-                _ => "No groups",
+                ChatFilter::Unread => gettext(locale, "No unread chats"),
+                ChatFilter::Private => gettext(locale, "No private chats"),
+                ChatFilter::Channels => gettext(locale, "No channels"),
+                ChatFilter::Favorites => gettext(locale, "No favorites yet"),
+                _ => gettext(locale, "No groups"),
             };
-            (title, "Choose All to see every chat.")
+            (title, gettext(locale, "Choose All to see every chat."))
         } else if app.syncing {
-            ("Loading your chats", "Receiving history from your phone.")
+            (
+                gettext(locale, "Loading your chats"),
+                gettext(locale, "Receiving history from your phone."),
+            )
         } else {
             (
-                "No chats yet",
-                "Use New chat to message a contact or yourself.",
+                gettext(locale, "No chats yet"),
+                gettext(locale, "Use New chat to message a contact or yourself."),
             )
         };
-        widgets::empty_state(ui, &palette, Icon::MessageCircle, title, body);
+        widgets::empty_state(ui, &palette, Icon::MessageCircle, title.as_ref(), body.as_ref());
         return;
     }
     // Rows touch: one clickable surface from top to bottom, no gaps or rules.
@@ -1126,8 +1136,11 @@ fn locked_list(app: &mut App, ui: &mut egui::Ui) {
             ui,
             &palette,
             Icon::LockOpen,
-            "No locked chats",
-            "Lock a chat from its context menu to hide it here.",
+            &crate::i18n::gettext(app.locale, "No locked chats"),
+            &crate::i18n::gettext(
+                app.locale,
+                "Lock a chat from its context menu to hide it here.",
+            ),
         );
         return;
     }
@@ -1199,8 +1212,8 @@ fn results(app: &mut App, ui: &mut egui::Ui) {
             ui,
             &palette,
             Icon::Search,
-            "No results",
-            "Try another name, number, or message text.",
+            &crate::i18n::gettext(app.locale, "No results"),
+            &crate::i18n::gettext(app.locale, "Try another name, number, or message text."),
         );
         return;
     }

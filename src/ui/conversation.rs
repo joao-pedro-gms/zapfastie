@@ -1679,7 +1679,7 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                     if theme::icon_button(
                                         ui, Icon::X, 16.0, palette.secondary, palette.text,
-                                        "Cancel reply (Esc)",
+                                        &crate::i18n::gettext(app.locale, "Cancel reply (Esc)"),
                                     ).clicked() {
                                         app.actions.push(Action::CancelReply);
                                     }
@@ -1822,7 +1822,7 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                             palette.secondary
                         },
                         palette.text,
-                        "Emoji, GIFs, and stickers",
+                        &crate::i18n::gettext(app.locale, "Emoji, GIFs, and stickers"),
                     )).tab_stop(Stop::Emoji);
                     app.picker_anchor = Some(smile.rect);
                     if smile.clicked() {
@@ -2596,7 +2596,7 @@ fn edit_strip(app: &mut App, ui: &mut egui::Ui) {
                     16.0,
                     palette.secondary,
                     palette.text,
-                    "Stop editing (Esc)",
+                    &crate::i18n::gettext(app.locale, "Stop editing (Esc)"),
                 )
                 .clicked()
                 {
@@ -2639,7 +2639,7 @@ fn reply_strip(app: &mut App, ui: &mut egui::Ui, quoted: &Message) {
                     16.0,
                     palette.secondary,
                     palette.text,
-                    "Cancel reply (Esc)",
+                    &crate::i18n::gettext(app.locale, "Cancel reply (Esc)"),
                 )
                 .clicked()
                 {
@@ -4539,7 +4539,7 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
             palette.overlay,
             palette.surface_hover,
             palette.text,
-            "Newest message",
+            &crate::i18n::gettext(app.locale, "Newest message"),
         )
         .clicked()
         {

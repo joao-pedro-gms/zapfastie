@@ -260,7 +260,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                             20.0,
                             palette.secondary,
                             palette.text,
-                            "Back (Esc)",
+                            &crate::i18n::gettext(locale, "Back (Esc)"),
                         )
                         .clicked()
                         {

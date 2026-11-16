@@ -1198,7 +1198,7 @@ msgstr ""
 
 #: src/ui/dialogs.rs:491
 msgid "New chat"
-msgstr "Nova chamada"
+msgstr "Nova conversa"
 
 #: src/ui/dialogs.rs:493 src/ui/new_group.rs:91
 msgid "Search contacts"
@@ -4555,3 +4555,177 @@ msgstr "Conecte-se ao WhatsApp para limpar uma conversa."
 
 msgid "Connect to WhatsApp to call."
 msgstr "Conecte-se ao WhatsApp para ligar."
+
+msgid "Nothing archived"
+msgstr "Nada arquivado"
+
+msgid "Archived chats appear here."
+msgstr "As conversas arquivadas aparecem aqui."
+
+msgid "No unread chats"
+msgstr "Nenhuma conversa não lida"
+
+msgid "No private chats"
+msgstr "Nenhuma conversa privada"
+
+msgid "No channels"
+msgstr "Nenhum canal"
+
+msgid "No groups"
+msgstr "Nenhum grupo"
+
+msgid "Choose All to see every chat."
+msgstr "Escolha Todas para ver todas as conversas."
+
+msgid "Loading your chats"
+msgstr "Carregando suas conversas"
+
+msgid "Receiving history from your phone."
+msgstr "Recebendo o histórico do seu celular."
+
+msgid "No chats yet"
+msgstr "Nenhuma conversa ainda"
+
+msgid "Use New chat to message a contact or yourself."
+msgstr "Use Nova conversa para falar com um contato ou consigo."
+
+msgid "No locked chats"
+msgstr "Nenhuma conversa trancada"
+
+msgid "Lock a chat from its context menu to hide it here."
+msgstr "Tranque uma conversa pelo menu de contexto para escondê-la aqui."
+
+msgid "No results"
+msgstr "Nenhum resultado"
+
+msgid "Try another name, number, or message text."
+msgstr "Tente outro nome, número ou texto de mensagem."
+
+msgid "New chat (⌘N)"
+msgstr "Nova conversa (⌘N)"
+
+msgid "Cancel reply (Esc)"
+msgstr "Cancelar resposta (Esc)"
+
+msgid "Emoji, GIFs, and stickers"
+msgstr "Emoji, GIFs e figurinhas"
+
+msgid "Stop editing (Esc)"
+msgstr "Parar de editar (Esc)"
+
+msgid "Newest message"
+msgstr "Mensagem mais recente"
+
+msgid "Back (Esc)"
+msgstr "Voltar (Esc)"
+
+msgid "Search chats"
+msgstr "Buscar conversas"
+
+msgid "Search the open chat or the settings"
+msgstr "Buscar na conversa aberta ou nas configurações"
+
+msgid "Walk the open chat's search results and jump to one"
+msgstr "Percorrer os resultados da busca da conversa e abrir um"
+
+msgid "Focus the message input"
+msgstr "Ir para o campo de mensagem"
+
+msgid "Quick stickers, on their own"
+msgstr "Figurinhas rápidas, sozinhas"
+
+msgid "Previous / next chat"
+msgstr "Conversa anterior / próxima"
+
+msgid "Previous / next chat, as in WhatsApp"
+msgstr "Conversa anterior / próxima, como no WhatsApp"
+
+msgid "Open a chat by its position in the chat list"
+msgstr "Abrir a conversa pela posição na lista"
+
+msgid "Edit your last message, or quote theirs (when the input is empty)"
+msgstr "Editar sua última mensagem, ou citar a da pessoa (com o campo vazio)"
+
+msgid "Send (Shift+Enter for a new line)"
+msgstr "Enviar (Shift+Enter para nova linha)"
+
+msgid "Dismiss the current action, return from search, Calls or Starred, or close the chat"
+msgstr "Dispensar a ação atual, voltar da busca, de Chamadas ou Com estrela, ou fechar a conversa"
+
+msgid "New chat or message yourself"
+msgstr "Nova conversa ou mensagem para você"
+
+msgid "Archive or unarchive the open chat"
+msgstr "Arquivar ou desarquivar a conversa aberta"
+
+msgid "Switch to the next linked number"
+msgstr "Passar para o próximo número vinculado"
+
+msgid "Paste text, or stage a picture from the clipboard"
+msgstr "Colar texto, ou preparar uma imagem da área de transferência"
+
+msgid "Copy the selected messages"
+msgstr "Copiar as mensagens selecionadas"
+
+msgid "Collapse or expand the chat list"
+msgstr "Recolher ou expandir a lista de conversas"
+
+msgid "Jump to the newest message (when the input is empty)"
+msgstr "Ir para a mensagem mais recente (com o campo vazio)"
+
+msgid "Go to the message list"
+msgstr "Ir para a lista de mensagens"
+
+msgid "Move through messages (in the message list)"
+msgstr "Percorrer as mensagens (na lista de mensagens)"
+
+msgid "Message menu (in the message list)"
+msgstr "Menu da mensagem (na lista de mensagens)"
+
+msgid "Reply to the message (in the message list)"
+msgstr "Responder à mensagem (na lista de mensagens)"
+
+msgid "React to the message (in the message list)"
+msgstr "Reagir à mensagem (na lista de mensagens)"
+
+msgid "Copy the message (in the message list)"
+msgstr "Copiar a mensagem (na lista de mensagens)"
+
+msgid "Forward the message (in the message list)"
+msgstr "Encaminhar a mensagem (na lista de mensagens)"
+
+msgid "Delete the message for me (in the message list)"
+msgstr "Apagar a mensagem para mim (na lista de mensagens)"
+
+msgid "Delete the message for everyone (in the message list)"
+msgstr "Apagar a mensagem para todos (na lista de mensagens)"
+
+msgid "Go to the replied message (in the message list)"
+msgstr "Ir para a mensagem respondida (na lista de mensagens)"
+
+msgid "Scroll the open chat by a page"
+msgstr "Rolar a conversa aberta em uma página"
+
+msgid "Top / bottom of the open chat (when the input is empty)"
+msgstr "Início / fim da conversa aberta (com o campo vazio)"
+
+msgid "Zoom in / out"
+msgstr "Aumentar / diminuir o zoom"
+
+msgid "Reset zoom"
+msgstr "Restaurar o zoom"
+
+msgid "Previous / next item in the media viewer"
+msgstr "Item anterior / próximo no visualizador"
+
+msgid "Keyboard shortcuts (? when not typing)"
+msgstr "Atalhos de teclado (? fora da digitação)"
+
+msgid "Lock ZapFastie (with an app lock password)"
+msgstr "Trancar o ZapFastie (com senha de trava)"
+
+msgid "Close the window (ZapFastie remains in the tray)"
+msgstr "Fechar a janela (o ZapFastie continua na bandeja)"
+
+msgid "Quit"
+msgstr "Sair"

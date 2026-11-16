@@ -987,10 +987,11 @@ fn shortcuts_width(window: f32) -> f32 {
 /// wrapped in the room that is left.
 fn shortcut_row(
     ui: &mut egui::Ui,
+    locale: crate::i18n::Locale,
     palette: &theme::Palette,
     keys_width: f32,
     keys: &str,
-    what: &str,
+    what: &'static str,
 ) {
     ui.horizontal_top(|ui| {
         let rest = (ui.available_width() - keys_width - ui.spacing().item_spacing.x).max(60.0);
@@ -1005,7 +1006,12 @@ fn shortcut_row(
         });
         ui.allocate_ui_with_layout(vec2(rest, 0.0), Layout::top_down(Align::Min), |ui| {
             ui.set_width(rest);
-            theme::paragraph(ui, what, theme::regular(13.0), palette.secondary);
+            theme::paragraph(
+                ui,
+                crate::i18n::gettext(locale, what).into_owned(),
+                theme::regular(13.0),
+                palette.secondary,
+            );
         });
     });
 }
@@ -1054,7 +1060,7 @@ fn shortcuts(app: &mut App, ui: &mut egui::Ui) {
                             ui.set_width(column);
                             ui.spacing_mut().item_spacing = vec2(18.0, 8.0);
                             for (keys, what) in rows {
-                                shortcut_row(ui, &palette, keys_width, keys, what);
+                                shortcut_row(ui, app.locale, &palette, keys_width, keys, what);
                             }
                         },
                     );

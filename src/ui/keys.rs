@@ -1155,7 +1155,9 @@ const DELETE_FOR_EVERYONE_KEYS: &str = if cfg!(target_os = "macos") {
     "Shift+Delete"
 };
 
-/// Shortcuts shown in the help dialog.
+/// Shortcuts shown in the help dialog. Each description is a gettext msgid:
+/// the dialog translates it when it draws the row, so the help follows the
+/// interface language like the rest of the window.
 pub const SHORTCUTS: &[(&str, &str)] = &[
     ("Ctrl+K / Ctrl+Shift+F", "Search chats"),
     ("Ctrl+F", "Search the open chat or the settings"),

@@ -19153,7 +19153,8 @@ mod tests {
     /// name in the accessibility tree.
     fn return_to_bottom_shown(app: &mut App, ctx: &egui::Context) -> bool {
         tree_after(app, ctx, None).nodes.iter().any(|(_, node)| {
-            node.role() == egui::accesskit::Role::Button && node.label() == Some("Newest message")
+            node.role() == egui::accesskit::Role::Button
+                && node.label() == Some(crate::i18n::gettext(app.locale, "Newest message").as_ref())
         })
     }
 
@@ -21358,7 +21359,7 @@ mod tests {
                     output.textures_delta.clear();
                     if let Some(tree) = output.platform_output.accesskit_update {
                         for (_, node) in tree.nodes {
-                            if node.label() == Some("Cancel reply (Esc)")
+                            if node.label() == Some(crate::i18n::gettext(app.locale, "Cancel reply (Esc)").as_ref())
                                 && let Some(bounds) = node.bounds()
                             {
                                 let scale = ctx.pixels_per_point() as f64;
