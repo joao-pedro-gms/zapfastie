@@ -6,6 +6,9 @@ protocol implementation.
 
 ## Before opening an issue
 
+This fork has GitHub issues turned off, so the forms are not reachable here
+yet. The rules below still say what a report has to contain.
+
 Search open and closed issues first. For a bug, use the bug form and include
 the requested log and exact steps to reproduce it. Reports without enough
 information to investigate may be closed.
@@ -27,7 +30,7 @@ Product boundaries and upstream responsibilities:
   scheduled, bulk or automatic replies. WhatsApp's terms forbid automated
   use and it bans accounts for it.
 
-The guide's [current limitations](https://zapfast.rocks/what-is-zapfast/#what-it-does-not-do-yet)
+The guide's [current limitations](docs/_guide/what-is-zapfastie.md#what-it-does-not-do-yet)
 describe what is implemented today, not permanent exclusions. Missing features,
 codec restrictions, and download limits do not by themselves make a report out
 of scope. Check the relevant code and reported version when a guide and a
@@ -124,7 +127,7 @@ itself edits its PO file and passes `.github/scripts/update-translations.sh
 the catalogs without gettext tools.
 
 Linux needs the development packages listed in
-[Getting started](https://zapfast.rocks/getting-started/); `nix develop`
+[Getting started](docs/_guide/getting-started.md); `nix develop`
 provides the complete development environment. When changing `Cargo.lock` or
 `flake.nix`, also verify `nix build` on a Nix host or wait for the Nix CI job.
 Passing CI is required, but does not replace review for correctness, product

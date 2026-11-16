@@ -4,5 +4,5 @@ contact_links:
     url: https://github.com/joao-pedro-gms/zapfastie/blob/main/CONTRIBUTING.md
     about: Check product boundaries and contribution requirements before opening an issue or pull request.
   - name: Documentation
-    url: https://zapfast.rocks
+    url: https://github.com/joao-pedro-gms/zapfastie/blob/main/docs/_guide/what-is-zapfastie.md
     about: Install steps, settings, and where ZapFastie keeps its files and logs.

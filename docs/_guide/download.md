@@ -11,18 +11,24 @@ seo:
 {% assign app = site.release_app_name %}
 {% assign base = "https://github.com/joao-pedro-gms/zapfastie/releases/download/v" | append: v %}
 
+This fork has not published a release, so there are no files at a download
+link: the version named below is the one the next release will carry, the AUR,
+Fedora and Flatpak recipes wait in `packaging/`, and every file lands with the
+release. Two things work today: the Nix flake below builds from source, and so
+does [Getting started](/getting-started/).
+
 ZapFastie was previously called FastsApp. Version 0.13.0 introduces the new
 package and executable names. Your existing session and local data move
 automatically when you first start ZapFastie; quit FastsApp before upgrading.
 
-The current version is **v{{ v }}**. SHA-256 checksums are in
-[checksums.txt]({{ base }}/checksums.txt). Older versions are on the
+The current version is **v{{ v }}**. Each release carries its SHA-256 checksums
+in [checksums.txt]({{ base }}/checksums.txt). Older versions are on the
 [releases page](https://github.com/joao-pedro-gms/zapfastie/releases).
 
 ## Linux
 
-On Arch Linux and derivatives, install from the
-[AUR](https://aur.archlinux.org/packages/{{ name }}-bin):
+On Arch Linux and derivatives, the AUR packages come from the recipes in
+`packaging/arch/` and are not published yet. They will be:
 
 ```sh
 yay -S {{ name }}-bin    # prebuilt
@@ -84,14 +90,9 @@ sudo apt install ./{{ name }}_{{ v }}_amd64.deb    # or _arm64.deb
 - [{{ name }}_{{ v }}_amd64.deb]({{ base }}/{{ name }}_{{ v }}_amd64.deb)
 - [{{ name }}_{{ v }}_arm64.deb]({{ base }}/{{ name }}_{{ v }}_arm64.deb)
 
-On Fedora 44 and newer, install from the
-[COPR repository](https://copr.fedorainfracloud.org/coprs/paolino/zapfastie/),
-so dnf updates {{ app }} with the rest of your system:
-
-```sh
-sudo dnf copr enable paolino/zapfastie
-sudo dnf install zapfastie
-```
+On Fedora 44 and newer, there is no COPR repository for this fork yet; once
+there is one, dnf will update {{ app }} with the rest of the system. Until
+then, take the `.rpm` below.
 
 On openSUSE and other RPM distributions, or to install one release by hand,
 take the `.rpm`:
@@ -151,11 +152,8 @@ One download for both Apple Silicon and Intel:
 
 Open it and drag **{{ app }}** to Applications.
 
-If you use [Homebrew](https://brew.sh), you can install it with:
-
-```sh
-brew install --cask crmne/tap/zapfastie
-```
+If you use [Homebrew](https://brew.sh), there is no cask of this fork yet; one
+of its own will come with a release. Until then, the DMG above is the way.
 
 The app is signed with Developer ID and notarized by Apple. The DMG includes
 a validated notarization ticket.

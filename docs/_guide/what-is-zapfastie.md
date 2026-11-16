@@ -20,8 +20,8 @@ In our Linux test, it opens in under a second and uses about 200 MB of idle
 RAM, compared with 1.13 GB for WhatsApp Web and its Chromium processes.
 [See the measurements](/benchmarks/).
 
-<img class="VPImage dark" src="{{ '/screenshot.png' | relative_url }}" alt="ZapFastie showing a conversation with an attachment, voice messages, reactions, a quoted reply, and a link preview" width="1800" height="1360">
-<img class="VPImage light" src="{{ '/screenshot-light.png' | relative_url }}" alt="ZapFastie showing a conversation with an attachment, voice messages, reactions, a quoted reply, and a link preview" width="1800" height="1360">
+<img class="VPImage dark" src="{{ '/screenshot.png' | relative_url }}" alt="ZapFastie showing a conversation with an attachment, voice messages, reactions, a quoted reply, and a link preview" width="1280" height="960">
+<img class="VPImage light" src="{{ '/screenshot-light.png' | relative_url }}" alt="ZapFastie showing a conversation with an attachment, voice messages, reactions, a quoted reply, and a link preview" width="1280" height="960">
 
 ## What it does
 
@@ -80,9 +80,9 @@ copy. Syncing these deletions with the phone and other linked devices is now
 implemented on main, but has not yet been released. See
 [deletion behavior](/using-zapfastie/#writing).
 
-When reporting [an issue](https://github.com/joao-pedro-gms/zapfastie/issues), include
-what happened, what you expected, and when it happened. This helps match the
-problem to the log in the state directory.
+When reporting an issue (this fork's GitHub issues are turned off for now),
+include what happened, what you expected, and when it happened. This helps
+match the problem to the log in the state directory.
 
 ## Account safety
 

@@ -10,8 +10,11 @@ mail. These notes are for coding agents and new contributors.
 The order of that work, and where it stands: notes first, because they are
 local and need no network; then reading mail, with its own worker and its own
 encrypted archive beside the chat one; then sending mail and the threading
-around it; then the links between the three surfaces. Nothing of mail or notes
-is built yet, so no file in this repository pretends to be.
+around it; then the links between the three surfaces. Notes are built:
+`src/notes.rs` and `src/ui/notes.rs` are their tab, with a search and
+citations into a chat. Mail is not: `src/mail/` holds the account model, the
+reader that turns a mail into text, and the store beside the chat one, with no
+IMAP connection and no screen. No file in this repository pretends otherwise.
 
 ## Product boundaries
 
@@ -784,6 +787,13 @@ A release is not finished when the tag is pushed. Do these in order:
    file as the release description, and a stable tag without it fails. Link
    screenshots at the release's asset URLs
    (`https://github.com/joao-pedro-gms/zapfastie/releases/download/vX.Y.Z/NAME.png`).
+   In the same commit, set `zapfast_version` in `docs/_config.yml` and the
+   version menu in `docs/_data/versions.yml` to the new version. The site's
+   `/` is built from the newest release tag and published when the release
+   is, by which time its files exist, so the tag's docs must already name
+   it; a version set after tagging only reaches `/next/` until the release
+   after. The menu lists only the current version, which points to
+   `/download/`, and the Changelog link; do not add older versions to it.
    Run the full checks, commit, and push `main`. Before tagging, verify the
    release commit is reachable from `origin/main` so the binaries report the
    right version and the release contains the canonical history.
@@ -792,12 +802,11 @@ A release is not finished when the tag is pushed. Do these in order:
 3. Upload the screenshots to the release as assets with the names the notes
    link, then open the published release and check the text, every image,
    and every download link. Never leave generated placeholder notes.
-4. After the release files exist, update both `zapfast_version` in
-   `docs/_config.yml` and the version menu in `docs/_data/versions.yml`.
-   The menu lists only the current version, which points to `/download/`,
-   and the Changelog link; do not add older versions to it. Never point the
-   download page at files that do not exist yet. Set `release_asset_prefix` to
-   `zapfastie` and `release_app_name` to `ZapFastie` only once those assets exist.
+4. Once the release is published, check that the download page offers the
+   new version and every download link loads, wherever the site is served
+   from. Never point the download page at files that do not exist yet. Set
+   `release_asset_prefix` to `zapfastie` and `release_app_name` to `ZapFastie`
+   only once those assets exist.
 5. Update the AUR packages from the templates in `packaging/arch/`. The shared
    packaging workflow generates versions, hashes and `.SRCINFO` after the
    release exists, and publishes when `PUBLISH_AUR` and the required secrets

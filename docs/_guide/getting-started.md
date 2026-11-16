@@ -6,13 +6,13 @@ nav_order: 2
 
 ## Install
 
-The [Download page](/download/) has packages and archives for Linux,
-macOS, and Windows.
-
-Or build from source with a recent stable [Rust](https://rustup.rs):
+This fork has published no package yet, so building from source with a recent
+stable [Rust](https://rustup.rs) is how ZapFastie installs today. The
+[Download page](/download/) has the packages and archives each release will
+bring.
 
 ```sh
-git clone https://github.com/joao-pedro-gms/zapfastie zapfast
+git clone https://github.com/joao-pedro-gms/zapfastie
 cd zapfastie
 cargo install --path .
 zapfastie
