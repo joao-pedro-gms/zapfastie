@@ -74,15 +74,15 @@ opens the full emoji picker. Hover over a reaction to see who added it; in
 released builds, clicking it adds that reaction or removes your own. When
 someone reacts to one of your messages, the chat moves to the top of the list.
 
-**Development builds** show a compact badge with the three most-used reaction
+A message's reactions show as a compact badge with the three most-used
 emojis and the total count. Hover for a quick list, or click the badge to see
 every person grouped by emoji. Click **You** in that list to remove your
 reaction; use React to add or change it.
 Editing uses the composer. Press Escape to cancel. If WhatsApp refuses an
 edit, the message keeps its earlier text.
 
-**Development builds** also show when your message was delivered and read when
-you click its time or ticks, as on WhatsApp.
+Your message shows when it was delivered and read when you click its time or
+ticks, as on WhatsApp.
 
 Forwarding opens a recipient picker. Select up to five writable chats, as on
 WhatsApp; a message labelled as forwarded many times goes to one chat at a
@@ -108,12 +108,9 @@ chat's newest message: your own last text opens for editing, and one somebody
 else sent becomes the quote, so answering what was just said takes one key.
 
 Deleting a message asks which copies to remove. **Delete for everyone**
-revokes it through WhatsApp. In **0.19.0**, **Delete for me** removes only this
-computer's copy, and individual deletions do not sync to or from your phone.
-
-**Development builds** now sync **Delete for me** with your phone and linked
-devices; other people keep their copy. This needs a connection, and the local
-copy disappears only after WhatsApp accepts the deletion. Phone deletions sync
+revokes it through WhatsApp. **Delete for me** syncs with your phone and linked devices; other people keep
+their copy. This needs a connection, and the local copy disappears only after
+WhatsApp accepts the deletion. Phone deletions sync
 here too, and history replay cannot restore deleted messages. Interrupted
 requests remain saved for that account and retry when it reconnects, including
 when an acknowledgement was lost. Unlinking clears those requests. Confirmed
@@ -127,16 +124,14 @@ offered only when every selected message can still be revoked. The
 confirmation shows how many messages it deletes, and each is deleted as it
 would be on its own.
 
-**Delete chat** and **Clear chat** already sync in 0.19.0, as described under
-[Chats](#chats).
+**Delete chat** and **Clear chat** sync too, as described under [Chats](#chats).
 
-**Development builds** place a message you send at the time WhatsApp's
-server acknowledged it, so a reply no longer sorts above it when this
+A message you send is placed at the time WhatsApp's server acknowledged it, so a reply no longer sorts above it when this
 computer's clock runs ahead. Until the server answers, and for a poll, the
 message keeps this computer's time.
 
-**Development builds** preserve edited replies and the phone's order for
-messages sent within the same second when loading history. If an earlier
+Edited replies and the phone's order for messages sent within the same second
+are preserved when loading history. If an earlier
 build missed a message or put nearby messages in the wrong order, right-click
 a message just after the affected area and choose **Reload earlier messages**.
 This asks your phone for up to 50 messages before that point and merges them
@@ -168,7 +163,7 @@ by sender, time, and a short summary.
 
 ## Starred messages
 
-**Development builds** can star messages. Right-click a message and choose
+Messages can be starred. Right-click a message and choose
 **Star**; once WhatsApp confirms it, a small star shows beside the message's
 time. Stars made on your phone or another linked device show up here too, and
 the other way round. Stars made before your copy of ZapFastie followed them are
@@ -183,7 +178,7 @@ Click **Chats** in the rail, or press Escape, to go back to the chats.
 
 ## Pinned messages
 
-**Development builds** can pin a message for everyone in the chat. Choose
+A message can be pinned for everyone in the chat. Choose
 **Pin message** in a message's menu; WhatsApp keeps the pin for seven days. A
 chat holds three pins at a time, and ZapFastie refuses a fourth instead of
 quietly replacing one. A line under the chat's header shows the newest pin,
@@ -932,8 +927,7 @@ A person's details also list the groups you are both in, under a heading
 such as **3 groups in common**: click one to open it. Groups you left and
 locked chats are not listed.
 
-**Development builds** also show a group's description in the panel. You can
-select and copy its text, and a long description scrolls. To change the
+A group's description shows in the panel too. You can select and copy its text, and a long description scrolls. To change the
 description, use your phone.
 
 ## Links

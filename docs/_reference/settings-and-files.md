@@ -267,12 +267,11 @@ hints under the message box** in the Keyboard shortcuts dialog brings it back),
 **Also save to your phone's contacts** in the new-contact dialog, voice
 playback speed, and the chat list and search pane widths.
 
-Development builds also remember the window's size, position, and maximized
-state in `settings.json`, including when reopening from the tray or a
+ZapFastie remembers the window's size, position, and maximized state in
+`settings.json`, including when reopening from the tray or a
 notification. The window opens at the same size whatever the interface's
 zoom. On Wayland the compositor controls placement, so ZapFastie keeps the size
-without choosing the position. These window changes and **Keep chats
-archived** are not yet included in 0.19.0.
+without choosing the position.
 
 Labels always get a chip each, in a row under the filter chips, once a label
 exists. They are kept in the message archive, next to your chats, and never

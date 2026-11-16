@@ -21,8 +21,7 @@ Each linked device can have one connection. Two clients using the same device
 keys will disconnect each other. A second ZapFastie launch reopens the existing
 window instead of starting another instance.
 
-**Development builds:** when WhatsApp identifies a contact previously known
-by a private id, ZapFastie merges that chat into the contact's phone-number
+When WhatsApp identifies a contact previously known by a private id, ZapFastie merges that chat into the contact's phone-number
 chat. Messages keep their stars, pins, and motion-photo clips. Newer star and pin
 changes take precedence, including removing a star or pin.
 

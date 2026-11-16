@@ -75,10 +75,8 @@ ZapFastie does not currently support:
   videos, documents, and templates without readable text
   also need another client.
 
-In **0.19.0**, **Delete for me** for individual messages affects only the local
-copy. Syncing these deletions with the phone and other linked devices is now
-implemented on main, but has not yet been released. See
-[deletion behavior](/using-zapfastie/#writing).
+**Delete for me** removes the message here and on your other linked devices;
+other people keep their copy. See [deletion behavior](/using-zapfastie/#writing).
 
 When reporting an issue (this fork's GitHub issues are turned off for now),
 include what happened, what you expected, and when it happened. This helps
