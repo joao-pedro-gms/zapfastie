@@ -958,12 +958,12 @@ pub fn menu_frame(palette: &Palette) -> egui::Frame {
 }
 
 pub fn empty_state(ui: &mut Ui, palette: &Palette, icon: Icon, title: &str, body: &str) {
-    ui.add_space(48.0);
+    ui.add_space(theme::SPACE_48);
     ui.vertical_centered(|ui| {
         theme::icon(ui, icon, 40.0, palette.dim);
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         theme::text(ui, title, theme::semibold(16.0), palette.text);
-        ui.add_space(2.0);
+        ui.add_space(theme::SPACE_2);
         ui.add(
             egui::Label::new(
                 egui::RichText::new(body)

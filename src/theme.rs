@@ -628,6 +628,60 @@ pub const FOCUS_STROKE_WIDTH: f32 = 1.0;
 pub const ROW_HEIGHT: f32 = 68.0;
 pub const TOP_BAR_HEIGHT: f32 = 60.0;
 
+/// The spacing steps a surface draws from, in points.
+///
+/// Every one is even, so the interface sits on a two-point grid; a new surface
+/// takes a step from here rather than inventing a number, which is what let
+/// thirteen different gaps accumulate across the same screens.
+pub const SPACE: [f32; 13] = [
+    2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 24.0, 32.0, 48.0,
+];
+
+/// Whether `value` is one of [`SPACE`]'s steps.
+pub fn on_scale(value: f32) -> bool {
+    SPACE.contains(&value)
+}
+
+/// A hair's width, between the elements of one control.
+pub const SPACE_2: f32 = 2.0;
+/// The gap inside a chip or between an icon and its label.
+pub const SPACE_4: f32 = 4.0;
+/// Between the rows of a tight list.
+pub const SPACE_6: f32 = 6.0;
+/// The usual gap between the parts of one row.
+pub const SPACE_8: f32 = 8.0;
+/// Between a label and its value.
+pub const SPACE_10: f32 = 10.0;
+/// Between the rows of a settings list.
+pub const SPACE_12: f32 = 12.0;
+/// Between a heading and the text under it.
+pub const SPACE_14: f32 = 14.0;
+/// Between the blocks of a dialog.
+pub const SPACE_16: f32 = 16.0;
+/// The gap above a section.
+pub const SPACE_18: f32 = 18.0;
+/// Between a page's sections.
+pub const SPACE_20: f32 = 20.0;
+/// Around a dialog's own content.
+pub const SPACE_24: f32 = 24.0;
+/// Above a page's title.
+pub const SPACE_32: f32 = 32.0;
+/// The room an empty state leaves at the top.
+pub const SPACE_48: f32 = 48.0;
+
+/// A page's own title, such as Settings'.
+pub const TITLE_PAGE: f32 = 24.0;
+/// A dialog's title, beside its close button.
+pub const TITLE_DIALOG: f32 = 18.0;
+/// The list header's title, level with the rail's Chats.
+pub const TITLE_LIST: f32 = 20.0;
+/// A section heading inside a page.
+pub const HEADING: f32 = 15.0;
+/// Body text.
+pub const BODY: f32 = 13.5;
+/// The line under a label, and a timestamp.
+pub const META: f32 = 12.5;
+
 pub fn regular(size: f32) -> egui::FontId {
     fastframe_fonts::Weight::Regular.font_id(size)
 }
@@ -2032,6 +2086,75 @@ mod tests {
     }
 
     #[test]
+    /// Each named step is the value its name says, and every one is on the
+    /// scale, so a step cannot drift away from the list it belongs to.
+    #[test]
+    fn the_named_steps_are_the_scale() {
+        for (name, value) in [
+            ("SPACE_2", SPACE_2),
+            ("SPACE_4", SPACE_4),
+            ("SPACE_6", SPACE_6),
+            ("SPACE_8", SPACE_8),
+            ("SPACE_10", SPACE_10),
+            ("SPACE_12", SPACE_12),
+            ("SPACE_14", SPACE_14),
+            ("SPACE_16", SPACE_16),
+            ("SPACE_18", SPACE_18),
+            ("SPACE_20", SPACE_20),
+            ("SPACE_24", SPACE_24),
+            ("SPACE_32", SPACE_32),
+            ("SPACE_48", SPACE_48),
+        ] {
+            assert!(on_scale(value), "{name} is off the scale");
+            let named: f32 = name.trim_start_matches("SPACE_").parse().expect("a number");
+            assert_eq!(value, named, "{name} does not name its value");
+        }
+        assert!(!on_scale(7.0) && !on_scale(13.0) && !on_scale(0.0));
+    }
+
+    /// Every gap the main surfaces ask for is a step on the scale: the screens
+    /// that carried thirteen different numbers now draw from one list, and a
+    /// new number has to be argued for here.
+    #[test]
+    fn the_screens_only_ask_for_steps_on_the_scale() {
+        let sources: [(&str, &str); 10] = [
+            ("ui/chats.rs", include_str!("ui/chats.rs")),
+            ("ui/conversation.rs", include_str!("ui/conversation.rs")),
+            ("ui/settings.rs", include_str!("ui/settings.rs")),
+            ("ui/dialogs.rs", include_str!("ui/dialogs.rs")),
+            ("ui/widgets.rs", include_str!("ui/widgets.rs")),
+            ("ui/picker.rs", include_str!("ui/picker.rs")),
+            ("ui/notes.rs", include_str!("ui/notes.rs")),
+            ("ui/info.rs", include_str!("ui/info.rs")),
+            ("ui/calls.rs", include_str!("ui/calls.rs")),
+            ("ui/call.rs", include_str!("ui/call.rs")),
+        ];
+        for (name, source) in sources {
+            for (index, line) in source.lines().enumerate() {
+                let Some(rest) = line.split("add_space(").nth(1) else {
+                    continue;
+                };
+                let number: String = rest
+                    .chars()
+                    .take_while(|c| c.is_ascii_digit() || *c == '.')
+                    .collect();
+                // A sum of steps, or a step named by a constant, is a
+                // deliberate value; a bare number is the one to watch.
+                if !rest[number.len()..].starts_with(')') {
+                    continue;
+                }
+                let Ok(value) = number.parse::<f32>() else {
+                    continue;
+                };
+                assert!(
+                    on_scale(value),
+                    "{name}:{} asks for {value}, which is not a step",
+                    index + 1
+                );
+            }
+        }
+    }
+
     fn readable_on_leaves_a_readable_colour_alone() {
         let light = Palette::light();
         assert_eq!(

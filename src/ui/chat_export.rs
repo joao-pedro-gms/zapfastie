@@ -11,7 +11,7 @@ pub(super) fn show(app: &mut App, ui: &mut egui::Ui, chat: &str, mut include_med
     theme::text(
         ui,
         gettext(locale, "Export chat").as_ref(),
-        theme::medium(20.0),
+        theme::medium(theme::TITLE_LIST),
         palette.text,
     );
     if let Some(chat) = app.chat(chat) {

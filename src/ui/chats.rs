@@ -186,7 +186,7 @@ fn header(app: &mut App, ui: &mut egui::Ui) {
                         header_title(
                             ui,
                             crate::i18n::gettext(app.locale, "Starred").as_ref(),
-                            theme::bold(20.0),
+                            theme::bold(theme::TITLE_LIST),
                             palette.text,
                             buttons_width,
                         );
@@ -217,7 +217,7 @@ fn header(app: &mut App, ui: &mut egui::Ui) {
                                     "Archived"
                                 },
                             ),
-                            theme::bold(20.0),
+                            theme::bold(theme::TITLE_LIST),
                             palette.text,
                             buttons_width,
                         );
@@ -227,7 +227,7 @@ fn header(app: &mut App, ui: &mut egui::Ui) {
                         header_title(
                             ui,
                             &crate::i18n::gettext(app.locale, tab_title(&app.page)),
-                            theme::bold(20.0),
+                            theme::bold(theme::TITLE_LIST),
                             palette.text,
                             buttons_width,
                         );
@@ -568,7 +568,7 @@ fn macos_header(app: &mut App, ui: &mut egui::Ui) {
                     header_title(
                         ui,
                         &crate::i18n::gettext(app.locale, tab_title(&app.page)),
-                        theme::bold(20.0),
+                        theme::bold(theme::TITLE_LIST),
                         palette.text,
                         header_buttons_width(ui, &buttons),
                     );

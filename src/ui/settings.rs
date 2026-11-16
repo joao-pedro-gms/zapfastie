@@ -273,9 +273,9 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                             palette.text,
                         );
                     });
-                    ui.add_space(14.0);
+                    ui.add_space(theme::SPACE_14);
                     search(app, ui);
-                    ui.add_space(6.0);
+                    ui.add_space(theme::SPACE_6);
                     let filter = Filter::new(&app.settings_search);
                     let mut found = false;
                     for section in sections(app) {
