@@ -1,7 +1,9 @@
 ---
 layout: home
 title: ZapFastie
-description: A fast, lightweight WhatsApp app for Linux, macOS, and Windows.
+description: ZapFastie is a lightweight WhatsApp client for Linux, macOS, and Windows, written in Rust with no browser engine. Opens in under a second, about 200 MB of RAM.
+seo:
+  title: Native WhatsApp Client for Linux, macOS and Windows
 permalink: /
 hero:
   name: ZapFastie
@@ -21,8 +23,8 @@ hero:
     dark: /screenshot.png
     light: /screenshot-light.png
     alt: "ZapFastie showing a conversation with an attachment, voice messages, reactions, a quoted reply, and a link preview"
-    width: 1800
-    height: 1360
+    width: 1280
+    height: 960
 
 features:
   - icon: ⚡
@@ -60,7 +62,11 @@ features:
 
 <p class="sibling"><strong>Want Spotify just as fast and native?</strong> <a href="https://spotifast.rocks">Spotifast</a> is ZapFastie's sibling: the same native interface, for Spotify. Both are built on <a href="https://fastframe.dev">fastframe</a>, the shared foundation for native Rust apps built with <a href="https://www.egui.rs">egui</a>.</p>
 
-<video class="hero-film image-src" controls muted loop playsinline preload="metadata" poster="{{ '/assets/images/launch-film-poster.jpg' | relative_url }}" aria-label="ZapFastie in under a minute: a film of the app, made with its built-in demo content" hidden>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ZapFastie","url":"https://github.com/joao-pedro-gms/zapfastie","softwareVersion":"{{ site.zapfast_version }}","operatingSystem":"Linux, macOS, Windows","applicationCategory":"CommunicationApplication","license":"https://github.com/joao-pedro-gms/zapfastie/blob/main/LICENSE","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+
+<video class="hero-film image-src" width="1280" height="720" controls muted loop playsinline preload="metadata" poster="{{ '/assets/images/launch-film-poster.jpg' | relative_url }}" aria-label="ZapFastie in under a minute: a film of the app, made with its built-in demo content" hidden>
   <source src="{{ '/assets/videos/launch-film.mp4' | relative_url }}" type="video/mp4">
 </video>
 
@@ -82,6 +88,8 @@ features:
 <style>
   .hero-film {
     display: block;
+    /* The film's box before its metadata arrives, so nothing moves. */
+    aspect-ratio: 16 / 9;
     background: #0b141a;
   }
   .sibling {

@@ -4,6 +4,8 @@ description: Why ZapFastie exists, what it supports, and its current limitations
 redirect_from:
   - /what-is-fastsapp/
 nav_order: 0
+seo:
+  title: What is ZapFastie? An Open-Source WhatsApp Client
 ---
 
 ## Why ZapFastie

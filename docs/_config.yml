@@ -1,5 +1,5 @@
 title: ZapFastie
-zapfast_version: "0.21.0"
+zapfast_version: "0.22.0"
 release_asset_prefix: zapfastie
 release_app_name: ZapFastie
 description: A fast, lightweight WhatsApp app for Linux, macOS, and Windows.
