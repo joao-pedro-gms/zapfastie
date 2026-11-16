@@ -4596,7 +4596,13 @@ impl Worker {
                 match profile.set_push_name(&name).await {
                     Ok(outcome) => {
                         if let whatsapp_rust::PushNameOutcome::SyncPending { source } = outcome {
-                            log::warn!("name changed, but not yet synced to the phone: {source}");
+                            // The library's error may name a contact; the log
+                            // is attached to bug reports, so it says only what
+                            // the redactor allows.
+                            log::warn!(
+                                "name changed, but not yet synced to the phone: {}",
+                                crate::diagnostics::protocol_summary(&source.to_string())
+                            );
                         }
                         saved_name = Some(name);
                     }
@@ -4784,13 +4790,13 @@ impl Worker {
     fn on_receipt(&mut self, receipt: &wa_events::Receipt) {
         self.learn_source(&receipt.source);
         let chat = self.canonical(&receipt.source.chat);
+        // No phone number and no chat id here: this log goes into bug reports.
         log::debug!(
-            "receipt {:?} from {} (chat {chat}, from me: {}, offline: {}) for {:?}",
+            "receipt {:?} ({} ids, from me: {}, offline: {})",
             receipt.r#type,
-            receipt.source.sender,
+            receipt.message_ids.len(),
             receipt.source.is_from_me,
-            receipt.offline,
-            receipt.message_ids
+            receipt.offline
         );
         let status = match receipt.r#type {
             ReceiptType::Delivered => Delivery::Delivered,
@@ -4900,7 +4906,7 @@ impl Worker {
             }
         }
         log::debug!(
-            "receipt moved {changed} of {} messages in {chat} to {status:?}",
+            "receipt moved {changed} of {} messages to {status:?}",
             receipt.message_ids.len()
         );
         // Read receipts advance all earlier messages.
