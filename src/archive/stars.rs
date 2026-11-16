@@ -132,3 +132,34 @@ impl Archive {
         Ok(list)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_star_and_an_unstar_keep_the_newest_time() {
+        let archive = Archive::in_memory().expect("opens");
+        let chat = "fixture@s.whatsapp.net";
+        archive.star(chat, "a", 100).expect("stars");
+        assert!(archive.starred_ids(chat).expect("reads").contains("a"));
+        archive.unstar(chat, "a", 200).expect("unstars");
+        assert!(archive.starred_ids(chat).expect("reads").is_empty());
+        // A response that finished late does not put the star back.
+        assert!(!archive.set_star(chat, "a", true, 150, false).expect("ignored"));
+        assert!(archive.starred_ids(chat).expect("reads").is_empty());
+    }
+
+    /// A history replay carries the same second again; only a live event may
+    /// replace what is stored then.
+    #[test]
+    fn a_replay_at_the_same_second_loses_to_a_live_event() {
+        let archive = Archive::in_memory().expect("opens");
+        let chat = "fixture@s.whatsapp.net";
+        archive.unstar(chat, "a", 100).expect("unstars");
+        assert!(!archive.set_star(chat, "a", true, 100, true).expect("ignored"));
+        assert!(archive.starred_ids(chat).expect("reads").is_empty());
+        assert!(archive.set_star(chat, "a", true, 100, false).expect("stars"));
+        assert!(archive.starred_ids(chat).expect("reads").contains("a"));
+    }
+}

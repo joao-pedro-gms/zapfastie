@@ -208,3 +208,47 @@ impl Archive {
         Ok(list)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Three active pins are the cap WhatsApp keeps, and a fourth is refused
+    /// before it reaches the server.
+    #[test]
+    fn a_chat_keeps_three_pins() {
+        let archive = Archive::in_memory().expect("opens");
+        let chat = "fixture@s.whatsapp.net";
+        for (index, id) in ["a", "b", "c"].iter().enumerate() {
+            assert!(archive.pin(chat, id, 100 + index as i64, 1_000).expect("pins"));
+        }
+        assert_eq!(archive.pinned_ids(chat, 500).expect("reads").len(), 3);
+        assert!(archive.pin_full(chat, "d", 500).expect("checks"));
+        // Re-pinning one already pinned is not a fourth slot.
+        assert!(!archive.pin_full(chat, "a", 500).expect("checks"));
+    }
+
+    /// A pin that arrives late loses to the time already stored, so a replay
+    /// cannot restore a pin the reader removed.
+    #[test]
+    fn an_older_pin_event_loses() {
+        let archive = Archive::in_memory().expect("opens");
+        let chat = "fixture@s.whatsapp.net";
+        assert!(archive.pin(chat, "a", 200, 1_000).expect("pins"));
+        assert!(!archive.unpin(chat, "a", 100).expect("ignored"));
+        assert!(archive.pinned_ids(chat, 300).expect("reads").contains("a"));
+        assert!(archive.unpin(chat, "a", 300).expect("unpins"));
+        assert!(archive.pinned_ids(chat, 400).expect("reads").is_empty());
+    }
+
+    /// A pin past its expiry stops counting toward the cap.
+    #[test]
+    fn an_expired_pin_stops_counting() {
+        let archive = Archive::in_memory().expect("opens");
+        let chat = "fixture@s.whatsapp.net";
+        archive.pin(chat, "a", 100, 1_000).expect("pins");
+        assert!(archive.pinned_ids(chat, 999).expect("reads").contains("a"));
+        assert!(archive.pinned_ids(chat, 1_001).expect("reads").is_empty());
+        assert!(!archive.pin_full(chat, "b", 1_001).expect("checks"));
+    }
+}
