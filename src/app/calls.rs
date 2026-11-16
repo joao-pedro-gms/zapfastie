@@ -779,6 +779,8 @@ mod tests {
         let mut app = App::headless(AppDirs::under(directory), Settings::default()).0;
         let (backend, commands) = Backend::recording();
         app.backend = backend;
+        // A call needs the link, as in use.
+        app.link = LinkStatus::Connected;
         app.chats.push(Chat::new(ADA.into(), "Ada".into()));
         (app, commands)
     }
@@ -1224,6 +1226,28 @@ mod tests {
         assert_eq!(chat.as_str(), ADA);
         assert_eq!(*offered, video);
         (*generation, Arc::clone(cancel))
+    }
+
+    /// Pressing call while the link is down says so and sends nothing: the
+    /// header's buttons are unavailable then, and this is the same answer for
+    /// a call started from the Calls page or a menu.
+    #[test]
+    fn a_call_while_offline_says_so_and_sends_nothing() {
+        let directory = tempfile::tempdir().unwrap();
+        let (mut app, mut commands) = app(directory.path());
+        app.link = LinkStatus::Disconnected {
+            reason: String::new(),
+        };
+        let ctx = egui::Context::default();
+        app.apply(Action::StartCall(ADA.into()), &ctx);
+        assert!(sent(&mut commands).is_empty(), "nothing is sent");
+        assert!(app.call.is_none(), "no call screen is drawn");
+        assert!(
+            app.toasts
+                .iter()
+                .any(|toast| toast.message.contains("Connect to WhatsApp")),
+            "and it says why"
+        );
     }
 
     /// A group's call button starts a call in the group, drawn as the group's

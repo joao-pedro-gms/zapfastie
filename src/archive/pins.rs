@@ -220,7 +220,11 @@ mod tests {
         let archive = Archive::in_memory().expect("opens");
         let chat = "fixture@s.whatsapp.net";
         for (index, id) in ["a", "b", "c"].iter().enumerate() {
-            assert!(archive.pin(chat, id, 100 + index as i64, 1_000).expect("pins"));
+            assert!(
+                archive
+                    .pin(chat, id, 100 + index as i64, 1_000)
+                    .expect("pins")
+            );
         }
         assert_eq!(archive.pinned_ids(chat, 500).expect("reads").len(), 3);
         assert!(archive.pin_full(chat, "d", 500).expect("checks"));

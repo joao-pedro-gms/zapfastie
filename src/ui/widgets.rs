@@ -2027,7 +2027,12 @@ pub fn dotted_chip(
     // A chip is a Tab stop, so it must say what it is and whether it is the
     // one on screen: five unnamed buttons tell a screen reader nothing.
     response.widget_info(|| {
-        egui::WidgetInfo::selected(egui::WidgetType::SelectableLabel, ui.is_enabled(), selected, label)
+        egui::WidgetInfo::selected(
+            egui::WidgetType::SelectableLabel,
+            ui.is_enabled(),
+            selected,
+            label,
+        )
     });
     theme::reveal_focus(&response);
     theme::focus_outline(ui, response.id, rect, rect.height() / 2.0);

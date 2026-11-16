@@ -959,11 +959,10 @@ fn list(app: &mut App, ui: &mut egui::Ui) {
             // The banner above already knows how far along the phone is; the
             // empty list says it too, instead of looking stuck.
             let body = match app.sync_percent {
-                Some(percent) => crate::i18n::gettext(
-                    locale,
-                    "Receiving history from your phone: {}%",
-                )
-                .replace("{}", &percent.to_string()),
+                Some(percent) => {
+                    crate::i18n::gettext(locale, "Receiving history from your phone: {}%")
+                        .replace("{}", &percent.to_string())
+                }
                 None => gettext(locale, "Receiving history from your phone.").into_owned(),
             };
             (gettext(locale, "Loading your chats"), body.into())
@@ -973,7 +972,13 @@ fn list(app: &mut App, ui: &mut egui::Ui) {
                 gettext(locale, "Use New chat to message a contact or yourself."),
             )
         };
-        widgets::empty_state(ui, &palette, Icon::MessageCircle, title.as_ref(), body.as_ref());
+        widgets::empty_state(
+            ui,
+            &palette,
+            Icon::MessageCircle,
+            title.as_ref(),
+            body.as_ref(),
+        );
         return;
     }
     // Rows touch: one clickable surface from top to bottom, no gaps or rules.

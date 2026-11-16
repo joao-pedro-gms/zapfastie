@@ -21359,7 +21359,10 @@ mod tests {
                     output.textures_delta.clear();
                     if let Some(tree) = output.platform_output.accesskit_update {
                         for (_, node) in tree.nodes {
-                            if node.label() == Some(crate::i18n::gettext(app.locale, "Cancel reply (Esc)").as_ref())
+                            if node.label()
+                                == Some(
+                                    crate::i18n::gettext(app.locale, "Cancel reply (Esc)").as_ref(),
+                                )
                                 && let Some(bounds) = node.bounds()
                             {
                                 let scale = ctx.pixels_per_point() as f64;
