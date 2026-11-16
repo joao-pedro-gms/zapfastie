@@ -572,6 +572,9 @@ pub struct App {
     pub chat_lock_entry: String,
     pub chat_lock_confirm: String,
     pub chat_lock_error: bool,
+    /// Wrong tries against the locked-chats code, with the wait between them,
+    /// kept in the settings so a restart is not a fresh set of tries.
+    chat_lock_attempts: std::cell::Cell<crate::app_lock::Attempts>,
     pub new_chat_search: String,
     /// Last answer from the slow code verifier, keyed by what was checked.
     chat_lock_check: std::cell::RefCell<Option<(String, Option<String>, bool)>>,
@@ -1583,7 +1586,14 @@ impl App {
             });
         let locale = crate::i18n::resolve(settings.interface_language);
         // With a password set, ZapFastie starts locked.
-        let app_lock = crate::app_lock::AppLock::new(settings.app_lock_hash.is_some());
+        let mut app_lock = crate::app_lock::AppLock::new(settings.app_lock_hash.is_some());
+        // A restart is not a fresh set of tries: the wait saved by the last
+        // run carries over.
+        let chat_lock_wait = (settings.chat_lock_failures, settings.chat_lock_retry_at);
+        let saved_wait = settings.app_lock_retry_at.map(|ms| {
+            std::time::SystemTime::UNIX_EPOCH + std::time::Duration::from_millis(ms.max(0) as u64)
+        });
+        app_lock.restore_wait(settings.app_lock_failures, saved_wait);
         let tray_lockable = settings.app_lock_hash.is_some();
         let mut app = Self {
             dirs,
@@ -1650,6 +1660,10 @@ impl App {
             chat_lock_entry: String::new(),
             chat_lock_confirm: String::new(),
             chat_lock_error: false,
+            chat_lock_attempts: std::cell::Cell::new(crate::app_lock::Attempts::new(
+                chat_lock_wait.0,
+                chat_lock_wait.1,
+            )),
             new_chat_search: String::new(),
             chat_lock_check: Default::default(),
             message_receipts: None,
@@ -3405,6 +3419,14 @@ impl App {
         // Verifying runs a slow KDF, and this is read every frame, so the
         // answer is kept until the typed text or the stored verifier changes.
         let code = self.search.trim();
+        // Too many wrong codes: no more tries until the wait is over.
+        let mut attempts = self.chat_lock_attempts.get();
+        if attempts
+            .wait_left(crate::app_lock::unix_millis(std::time::SystemTime::now()))
+            .is_some()
+        {
+            return false;
+        }
         let stored = &self.settings.chat_lock_code_hash;
         let mut cached = self.chat_lock_check.borrow_mut();
         if let Some((checked, against, matched)) = cached.as_ref()
@@ -3414,6 +3436,14 @@ impl App {
             return *matched;
         }
         let matched = self.settings.verifies_chat_lock_code(code);
+        // A wrong code typed into the search field is a try like any other.
+        if !matched && !code.is_empty() {
+            attempts.failed(crate::app_lock::unix_millis(std::time::SystemTime::now()));
+            self.chat_lock_attempts.set(attempts);
+        } else if matched {
+            attempts.passed();
+            self.chat_lock_attempts.set(attempts);
+        }
         *cached = Some((code.to_owned(), stored.clone(), matched));
         matched
     }
@@ -10176,18 +10206,42 @@ impl App {
                 }
             }
             Action::UnlockLockedFolder(code) => {
-                if self.settings.verifies_chat_lock_code(code.trim()) {
+                let attempts = self.chat_lock_attempts.get();
+                let now = crate::app_lock::unix_millis(std::time::SystemTime::now());
+                if attempts.wait_left(now).is_some() {
+                    // Too many wrong codes in a row: no try until the wait is
+                    // over, and the dialog says the code did not match.
+                    self.chat_lock_entry.clear();
+                    self.chat_lock_error = true;
+                } else if self.settings.verifies_chat_lock_code(code.trim()) {
+                    self.chat_lock_attempts
+                        .set(crate::app_lock::Attempts::default());
+                    self.chat_lock_check.borrow_mut().take();
                     self.enter_locked_folder();
                 } else {
                     self.chat_lock_entry.clear();
                     self.chat_lock_error = true;
+                    let mut attempts = attempts;
+                    attempts.failed(now);
+                    self.chat_lock_attempts.set(attempts);
                 }
+                self.sync_chat_lock_wait();
             }
             Action::CreateChatLockCode(code) => {
-                if self.settings.chat_lock_code_hash.is_none() && !code.trim().is_empty() {
-                    self.settings.set_chat_lock_code(Some(code.trim()));
+                let code = code.trim();
+                if self.settings.chat_lock_code_hash.is_none()
+                    && code.chars().count() >= crate::app_lock::MIN_CHAT_LOCK_CHARS
+                {
+                    self.settings.set_chat_lock_code(Some(code));
                     self.mark_settings_dirty();
+                    // A new code starts with a clean count.
+                    self.chat_lock_attempts
+                        .set(crate::app_lock::Attempts::default());
+                    self.chat_lock_check.borrow_mut().take();
+                    self.sync_chat_lock_wait();
                     self.enter_locked_folder();
+                } else {
+                    self.chat_lock_error = true;
                 }
             }
             Action::CloseLockedFolder => {
@@ -10196,7 +10250,18 @@ impl App {
                 self.search_hits.clear();
             }
             Action::SetChatLockCode(code) => {
+                if code.as_deref().is_some_and(|code| {
+                    code.trim().chars().count() < crate::app_lock::MIN_CHAT_LOCK_CHARS
+                }) {
+                    // Too short to keep: Settings says what it needs.
+                    self.chat_lock_error = true;
+                    return;
+                }
                 self.settings.set_chat_lock_code(code.as_deref());
+                self.chat_lock_attempts
+                    .set(crate::app_lock::Attempts::default());
+                self.chat_lock_check.borrow_mut().take();
+                self.sync_chat_lock_wait();
                 self.close_locked_folder();
                 self.search.clear();
                 self.search_hits.clear();
@@ -11159,6 +11224,33 @@ impl App {
         }
     }
 
+    /// Keeps the wait after repeated wrong passwords in the settings, so the
+    /// next start of the app does not offer three fresh tries.
+    fn remember_lock_wait(&mut self) {
+        let (failures, retry_at) = self.app_lock.wait_record();
+        let retry_at = retry_at.map(crate::app_lock::unix_millis);
+        if self.settings.app_lock_failures != failures
+            || self.settings.app_lock_retry_at != retry_at
+        {
+            self.settings.app_lock_failures = failures;
+            self.settings.app_lock_retry_at = retry_at;
+            self.mark_settings_dirty();
+        }
+    }
+
+    /// The same for the locked-chats code, which anyone at an open window may
+    /// try by typing into the search field.
+    fn sync_chat_lock_wait(&mut self) {
+        let attempts = self.chat_lock_attempts.get();
+        if self.settings.chat_lock_failures != attempts.failures()
+            || self.settings.chat_lock_retry_at != attempts.retry_at_ms()
+        {
+            self.settings.chat_lock_failures = attempts.failures();
+            self.settings.chat_lock_retry_at = attempts.retry_at_ms();
+            self.mark_settings_dirty();
+        }
+    }
+
     /// Applies what the password thread worked out.
     fn app_lock_outcome(&mut self, outcome: crate::app_lock::Outcome) {
         use crate::app_lock::{FormError, Outcome};
@@ -11168,6 +11260,7 @@ impl App {
                     return;
                 }
                 self.app_lock.unlocked(matched);
+                self.remember_lock_wait();
                 if matched {
                     // In the order they were asked for, so the last one is
                     // what the reader finds on screen. Nothing switches
@@ -11894,6 +11987,9 @@ impl App {
     }
 
     pub fn frame_ui(&mut self, ui: &mut egui::Ui) {
+        // A wrong locked-chats code typed into search counts as a try; the
+        // settings keep it so a restart is not a clean slate.
+        self.sync_chat_lock_wait();
         let ctx = ui.ctx().clone();
         let ctx = &ctx;
         // Some window managers leave a new window behind the last app (#755).
@@ -27303,6 +27399,43 @@ mod app_lock_tests {
             std::thread::current().id()
         ));
         App::headless(AppDirs::under(&root), settings).0
+    }
+
+    #[test]
+    fn a_locked_chats_code_too_short_to_keep_is_refused() {
+        let ctx = egui::Context::default();
+        let mut app = app_with(Settings::default());
+        app.apply(Action::CreateChatLockCode("1234".into()), &ctx);
+        assert!(
+            app.settings.chat_lock_code_hash.is_none(),
+            "four is too few"
+        );
+        assert!(app.chat_lock_error, "the dialog says it did not take");
+        app.apply(Action::CreateChatLockCode("123456".into()), &ctx);
+        assert!(app.settings.chat_lock_code_hash.is_some());
+        assert!(app.locked_folder_open());
+    }
+
+    #[test]
+    fn wrong_locked_chats_codes_wait_and_the_wait_survives_a_restart() {
+        let ctx = egui::Context::default();
+        let mut settings = Settings::default();
+        settings.set_chat_lock_code(Some("123456"));
+        let mut app = app_with(settings);
+        for _ in 0..3 {
+            app.apply(Action::UnlockLockedFolder("wrong".into()), &ctx);
+        }
+        assert!(app.chat_lock_error);
+        assert_eq!(app.settings.chat_lock_failures, 3);
+        assert!(
+            app.settings.chat_lock_retry_at.is_some(),
+            "the wait is kept in the settings"
+        );
+        // A second launch picks it up: the right code waits like any other.
+        let mut restarted = app_with(app.settings.clone());
+        restarted.apply(Action::UnlockLockedFolder("123456".into()), &ctx);
+        assert!(!restarted.locked_folder_open(), "the wait holds");
+        assert_eq!(restarted.settings.chat_lock_failures, 3, "no fresh count");
     }
 
     /// An app with the lock set but not locked, as after unlocking.

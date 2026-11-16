@@ -297,8 +297,11 @@ but stay unread, and notifications say only "New message", without the chat,
 sender, text, or picture. Clicking one opens the message after you unlock.
 Voice messages and videos stop, and a recording in progress is discarded.
 
-Wrong passwords make the next try wait, up to half a minute. **Forgot
-password? Unlink this computer** is the only way back in without it: it
+Wrong passwords make the next try wait, up to half a minute, and the wait is
+saved, so restarting ZapFastie does not offer three fresh tries. Closing the
+lid counts as being away: the lock measures time while the computer sleeps
+too, so a laptop that was shut with the lock on is locked when it wakes.
+**Forgot password? Unlink this computer** is the only way back in without it: it
 unlinks this computer and deletes the chats stored here. Any unlink, including
 one from your phone, turns the app lock off.
 

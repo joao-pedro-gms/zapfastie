@@ -4543,3 +4543,6 @@ msgstr "Exportar…"
 
 #~ msgid "No notes match your search."
 #~ msgstr "Nenhuma nota corresponde à pesquisa."
+
+msgid "Use at least {} characters."
+msgstr "Use pelo menos {} caracteres."

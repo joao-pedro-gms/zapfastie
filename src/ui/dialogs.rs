@@ -394,6 +394,13 @@ fn unlock_locked_chats(app: &mut App, ui: &mut egui::Ui) {
                 .desired_width(f32::INFINITY),
         );
     }
+    if setup {
+        // A code too short to survive guessing cannot be set; say the length
+        // instead of leaving the button greyed out for no stated reason.
+        let requirement = crate::i18n::gettext(app.locale, "Use at least {} characters.")
+            .replace("{}", &crate::app_lock::MIN_CHAT_LOCK_CHARS.to_string());
+        theme::paragraph(ui, requirement, theme::regular(12.5), palette.secondary);
+    }
     if app.chat_lock_error {
         theme::paragraph(
             ui,
@@ -403,7 +410,10 @@ fn unlock_locked_chats(app: &mut App, ui: &mut egui::Ui) {
         );
     }
     let ready = !app.chat_lock_entry.trim().is_empty()
-        && (!setup || app.chat_lock_entry.trim() == app.chat_lock_confirm.trim());
+        && (!setup
+            || (app.chat_lock_entry.trim() == app.chat_lock_confirm.trim()
+                && app.chat_lock_entry.trim().chars().count()
+                    >= crate::app_lock::MIN_CHAT_LOCK_CHARS));
     ui.horizontal(|ui| {
         let button_label = if setup {
             crate::i18n::gettext(app.locale, "Set code and open")

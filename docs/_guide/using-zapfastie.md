@@ -985,7 +985,9 @@ notification. The lock syncs with your phone and other linked devices.
 
 Choose **Locked** in the rail on the left, above **Settings**, and type your
 local code to open
-them; the first time, ZapFastie offers to set one up. The code is separate from
+them; the first time, ZapFastie offers to set one up, at least six characters
+long. Wrong codes make the next try wait, as the app lock's do, and the wait is
+saved, so restarting ZapFastie does not reset it. The code is separate from
 your phone's and adds no encryption beyond the encrypted message archive.
 Leaving the tab, changing the code, or closing the window hides them again.
 
