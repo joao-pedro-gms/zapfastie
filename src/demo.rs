@@ -23120,6 +23120,28 @@ mod tests {
         }
     }
 
+    /// The filter chips are Tab stops, so each says its name: five unnamed
+    /// buttons told a screen reader nothing.
+    #[test]
+    fn filter_chips_are_named() {
+        let mut app = app();
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        app.attach(&ctx);
+        render(&mut app, &ctx);
+        let labels: Vec<String> = accessible_nodes(&mut app, &ctx, Vec::new())
+            .into_iter()
+            .map(|(label, _, _)| label)
+            .collect();
+        for chip in ["All", "Unread", "Groups", "Favorites"] {
+            // A chip with unread chats carries the count in its name.
+            let named = labels
+                .iter()
+                .any(|label| label == chip || label.starts_with(&format!("{chip},")));
+            assert!(named, "the {chip} chip is unnamed");
+        }
+    }
+
     /// A destructive confirmation opens with Cancel under the keys: Enter
     /// closes the dialog instead of deleting anything.
     #[test]

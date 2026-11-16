@@ -2024,6 +2024,11 @@ pub fn dotted_chip(
     let width =
         dot_width + text.size().x + number.as_ref().map_or(0.0, |number| gap + number.size().x);
     let (rect, response) = ui.allocate_exact_size(vec2(width + 18.0, 28.0), Sense::click());
+    // A chip is a Tab stop, so it must say what it is and whether it is the
+    // one on screen: five unnamed buttons tell a screen reader nothing.
+    response.widget_info(|| {
+        egui::WidgetInfo::selected(egui::WidgetType::SelectableLabel, ui.is_enabled(), selected, label)
+    });
     theme::reveal_focus(&response);
     theme::focus_outline(ui, response.id, rect, rect.height() / 2.0);
     if ui.is_rect_visible(rect) {

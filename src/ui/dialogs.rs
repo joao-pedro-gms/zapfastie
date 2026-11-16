@@ -1459,13 +1459,14 @@ fn sticker_maker(app: &mut App, ui: &mut egui::Ui) {
     }
     if draft.transparent {
         ui.horizontal(|ui| {
-            super::widgets::switch(ui, &palette, &mut draft.keep_transparent);
-            theme::text(
-                ui,
-                crate::i18n::gettext(locale, "Keep the transparent background"),
-                theme::regular(13.0),
-                palette.text,
-            );
+            let label = crate::i18n::gettext(locale, "Keep the transparent background");
+            let response = super::widgets::switch(ui, &palette, &mut draft.keep_transparent);
+            theme::reveal_focus(&response);
+            let on = draft.keep_transparent;
+            response.widget_info(|| {
+                egui::WidgetInfo::selected(egui::WidgetType::Checkbox, ui.is_enabled(), on, &label)
+            });
+            theme::text(ui, label, theme::regular(13.0), palette.text);
         });
     }
     Frame::new()
