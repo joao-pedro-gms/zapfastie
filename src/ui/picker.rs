@@ -777,6 +777,15 @@ fn emoji_grid(
     ui.ctx().data_mut(|data| {
         data.insert_temp(egui::Id::new(("emoji-visible", scroll_salt)), visible_label);
     });
+    if emoji_count == 0 && !app.picker_search.trim().is_empty() {
+        // An empty grid with no word about it reads as a broken picker; the
+        // sticker tab already says the same thing in its own words.
+        shelf_hint(
+            ui,
+            palette,
+            &gettext(app.locale, "No emoji match your search."),
+        );
+    }
     grid.show_rows(ui, row_height, rows.len(), |ui, range| {
         for row in &rows[range] {
             match row {

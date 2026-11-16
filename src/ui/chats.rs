@@ -956,10 +956,17 @@ fn list(app: &mut App, ui: &mut egui::Ui) {
             };
             (title, gettext(locale, "Choose All to see every chat."))
         } else if app.syncing {
-            (
-                gettext(locale, "Loading your chats"),
-                gettext(locale, "Receiving history from your phone."),
-            )
+            // The banner above already knows how far along the phone is; the
+            // empty list says it too, instead of looking stuck.
+            let body = match app.sync_percent {
+                Some(percent) => crate::i18n::gettext(
+                    locale,
+                    "Receiving history from your phone: {}%",
+                )
+                .replace("{}", &percent.to_string()),
+                None => gettext(locale, "Receiving history from your phone.").into_owned(),
+            };
+            (gettext(locale, "Loading your chats"), body.into())
         } else {
             (
                 gettext(locale, "No chats yet"),

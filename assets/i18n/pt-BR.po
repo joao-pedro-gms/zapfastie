@@ -4729,3 +4729,9 @@ msgstr "Fechar a janela (o ZapFastie continua na bandeja)"
 
 msgid "Quit"
 msgstr "Sair"
+
+msgid "Receiving history from your phone: {}%"
+msgstr "Recebendo o histórico do seu celular: {}%"
+
+msgid "No emoji match your search."
+msgstr "Nenhum emoji corresponde à sua busca."
