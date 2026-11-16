@@ -152,14 +152,14 @@ pub fn parse(source: &str) -> Vec<Block> {
                 // block opened for this item turns into the task here: plain
                 // bullets followed by boxes are one list to pulldown-cmark, and
                 // each box names only its own item.
-                if let Some(draft) = draft.as_mut() {
-                    if matches!(draft.kind, Kind::List { .. }) {
-                        draft.kind = Kind::Task {
-                            checked,
-                            marker: span.clone(),
-                            depth: lists.len().saturating_sub(1),
-                        };
-                    }
+                if let Some(draft) = draft.as_mut()
+                    && matches!(draft.kind, Kind::List { .. })
+                {
+                    draft.kind = Kind::Task {
+                        checked,
+                        marker: span.clone(),
+                        depth: lists.len().saturating_sub(1),
+                    };
                 }
             }
             Event::Start(Tag::Strong) => styles.push(Style::Strong),
