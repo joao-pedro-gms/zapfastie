@@ -202,22 +202,51 @@ The notebook icon in the rail opens **Notes**, kept on this computer and
 nowhere else: one encrypted database in the state folder, with a key of its
 own in your OS keyring, so unlinking a number does not take them with it.
 
-**+** starts a note and puts the keys in it. A note is markdown written in
-place and saved as you type, a few hundred bytes at a time; its name is the
-first line with something in it, and a heading, a bullet, a quote or a
-numbered item names it without its marker. **Pin** keeps a note at the top of
-the list, the search field reads titles and bodies, and **Delete** removes the
-note and what it cited.
+**+** starts a note and puts the keys in it. The list on the left groups what
+you wrote, **Pinned** first and then **Today**, **Yesterday**, **This week** and
+**Earlier**, each row showing when it was last written and the words under its
+name. A small bubble beside the time marks a note that cites a message. In a
+narrow window the list steps aside and the note takes the width, with the arrow
+in its header to come back to the list.
+
+A note is markdown written in place and saved as you type. What you type is
+what is stored, and the styling follows it as you go: headings, bold, italic,
+struck-through words, code, quotes, bullets, numbers and boxes take their shape
+under the caret without moving it. Boxes are the one thing you click in the
+source, `- [ ]` on one side of the line and `- [x]` on the other.
+
+The row under the title holds the formatting: **B**, *I*, struck-through, code,
+heading, bullets, numbers, quote and link, each applying over what you selected
+and turning itself off when you press it again. The same keys work while you
+type: `Ctrl+B`, `Ctrl+I`, `Ctrl+Shift+X` for struck-through text, and `Ctrl+K`
+for a link, which takes a selected address as the target. `Enter` in a list
+carries the list on, and in a checklist it starts a new unticked box.
+
+`Ctrl+E` reads the note instead of writing it: headings at their sizes, bold and
+italic drawn, lists indented, quotes to the side, code in its own block with a
+button to copy it, links that open in your browser, and every box clickable.
+Ticking one writes `- [x]` back into the note. `Ctrl+E` again, or the pencil in
+the header, returns to writing.
+
+The title is a field of its own: type over it and the note keeps that name, even
+as its first line changes. The menu in the header holds **Duplicate the note**,
+which copies the words, the pin and the citations under a name ending in
+`(copy)`, and **Export as markdown**, which writes the note as a `.md` file in
+the folder you chose for downloads, or your system's downloads folder, taking a
+new number rather than writing over a file already there. The path appears in a
+toast. **Delete** asks first, and says which note it would delete.
+
+The search field reads titles and bodies, and filtering the list leaves the note
+you have open open. `Escape` closes the note you are reading and then leaves the
+tab, and `Ctrl+F` puts the keys in the notes search while the tab is open.
 
 A note can cite a message: right-click a message and choose **Save to a
 note**. The note opens with the message quoted and a chip under its title
 naming the chat it came from; click the chip to go back to the message, which
-opens its chat first if you wrote the note from another one. The note keeps
-its citation even if the message is later deleted: the chip still names the
-chat, and the note still reads.
-
-`Escape` closes the note you are reading, and `Ctrl+F` puts the keys in the
-notes search while the tab is open.
+opens its chat first if you wrote the note from another one. Right-click the
+chip to take that citation off while the others stay. The note keeps its
+citation even if the message is later deleted: the chip still names the chat,
+and the note still reads.
 
 ## Stickers
 
