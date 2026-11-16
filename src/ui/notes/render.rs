@@ -201,7 +201,9 @@ fn task_box(ui: &mut egui::Ui, palette: &Palette, checked: &bool, job: &LayoutJo
                 if *checked {
                     palette.accent
                 } else {
-                    palette.outline
+                    // `outline` sits a shade off the surface and left the box
+                    // invisible; a dim rule reads as an empty box.
+                    palette.dim
                 },
             ),
             egui::StrokeKind::Inside,

@@ -148,6 +148,19 @@ pub fn parse(source: &str) -> Vec<Block> {
                 if let Some(item) = items.last_mut() {
                     *item = Some((checked, span.clone()));
                 }
+                // The box arrives after the item's paragraph has begun, so the
+                // block opened for this item turns into the task here: plain
+                // bullets followed by boxes are one list to pulldown-cmark, and
+                // each box names only its own item.
+                if let Some(draft) = draft.as_mut() {
+                    if matches!(draft.kind, Kind::List { .. }) {
+                        draft.kind = Kind::Task {
+                            checked,
+                            marker: span.clone(),
+                            depth: lists.len().saturating_sub(1),
+                        };
+                    }
+                }
             }
             Event::Start(Tag::Strong) => styles.push(Style::Strong),
             Event::End(TagEnd::Strong) => {
@@ -413,6 +426,36 @@ mod tests {
             "only the marker the block named changes"
         );
         assert!(matches!(blocks[1].kind, Kind::Task { checked: true, .. }));
+    }
+
+    #[test]
+    fn a_box_after_plain_bullets_keeps_its_kind() {
+        // One list of bullets and then boxes: the parser reports the box after
+        // the item's paragraph opens, and each item keeps its own.
+        let source =
+            "- who signs the lease\n- the sticker budget\n\n- [ ] book the room\n- [x] ask Ada";
+        let blocks = parse(source);
+        assert_eq!(blocks.len(), 4);
+        assert!(matches!(blocks[0].kind, Kind::List { ordered: false, .. }));
+        assert!(matches!(blocks[1].kind, Kind::List { ordered: false, .. }));
+        match &blocks[2].kind {
+            Kind::Task {
+                checked, marker, ..
+            } => {
+                assert!(!checked);
+                assert_eq!(&source[marker.clone()], "[ ]");
+            }
+            other => panic!("the third item is a task, not {other:?}"),
+        }
+        match &blocks[3].kind {
+            Kind::Task {
+                checked, marker, ..
+            } => {
+                assert!(checked);
+                assert_eq!(&source[marker.clone()], "[x]");
+            }
+            other => panic!("the fourth item is a task, not {other:?}"),
+        }
     }
 
     #[test]
