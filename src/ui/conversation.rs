@@ -3138,6 +3138,69 @@ fn sender_avatars(
     avatars
 }
 
+/// The button that floats over a chat read from further up and goes back to
+/// the newest message, carrying however many arrived since.
+fn return_to_bottom(
+    app: &mut App,
+    ui: &mut egui::Ui,
+    palette: &theme::Palette,
+    rect: Rect,
+    chat: &Chat,
+) {
+    let center = pos2(rect.right() - 34.0, rect.bottom() - 34.0);
+    let button = Rect::from_center_size(center, Vec2::splat(40.0));
+    let mut child = ui.new_child(
+        egui::UiBuilder::new()
+            .max_rect(button)
+            .layout(Layout::centered_and_justified(egui::Direction::LeftToRight)),
+    );
+    let unread = app.chat(&chat.id).map_or(0, |chat| chat.unread);
+    // It floats over the messages: a soft shadow lifts it off them.
+    child.painter().add(
+        egui::epaint::Shadow {
+            offset: [0, 3],
+            blur: 10,
+            spread: 0,
+            color: palette.lift_shadow(),
+        }
+        .as_shape(button, CornerRadius::same(20)),
+    );
+    // A screen reader cannot see the badge, so the count is in the name.
+    let newest_label = if unread > 0 {
+        crate::i18n::ngettext(
+            app.locale,
+            "{count} new message",
+            "{count} new messages",
+            unread,
+        )
+        .replace("{count}", &unread.to_string())
+    } else {
+        crate::i18n::gettext(app.locale, "Newest message").into_owned()
+    };
+    if theme::circle_button(
+        &mut child,
+        Icon::ArrowDown,
+        40.0,
+        palette.overlay,
+        palette.surface_hover,
+        palette.text,
+        &newest_label,
+    )
+    .clicked()
+    {
+        app.actions.push(Action::ScrollToBottom);
+    }
+    if unread > 0 {
+        widgets::badge(
+            ui,
+            palette,
+            pos2(center.x + 14.0, center.y - 16.0),
+            unread,
+            false,
+        );
+    }
+}
+
 fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
     let palette = app.palette;
     // Taken up front: `names_or` below borrows the rest of `app` for the
@@ -4528,59 +4591,7 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
     }
     // Show a return-to-bottom button while reading older messages.
     if !at_bottom {
-        let rect = output.inner_rect;
-        let center = pos2(rect.right() - 34.0, rect.bottom() - 34.0);
-        let button = Rect::from_center_size(center, Vec2::splat(40.0));
-        let mut child = ui.new_child(
-            egui::UiBuilder::new()
-                .max_rect(button)
-                .layout(Layout::centered_and_justified(egui::Direction::LeftToRight)),
-        );
-        let unread = app.chat(&chat.id).map_or(0, |chat| chat.unread);
-        // It floats over the messages: a soft shadow lifts it off them.
-        child.painter().add(
-            egui::epaint::Shadow {
-                offset: [0, 3],
-                blur: 10,
-                spread: 0,
-                color: palette.lift_shadow(),
-            }
-            .as_shape(button, CornerRadius::same(20)),
-        );
-        // A screen reader cannot see the badge, so the count is in the name.
-        let newest_label = if unread > 0 {
-            crate::i18n::ngettext(
-                app.locale,
-                "{count} new message",
-                "{count} new messages",
-                unread,
-            )
-            .replace("{count}", &unread.to_string())
-        } else {
-            crate::i18n::gettext(app.locale, "Newest message").into_owned()
-        };
-        if theme::circle_button(
-            &mut child,
-            Icon::ArrowDown,
-            40.0,
-            palette.overlay,
-            palette.surface_hover,
-            palette.text,
-            &newest_label,
-        )
-        .clicked()
-        {
-            app.actions.push(Action::ScrollToBottom);
-        }
-        if unread > 0 {
-            widgets::badge(
-                ui,
-                &palette,
-                pos2(center.x + 14.0, center.y - 16.0),
-                unread,
-                false,
-            );
-        }
+        return_to_bottom(app, ui, &palette, output.inner_rect, chat);
     }
 }
 
