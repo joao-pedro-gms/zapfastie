@@ -3093,6 +3093,51 @@ struct TextSelectionRows {
 
 /// The conversation's messages. `under` is how much of the list's top lies
 /// beneath the header, which a vibrant window lays over it.
+/// The pictures the rows and the typing strip need, keyed by sender: a
+/// group's message senders, anyone typing, and everyone who reacted, with our
+/// own picture in place of ours. A picture that is not cached is requested
+/// here, once per sender.
+fn sender_avatars(
+    app: &mut App,
+    chat: &Chat,
+    conversation: &crate::app::Conversation,
+    typing: &[String],
+) -> HashMap<String, Option<PathBuf>> {
+    let mut senders = HashSet::new();
+    if shows_sender_pictures(chat) {
+        senders.extend(
+            conversation
+                .messages
+                .iter()
+                .filter(|message| !message.from_me)
+                .map(|message| message.sender.clone()),
+        );
+        // A typing participant may not have a visible message.
+        senders.extend(typing.iter().cloned());
+    }
+    // Reaction-only participants and our own picture appear in the popup in
+    // direct chats too, where message-sender avatars are not drawn.
+    senders.extend(
+        conversation
+            .messages
+            .iter()
+            .flat_map(|message| &message.reactions)
+            .map(|reaction| {
+                if reaction.from_me {
+                    app.me.clone().unwrap_or_else(|| reaction.sender.clone())
+                } else {
+                    reaction.sender.clone()
+                }
+            }),
+    );
+    let mut avatars = HashMap::with_capacity(senders.len());
+    for sender in senders {
+        let picture = app.avatar(&sender);
+        avatars.insert(sender, picture);
+    }
+    avatars
+}
+
 fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
     let palette = app.palette;
     // Taken up front: `names_or` below borrows the rest of `app` for the
@@ -3169,38 +3214,8 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
         .or(starts.last().copied());
     let cursor_id = cursor.map(|index| conversation.messages[index].id.clone());
     let typing = app.typing_in(&chat.id);
-    let mut avatars = HashMap::new();
-    let mut senders = HashSet::new();
-    if shows_sender_pictures(chat) {
-        senders.extend(
-            conversation
-                .messages
-                .iter()
-                .filter(|message| !message.from_me)
-                .map(|message| message.sender.clone()),
-        );
-        // A typing participant may not have a visible message.
-        senders.extend(typing.iter().map(|(id, _, _)| id.clone()));
-    }
-    // Reaction-only participants and our own picture appear in the popup in
-    // direct chats too, where message-sender avatars are not drawn.
-    senders.extend(
-        conversation
-            .messages
-            .iter()
-            .flat_map(|message| &message.reactions)
-            .map(|reaction| {
-                if reaction.from_me {
-                    app.me.clone().unwrap_or_else(|| reaction.sender.clone())
-                } else {
-                    reaction.sender.clone()
-                }
-            }),
-    );
-    for sender in senders {
-        let picture = app.avatar(&sender);
-        avatars.insert(sender, picture);
-    }
+    let typing_ids: Vec<String> = typing.iter().map(|(id, ..)| id.clone()).collect();
+    let avatars = sender_avatars(app, chat, &conversation, &typing_ids);
     let names_or = |id: &str, hint: Option<&str>| app.display_name_or(id, hint);
     let mention_names = |id: &str| app.mention_name(id);
     let keyboard_navigation = std::cell::Cell::new(false);
