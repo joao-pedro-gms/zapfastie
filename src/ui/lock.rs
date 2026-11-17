@@ -50,7 +50,7 @@ fn password(app: &mut App, ui: &mut egui::Ui) {
     theme::paragraph(
         ui,
         gettext(locale, "Enter your password to unlock."),
-        theme::regular(13.5),
+        theme::regular(theme::BODY),
         palette.secondary,
     );
     let id = egui::Id::new(PASSWORD_ID);
@@ -87,7 +87,7 @@ fn password(app: &mut App, ui: &mut egui::Ui) {
             palette.danger,
         );
     }
-    ui.add_space(4.0);
+    ui.add_space(theme::SPACE_4);
     let ready = app.app_lock.can_try();
     if checking {
         theme::spinner(ui, 20.0, palette.accent);
@@ -102,7 +102,7 @@ fn password(app: &mut App, ui: &mut egui::Ui) {
     if submit && ready {
         app.actions.push(Action::UnlockApp);
     }
-    ui.add_space(10.0);
+    ui.add_space(theme::SPACE_10);
     if theme::link(
         ui,
         gettext(locale, "Forgot password? Unlink this computer"),
@@ -130,10 +130,10 @@ fn confirm_unlink(app: &mut App, ui: &mut egui::Ui) {
             locale,
             "Without the password, the only way back in is to unlink. This removes the device from WhatsApp, deletes the chats stored here, and turns the app lock off. You can link again with a new code.",
         ),
-        theme::regular(13.5),
+        theme::regular(theme::BODY),
         palette.text,
     );
-    ui.add_space(10.0);
+    ui.add_space(theme::SPACE_10);
     ui.horizontal(|ui| {
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
             if super::dialogs::danger_button(ui, app, &gettext(locale, "Unlink")).clicked() {

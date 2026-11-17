@@ -798,7 +798,7 @@ fn emoji_grid(
                         pos2(rect.left() + 4.0, rect.bottom() - 8.0),
                         Align2::LEFT_BOTTOM,
                         *label,
-                        theme::semibold(12.5),
+                        theme::semibold(theme::META),
                         palette.secondary,
                     );
                 }
@@ -998,10 +998,10 @@ fn gif_tab(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
     // Ask for a key when none is set or GIPHY rejects it.
     let bad_key = app.gif_error.as_ref().is_some_and(|error| error.bad_key);
     if app.settings.effective_giphy_key().is_none() || bad_key {
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         if let Some(error) = app.gif_error.as_ref().filter(|error| error.bad_key) {
             theme::paragraph(ui, &error.message, theme::regular(13.0), palette.danger);
-            ui.add_space(6.0);
+            ui.add_space(theme::SPACE_6);
         }
         theme::paragraph(
             ui,
@@ -1013,7 +1013,7 @@ fn gif_tab(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
             theme::regular(13.0),
             palette.text,
         );
-        ui.add_space(6.0);
+        ui.add_space(theme::SPACE_6);
         if theme::link(
             ui,
             "developers.giphy.com",
@@ -1025,7 +1025,7 @@ fn gif_tab(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
             app.actions
                 .push(Action::OpenUrl("https://developers.giphy.com/".to_owned()));
         }
-        ui.add_space(6.0);
+        ui.add_space(theme::SPACE_6);
         let field = Frame::new()
             .fill(palette.surface)
             .corner_radius(CornerRadius::same(theme::RADIUS))
@@ -1036,9 +1036,9 @@ fn gif_tab(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
                         .hint_text(
                             egui::RichText::new("GIPHY API key")
                                 .color(palette.dim)
-                                .font(theme::regular(13.5)),
+                                .font(theme::regular(theme::BODY)),
                         )
-                        .font(theme::regular(13.5))
+                        .font(theme::regular(theme::BODY))
                         .text_color(palette.text)
                         .frame(Frame::NONE)
                         .desired_width(f32::INFINITY),
@@ -1085,7 +1085,7 @@ fn gif_tab(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
             theme::text(
                 ui,
                 gettext(app.locale, "Searching…"),
-                theme::regular(12.5),
+                theme::regular(theme::META),
                 palette.secondary,
             );
         });
@@ -1180,7 +1180,7 @@ fn gif_tab(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
                 }
             }
             if results.is_empty() && !app.gif_pending && app.gif_error.is_none() {
-                ui.add_space(20.0);
+                ui.add_space(theme::SPACE_20);
                 ui.vertical_centered(|ui| {
                     theme::text(
                         ui,
@@ -1322,7 +1322,7 @@ fn shelf_strip(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
 
 /// A short centered note in place of an empty grid.
 fn shelf_hint(ui: &mut egui::Ui, palette: &Palette, text: &str) {
-    ui.add_space(24.0);
+    ui.add_space(theme::SPACE_24);
     ui.vertical_centered(|ui| {
         theme::paragraph(ui, text, theme::regular(13.0), palette.secondary);
     });
@@ -1338,7 +1338,7 @@ fn sticker_tab(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
         &gettext(locale, "Search by emoji, word, or pack"),
     );
     shelf_strip(app, ui, palette);
-    ui.add_space(2.0);
+    ui.add_space(theme::SPACE_2);
     let query = app.sticker_search.trim().to_owned();
     let shelf = app.sticker_shelf.clone();
     if query.is_empty() && shelf == StickerShelf::Add {
@@ -1522,7 +1522,7 @@ fn add_page(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
         .id_salt("sticker-add")
         .auto_shrink([false, false])
         .show(ui, |ui| {
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
             theme::text(
                 ui,
                 gettext(locale, "Import a pack"),
@@ -1535,12 +1535,12 @@ fn add_page(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
                     locale,
                     "Paste a signal.art link from signalstickers.org, or open a .wastickers file.",
                 ),
-                theme::regular(12.5),
+                theme::regular(theme::META),
                 palette.secondary,
             );
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
             import_row(app, ui, palette);
-            ui.add_space(14.0);
+            ui.add_space(theme::SPACE_14);
             theme::text(
                 ui,
                 gettext(locale, "Make your own"),
@@ -1553,12 +1553,12 @@ fn add_page(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
                     locale,
                     "Start a pack, then right-click any sticker to add it. Or turn a picture into a sticker.",
                 ),
-                theme::regular(12.5),
+                theme::regular(theme::META),
                 palette.secondary,
             );
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
             new_pack_row(app, ui, palette);
-            ui.add_space(6.0);
+            ui.add_space(theme::SPACE_6);
             if theme::soft_button(
                 ui,
                 palette,
@@ -1677,13 +1677,13 @@ fn import_row(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
         }
     });
     if app.sticker_import_pending {
-        ui.add_space(2.0);
+        ui.add_space(theme::SPACE_2);
         ui.horizontal(|ui| {
             theme::spinner(ui, 14.0, palette.accent);
             theme::text(
                 ui,
                 gettext(locale, "Importing the pack…"),
-                theme::regular(12.5),
+                theme::regular(theme::META),
                 palette.secondary,
             );
         });

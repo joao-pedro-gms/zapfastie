@@ -50,16 +50,16 @@ fn block_ui(
         Kind::Heading(level) => {
             ui.add_space(if level <= 2 { 10.0 } else { 6.0 });
             ui.add(egui::Label::new(job).wrap().selectable(true));
-            ui.add_space(2.0);
+            ui.add_space(theme::SPACE_2);
         }
         Kind::Rule => {
-            ui.add_space(8.0);
+            ui.add_space(theme::SPACE_8);
             let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), 1.0), Sense::hover());
             ui.painter().rect_filled(rect, 0.0, palette.outline);
-            ui.add_space(8.0);
+            ui.add_space(theme::SPACE_8);
         }
         Kind::Code { language } => {
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
             let copy = gettext(locale, "Copy the code");
             Frame::new()
                 .fill(palette.surface)
@@ -99,10 +99,10 @@ fn block_ui(
                         .selectable(true),
                     );
                 });
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
         }
         Kind::Quote => {
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
             Frame::new()
                 .inner_margin(Margin {
                     left: 12,
@@ -126,7 +126,7 @@ fn block_ui(
                     }
                     ui.add(egui::Label::new(quoted).wrap().selectable(true));
                 });
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
         }
         Kind::List { ordered, depth } => {
             let marker = if ordered { "1." } else { "•" };
@@ -150,7 +150,7 @@ fn block_ui(
             if let Some(url) = link_under(block, &response, &galley) {
                 app.actions.push(Action::OpenUrl(url));
             }
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
         }
     }
 }
@@ -167,11 +167,11 @@ fn list_row(
 ) {
     ui.horizontal_top(|ui| {
         ui.add_space(depth as f32 * 18.0);
-        ui.add_space(2.0);
+        ui.add_space(theme::SPACE_2);
         ui.add(
             egui::Label::new(
                 egui::RichText::new(marker)
-                    .font(theme::regular(13.5))
+                    .font(theme::regular(theme::BODY))
                     .color(palette.secondary),
             )
             .selectable(false),
@@ -185,7 +185,7 @@ fn list_row(
 fn task_box(ui: &mut egui::Ui, palette: &Palette, checked: &bool, job: &LayoutJob) -> bool {
     let mut pressed = false;
     ui.horizontal_top(|ui| {
-        ui.add_space(2.0);
+        ui.add_space(theme::SPACE_2);
         let (rect, response) = ui.allocate_exact_size(vec2(16.0, 16.0), Sense::click());
         let box_rect = egui::Rect::from_min_size(rect.min, vec2(15.0, 15.0));
         ui.painter().rect(

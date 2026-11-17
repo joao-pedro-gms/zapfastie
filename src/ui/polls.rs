@@ -32,12 +32,12 @@ pub fn create(app: &mut App, ui: &mut egui::Ui, chat: &str) {
             }
         });
     });
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
     ui.add_enabled_ui(!app.poll_creating, |ui| {
         theme::text(
             ui,
             crate::i18n::gettext(locale, "Question"),
-            theme::medium(13.5),
+            theme::medium(theme::BODY),
             palette.secondary,
         );
         let format = egui::TextFormat::simple(theme::regular(14.0), palette.text);
@@ -60,11 +60,11 @@ pub fn create(app: &mut App, ui: &mut egui::Ui, chat: &str) {
                 .horizontal_align(question_align)
                 .layouter(&mut layouter),
         );
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         theme::text(
             ui,
             crate::i18n::gettext(locale, "Answers"),
-            theme::medium(13.5),
+            theme::medium(theme::BODY),
             palette.secondary,
         );
         let height = (ui.ctx().content_rect().height() - 320.0).clamp(90.0, 330.0);
@@ -130,7 +130,7 @@ pub fn create(app: &mut App, ui: &mut egui::Ui, chat: &str) {
         {
             app.poll_draft.options.push(String::new());
         }
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         ui.horizontal(|ui| {
             let label = crate::i18n::gettext(locale, "Allow multiple answers");
             let response = widgets::switch(ui, &palette, &mut app.poll_draft.multiple);
@@ -139,10 +139,10 @@ pub fn create(app: &mut App, ui: &mut egui::Ui, chat: &str) {
             response.widget_info(|| {
                 egui::WidgetInfo::selected(egui::WidgetType::Checkbox, ui.is_enabled(), on, &label)
             });
-            theme::text(ui, label, theme::regular(13.5), palette.text);
+            theme::text(ui, label, theme::regular(theme::BODY), palette.text);
         });
     });
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
     let valid = app.poll_draft.validated();
     if let Err(error) = valid.as_ref() {
         theme::text(ui, *error, theme::regular(12.0), palette.dim);
@@ -222,13 +222,13 @@ pub fn ballot(
                 theme::regular(11.5),
                 palette.secondary,
             );
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
             for (index, option) in options.iter().enumerate() {
                 let selected = state.selected.contains(&index);
                 let label = widgets::line(
                     ui,
                     option,
-                    theme::regular(13.5),
+                    theme::regular(theme::BODY),
                     palette.text,
                     (width - 58.0).max(50.0),
                     3,
@@ -429,7 +429,7 @@ pub fn results_button(
         rect.center(),
         egui::Align2::CENTER_CENTER,
         crate::i18n::gettext(locale, "Show votes"),
-        theme::medium(13.5),
+        theme::medium(theme::BODY),
         if enabled {
             palette.link
         } else {
@@ -496,7 +496,7 @@ pub fn results(app: &mut App, ui: &mut egui::Ui, chat: &str, id: &str) {
     else {
         return;
     };
-    ui.add_space(12.0);
+    ui.add_space(theme::SPACE_12);
     widgets::rich_text(ui, question, theme::semibold(16.0), palette.text);
     if !state.history_complete {
         widgets::rich_text(
@@ -518,7 +518,7 @@ pub fn results(app: &mut App, ui: &mut egui::Ui, chat: &str, id: &str) {
         .auto_shrink([false, true])
         .show(ui, |ui| {
             for (index, option) in options.iter().enumerate() {
-                ui.add_space(16.0);
+                ui.add_space(theme::SPACE_16);
                 let count = state.counts.get(index).copied().unwrap_or(0);
                 let heading = ui.horizontal(|ui| {
                     let width = (ui.available_width() - 70.0).max(1.0);
@@ -554,7 +554,7 @@ pub fn results(app: &mut App, ui: &mut egui::Ui, chat: &str, id: &str) {
                     .filter(|vote| vote.choices.contains(&index))
                     .collect();
                 for voter in &voters {
-                    ui.add_space(4.0);
+                    ui.add_space(theme::SPACE_4);
                     ui.horizontal(|ui| {
                         let picture = app.avatar(&voter.id);
                         widgets::avatar(

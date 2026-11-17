@@ -301,10 +301,10 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     let mut close = false;
     ui.painter()
         .rect_filled(ui.available_rect_before_wrap(), 0.0, palette.surface);
-    ui.add_space(6.0);
+    ui.add_space(theme::SPACE_6);
     ui.horizontal(|ui| {
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-            ui.add_space(8.0);
+            ui.add_space(theme::SPACE_8);
             close = theme::icon_button(
                 ui,
                 Icon::X,

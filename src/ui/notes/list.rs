@@ -63,7 +63,7 @@ impl Group {
 pub fn show(app: &mut App, ui: &mut egui::Ui, palette: &Palette, tall: bool) {
     header(app, ui, palette);
     search(app, ui, palette);
-    ui.add_space(4.0);
+    ui.add_space(theme::SPACE_4);
     ui.ctx()
         .data_mut(|data| data.insert_temp(super::list_id(), ui.available_rect_before_wrap()));
     if let Some(error) = app.notes_error.clone() {
@@ -93,7 +93,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui, palette: &Palette, tall: bool) {
                 if in_group.peek().is_none() {
                     continue;
                 }
-                ui.add_space(8.0);
+                ui.add_space(theme::SPACE_8);
                 let index = Group::ALL
                     .iter()
                     .position(|known| *known == group)
@@ -113,7 +113,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui, palette: &Palette, tall: bool) {
                     )
                     .selectable(false),
                 );
-                ui.add_space(2.0);
+                ui.add_space(theme::SPACE_2);
                 for note in in_group {
                     row(app, ui, palette, note, open == Some(note.id));
                 }
@@ -152,7 +152,7 @@ fn header(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
             }
         });
     });
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
 }
 
 /// The field that filters the list. Typing reads the list again on the next
@@ -211,7 +211,7 @@ fn empty(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
 /// A line where the list would be: nothing matching, or why the notes could
 /// not be opened.
 fn hint(ui: &mut egui::Ui, palette: &Palette, text: &str) {
-    ui.add_space(18.0);
+    ui.add_space(theme::SPACE_18);
     ui.label(
         egui::RichText::new(text)
             .size(13.0)

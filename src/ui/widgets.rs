@@ -511,7 +511,11 @@ pub fn menu_width(ui: &Ui, labels: &[&str], icons: bool) -> f32 {
         .iter()
         .map(|label| {
             ui.painter()
-                .layout_no_wrap(label.to_string(), theme::regular(13.5), Color32::WHITE)
+                .layout_no_wrap(
+                    label.to_string(),
+                    theme::regular(theme::BODY),
+                    Color32::WHITE,
+                )
                 .size()
                 .x
         })
@@ -582,7 +586,7 @@ pub fn submenu<R>(
         let x = rect.left() + 36.0;
         let mut job = egui::text::LayoutJob::simple_singleline(
             label.to_string(),
-            theme::regular(13.5),
+            theme::regular(theme::BODY),
             palette.text,
         );
         job.wrap = egui::text::TextWrapping {
@@ -703,7 +707,7 @@ pub fn menu_item_focusable(
         }
         let mut job = egui::text::LayoutJob::simple_singleline(
             label.to_string(),
-            theme::regular(13.5),
+            theme::regular(theme::BODY),
             color,
         );
         job.wrap = egui::text::TextWrapping {
@@ -967,7 +971,7 @@ pub fn empty_state(ui: &mut Ui, palette: &Palette, icon: Icon, title: &str, body
         ui.add(
             egui::Label::new(
                 egui::RichText::new(body)
-                    .font(theme::regular(13.5))
+                    .font(theme::regular(theme::BODY))
                     .color(palette.secondary),
             )
             .wrap()
@@ -1211,7 +1215,7 @@ pub fn setting_row(
                 let description = line(
                     ui,
                     description,
-                    theme::regular(12.5),
+                    theme::regular(theme::META),
                     palette.secondary,
                     ui.available_width(),
                     usize::MAX,
@@ -1224,7 +1228,7 @@ pub fn setting_row(
         });
         ui.with_layout(Layout::right_to_left(Align::Center), control);
     });
-    ui.add_space(10.0);
+    ui.add_space(theme::SPACE_10);
 }
 
 pub fn paint_vertical_gradient(ui: &Ui, rect: Rect, top: Color32, bottom: Color32) {
@@ -2016,7 +2020,7 @@ pub fn dotted_chip(
         palette.secondary
     };
     let painter = ui.painter();
-    let text = painter.layout_no_wrap(label.to_owned(), theme::medium(12.5), color);
+    let text = painter.layout_no_wrap(label.to_owned(), theme::medium(theme::META), color);
     let number =
         (count > 0).then(|| painter.layout_no_wrap(count.to_string(), theme::regular(11.5), color));
     let gap = 5.0;
@@ -2386,7 +2390,7 @@ mod tests {
                             ui.painter()
                                 .layout_no_wrap(
                                     (*label).to_string(),
-                                    theme::regular(13.5),
+                                    theme::regular(theme::BODY),
                                     Color32::WHITE,
                                 )
                                 .size()

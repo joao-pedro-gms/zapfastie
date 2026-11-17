@@ -22,7 +22,7 @@ pub(super) fn show(app: &mut App, ui: &mut egui::Ui, chat: &str, mut include_med
         locale,
         "Exported files are not encrypted. Locked chats cannot be exported.",
     ));
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
     let busy = app.chat_export.is_some();
     if ui
         .add_enabled(
@@ -54,7 +54,7 @@ pub(super) fn show(app: &mut App, ui: &mut egui::Ui, chat: &str, mut include_med
             .replace("{missing}", &counts.missing.to_string()),
         );
     }
-    ui.add_space(12.0);
+    ui.add_space(theme::SPACE_12);
     ui.horizontal(|ui| {
         if theme::pill_button(ui, &palette, &gettext(locale, "Cancel"), false).clicked() {
             app.actions.push(Action::CloseDialog);

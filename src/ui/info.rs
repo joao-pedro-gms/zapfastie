@@ -184,7 +184,7 @@ fn header(
                 if button.clicked() {
                     app.actions.push(action);
                 }
-                ui.add_space(6.0);
+                ui.add_space(theme::SPACE_6);
                 theme::text(ui, title, theme::semibold(16.0), palette.text);
             });
         })
@@ -372,7 +372,7 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
         } else {
             widgets::avatar(ui, &palette, name, id, photo, None);
         }
-        ui.add_space(6.0);
+        ui.add_space(theme::SPACE_6);
         if let Some(draft) = renaming.as_mut() {
             match group_name_field(app, ui, draft) {
                 Some(true) => {
@@ -511,7 +511,7 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
             theme::selectable_text(
                 ui,
                 crate::util::phone(phone),
-                theme::regular(13.5),
+                theme::regular(theme::BODY),
                 palette.secondary,
             );
         }
@@ -519,7 +519,7 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
             theme::text(
                 ui,
                 crate::i18n::gettext(app.locale, "Saving…"),
-                theme::regular(12.5),
+                theme::regular(theme::META),
                 palette.dim,
             );
         }
@@ -528,7 +528,7 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
                 ui,
                 crate::i18n::ngettext(app.locale, "{} member", "{} members", shown.members as u32)
                     .replace("{}", &shown.members.to_string()),
-                theme::regular(13.5),
+                theme::regular(theme::BODY),
                 palette.secondary,
             );
         }
@@ -541,7 +541,7 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
                 String::new()
             };
             if !status.is_empty() {
-                theme::text(ui, status, theme::regular(12.5), palette.dim);
+                theme::text(ui, status, theme::regular(theme::META), palette.dim);
             }
         }
         if let Some(until) = shown.muted_until {
@@ -552,7 +552,7 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
                 } else {
                     format!("Muted until {}", crate::util::chat_stamp(app.locale, until))
                 },
-                theme::regular(12.5),
+                theme::regular(theme::META),
                 palette.secondary,
             );
         }
@@ -676,7 +676,7 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
                 theme::text(
                     ui,
                     crate::i18n::gettext(app.locale, "Saving…"),
-                    theme::regular(12.5),
+                    theme::regular(theme::META),
                     palette.dim,
                 );
             }
@@ -695,12 +695,12 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
     if let Some(action) = group_action {
         app.actions.push(action);
     }
-    ui.add_space(4.0);
+    ui.add_space(theme::SPACE_4);
     actions(app, ui, shown, mine, editable);
     ui.vertical_centered(|ui| super::blocking::button(app, ui, id, Stop::InfoControl(BLOCK_STOP)));
     let describing = app.group_description_edit.take().filter(|_| group_editable);
     if let Some(mut draft) = describing {
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         match group_description_field(app, ui, &mut draft) {
             Some(true) => app.actions.push(Action::SetGroupDescription {
                 chat: id.to_owned(),
@@ -710,19 +710,19 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
             None => app.group_description_edit = Some(draft),
         }
     } else if group_editable && shown.description.is_none() {
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         let add = crate::i18n::gettext(app.locale, "Add group description");
         if widgets::menu_item(ui, &palette, Some(Icon::Pencil), add.as_ref()) {
             app.actions
                 .push(Action::EditGroupDescription(String::new()));
         }
     } else if let Some(description) = shown.description.as_deref() {
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         ui.horizontal(|ui| {
             theme::text(
                 ui,
                 crate::i18n::gettext(app.locale, "Description"),
-                theme::medium(12.5),
+                theme::medium(theme::META),
                 palette.secondary,
             );
             if group_editable
@@ -740,7 +740,7 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
                     .push(Action::EditGroupDescription(description.to_owned()));
             }
         });
-        ui.add_space(4.0);
+        ui.add_space(theme::SPACE_4);
         // A long description scrolls in place, so the media and the members
         // stay close under it.
         egui::ScrollArea::vertical()
@@ -748,25 +748,25 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
             .max_height(120.0)
             .auto_shrink([false, true])
             .show(ui, |ui| {
-                theme::selectable_text(ui, description, theme::regular(13.5), palette.text);
+                theme::selectable_text(ui, description, theme::regular(theme::BODY), palette.text);
             });
     }
     // A locked chat's media stays in the locked folder: the section is not
     // there, rather than empty.
     if app.info_media_allowed() {
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         media_row(app, ui, id, overlay);
     }
     // Our own details, under either of our ids, share no groups with us.
     if !shown.group && !shown.channel && !app.our_ids().contains(&id) {
         let groups = groups_in_common(app, id);
         if !groups.is_empty() {
-            ui.add_space(8.0);
+            ui.add_space(theme::SPACE_8);
             common_groups(app, ui, id, &groups);
         }
     }
     if shown.can_manage {
-        ui.add_space(4.0);
+        ui.add_space(theme::SPACE_4);
         let label = crate::i18n::gettext(app.locale, "Group permissions");
         let response = nav_row(app, ui, Icon::Shield, &label, PERMISSIONS_STOP);
         ui.ctx()
@@ -776,11 +776,11 @@ fn identity(app: &mut App, ui: &mut egui::Ui, shown: &Shown, overlay: bool) {
         }
     }
     if shown.group && shown.members > 0 {
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         members(app, ui, shown, window, photo);
     }
     if shown.can_leave {
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         let leave_label = if shown.channel {
             crate::i18n::gettext(app.locale, "Leave channel")
         } else {
@@ -937,10 +937,10 @@ fn members(app: &mut App, ui: &mut egui::Ui, shown: &Shown, window: f32, photo: 
     theme::text(
         ui,
         format!("Members ({})", members.len()),
-        theme::medium(12.5),
+        theme::medium(theme::META),
         palette.secondary,
     );
-    ui.add_space(4.0);
+    ui.add_space(theme::SPACE_4);
     if shown.can_add {
         let label = crate::i18n::gettext(app.locale, "Add members");
         let response = nav_row(app, ui, Icon::UserPlus, &label, ADD_MEMBERS_STOP);
@@ -953,7 +953,7 @@ fn members(app: &mut App, ui: &mut egui::Ui, shown: &Shown, window: f32, photo: 
     }
     if shown.can_share_link {
         invite_link(app, ui, id, shown.can_manage);
-        ui.add_space(4.0);
+        ui.add_space(theme::SPACE_4);
     }
     let roles = app
         .chat(id)
@@ -1162,10 +1162,10 @@ fn common_groups(app: &mut App, ui: &mut egui::Ui, person: &str, groups: &[(Stri
             groups.len() as u32,
         )
         .replace("{}", &groups.len().to_string()),
-        theme::medium(12.5),
+        theme::medium(theme::META),
         palette.secondary,
     );
-    ui.add_space(4.0);
+    ui.add_space(theme::SPACE_4);
     let row_height = 30.0;
     let mut open = None;
     ui.scope(|ui| {
@@ -1281,7 +1281,7 @@ fn media_row(app: &mut App, ui: &mut egui::Ui, chat: &str, overlay: bool) {
             pos2(rect.left(), rect.center().y),
             Align2::LEFT_CENTER,
             &title,
-            theme::regular(13.5),
+            theme::regular(theme::BODY),
             palette.secondary,
         );
         let chevron = Rect::from_center_size(
@@ -1346,7 +1346,7 @@ fn failure_line(app: &mut App, ui: &mut egui::Ui) {
         theme::text(
             ui,
             crate::i18n::gettext(app.locale, "Could not list the media."),
-            theme::regular(12.5),
+            theme::regular(theme::META),
             palette.dim,
         );
         if theme::soft_button(
@@ -1433,14 +1433,14 @@ fn media_view(app: &mut App, ui: &mut egui::Ui, chat: &str, tab: MediaTab, overl
             }
         }
         None if app.info_media_failed => {
-            ui.add_space(24.0);
+            ui.add_space(theme::SPACE_24);
             ui.horizontal(|ui| {
                 ui.add_space(MARGIN);
                 failure_line(app, ui);
             });
         }
         None if app.info_media_pending => {
-            ui.add_space(32.0);
+            ui.add_space(theme::SPACE_32);
             ui.vertical_centered(|ui| theme::spinner(ui, 22.0, palette.secondary));
         }
         None => {}
@@ -1481,7 +1481,7 @@ fn media_grid(
     };
     let cell = (width - (columns - 1) as f32 * GAP) / columns as f32;
     let rows = listing.media.len().div_ceil(columns);
-    ui.add_space(6.0);
+    ui.add_space(theme::SPACE_6);
     // `show_rows` reads the spacing from outside its closure.
     ui.spacing_mut().item_spacing = vec2(GAP, GAP);
     egui::ScrollArea::vertical()
@@ -1740,7 +1740,14 @@ fn item_row(
         theme::paint_icon(ui, icon, tile, 20.0, palette.secondary);
         let left = tile.right() + 12.0;
         let width = rect.right() - MARGIN - left;
-        let name = widgets::line(ui, title, theme::medium(13.5), palette.text, width, 1);
+        let name = widgets::line(
+            ui,
+            title,
+            theme::medium(theme::BODY),
+            palette.text,
+            width,
+            1,
+        );
         name.paint(ui, pos2(left, rect.top() + 12.0), palette.text);
         let line = widgets::line(ui, detail, theme::regular(12.0), palette.dim, width, 1);
         line.paint(ui, pos2(left, rect.top() + 33.0), palette.dim);
@@ -1757,7 +1764,7 @@ fn item_row(
 /// than it carries.
 fn truncated_note(app: &App, ui: &mut egui::Ui) {
     let palette = app.palette;
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
     ui.horizontal(|ui| {
         ui.add_space(MARGIN);
         let line = widgets::line(
@@ -1771,7 +1778,7 @@ fn truncated_note(app: &App, ui: &mut egui::Ui) {
         let (rect, _) = ui.allocate_exact_size(line.size(), Sense::hover());
         line.paint(ui, rect.min, palette.dim);
     });
-    ui.add_space(4.0);
+    ui.add_space(theme::SPACE_4);
 }
 
 /// A tab's label. The words are short, so each carries the context that
@@ -1819,7 +1826,7 @@ fn nav_row(app: &mut App, ui: &mut egui::Ui, icon: Icon, label: &str, stop: u8) 
         let line = widgets::line(
             ui,
             label,
-            theme::medium(13.5),
+            theme::medium(theme::BODY),
             palette.text,
             rect.width() - 70.0,
             1,
@@ -1858,13 +1865,13 @@ fn invite_link(app: &mut App, ui: &mut egui::Ui, id: &str, can_reset: bool) {
         ui.painter()
             .circle_filled(tile.center(), 16.0, palette.accent.gamma_multiply(0.16));
         theme::paint_icon(ui, Icon::Link, tile, 17.0, palette.accent);
-        ui.add_space(2.0);
+        ui.add_space(theme::SPACE_2);
         ui.vertical(|ui| {
             ui.spacing_mut().item_spacing.y = 2.0;
             theme::text(
                 ui,
                 crate::i18n::gettext(locale, "Invite via link"),
-                theme::medium(13.5),
+                theme::medium(theme::BODY),
                 palette.text,
             );
             match &state {
@@ -1874,7 +1881,7 @@ fn invite_link(app: &mut App, ui: &mut egui::Ui, id: &str, can_reset: bool) {
                         theme::text(
                             ui,
                             crate::i18n::gettext(locale, "Getting the link…"),
-                            theme::regular(12.5),
+                            theme::regular(theme::META),
                             palette.dim,
                         );
                     });
@@ -1883,7 +1890,7 @@ fn invite_link(app: &mut App, ui: &mut egui::Ui, id: &str, can_reset: bool) {
                     theme::selectable_text(
                         ui,
                         link.as_str(),
-                        theme::regular(12.5),
+                        theme::regular(theme::META),
                         palette.secondary,
                     );
                 }
@@ -1891,12 +1898,12 @@ fn invite_link(app: &mut App, ui: &mut egui::Ui, id: &str, can_reset: bool) {
                     theme::paragraph(
                         ui,
                         failure.link_message(locale),
-                        theme::regular(12.5),
+                        theme::regular(theme::META),
                         palette.dim,
                     );
                 }
             }
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
             ui.horizontal_wrapped(|ui| {
                 match &state {
                     LinkState::Failed(_) => {
@@ -2044,14 +2051,14 @@ fn permissions_view(app: &mut App, ui: &mut egui::Ui, chat: &str) {
                     for (index, (permission, value)) in values.iter().enumerate() {
                         if index == 0 || *permission == Permission::ApproveMembers {
                             if index > 0 {
-                                ui.add_space(8.0);
+                                ui.add_space(theme::SPACE_8);
                             }
                             let heading = if *permission == Permission::ApproveMembers {
                                 crate::i18n::gettext(locale, "Admins can:")
                             } else {
                                 crate::i18n::gettext(locale, "Members can:")
                             };
-                            theme::text(ui, heading, theme::medium(12.5), palette.secondary);
+                            theme::text(ui, heading, theme::medium(theme::META), palette.secondary);
                         }
                         let stop = TAB_STOP + index as u8;
                         if let Some(members) =
@@ -2064,7 +2071,7 @@ fn permissions_view(app: &mut App, ui: &mut egui::Ui, chat: &str) {
                         theme::text(
                             ui,
                             crate::i18n::gettext(locale, "Saving…"),
-                            theme::regular(12.5),
+                            theme::regular(theme::META),
                             palette.dim,
                         );
                     }
@@ -2105,7 +2112,7 @@ fn permission_row(
             let line = widgets::line(
                 ui,
                 &description,
-                theme::regular(12.5),
+                theme::regular(theme::META),
                 palette.secondary,
                 width,
                 usize::MAX,
@@ -2132,7 +2139,7 @@ fn permission_row(
         });
     });
     let _ = row;
-    ui.add_space(4.0);
+    ui.add_space(theme::SPACE_4);
     turned
 }
 
@@ -2238,9 +2245,9 @@ fn group_description_field(app: &App, ui: &mut egui::Ui, draft: &mut String) -> 
                     .hint_text(
                         egui::RichText::new(hint.as_ref())
                             .color(palette.dim)
-                            .font(theme::regular(13.5)),
+                            .font(theme::regular(theme::BODY)),
                     )
-                    .font(theme::regular(13.5))
+                    .font(theme::regular(theme::BODY))
                     .text_color(palette.text)
                     .frame(Frame::NONE)
                     .char_limit(crate::model::GROUP_DESCRIPTION_LIMIT)

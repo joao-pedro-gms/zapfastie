@@ -241,7 +241,7 @@ fn header(app: &mut App, ui: &mut egui::Ui) {
             ui.ctx()
                 .data_mut(|data| data.insert_temp(header_row_id(), row.response.rect));
 
-            ui.add_space(6.0);
+            ui.add_space(theme::SPACE_6);
             search_and_filters(app, ui);
         });
 }
@@ -579,7 +579,7 @@ fn macos_header(app: &mut App, ui: &mut egui::Ui) {
             });
             ui.ctx()
                 .data_mut(|data| data.insert_temp(header_row_id(), row.response.rect));
-            ui.add_space(6.0);
+            ui.add_space(theme::SPACE_6);
             search_and_filters(app, ui);
         });
 }
@@ -608,7 +608,7 @@ fn filter_chips(app: &mut App, ui: &mut egui::Ui) {
         return;
     }
     let palette = app.palette;
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
     let output = widgets::chip_scroll_row(ui, "chat-filters", |ui| {
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing = vec2(4.0, 6.0);
@@ -667,7 +667,7 @@ fn filter_chips(app: &mut App, ui: &mut egui::Ui) {
                     app.actions.push(Action::SetChatFilter(next));
                 }
             }
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
         })
     });
     // Chips cut off at the edge fade into the panel, which says the row
@@ -1127,7 +1127,7 @@ fn locked_entry(app: &mut App, ui: &mut egui::Ui) {
             pos2(rect.right() - 16.0, rect.center().y),
             egui::Align2::RIGHT_CENTER,
             count.to_string(),
-            theme::regular(12.5),
+            theme::regular(theme::META),
             palette.accent,
         );
     }
@@ -1295,7 +1295,7 @@ fn results(app: &mut App, ui: &mut egui::Ui) {
                     });
                 }
             }
-            ui.add_space(8.0);
+            ui.add_space(theme::SPACE_8);
         });
 }
 
@@ -1308,7 +1308,7 @@ fn offscreen(ui: &egui::Ui, height: f32) -> bool {
 }
 
 fn section(ui: &mut egui::Ui, palette: &Palette, label: &str) {
-    ui.add_space(10.0);
+    ui.add_space(theme::SPACE_10);
     Frame::new()
         .inner_margin(Margin {
             left: 14,
@@ -1317,7 +1317,7 @@ fn section(ui: &mut egui::Ui, palette: &Palette, label: &str) {
             bottom: 10,
         })
         .show(ui, |ui| {
-            theme::text(ui, label, theme::semibold(12.5), palette.accent);
+            theme::text(ui, label, theme::semibold(theme::META), palette.accent);
         });
 }
 

@@ -132,10 +132,10 @@ fn note(app: &mut App, ui: &mut egui::Ui, palette: &Palette, narrow: bool) {
     }
     header(app, ui, palette, narrow);
     if !app.note_links.is_empty() {
-        ui.add_space(6.0);
+        ui.add_space(theme::SPACE_6);
         citations(app, ui, palette);
     }
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
     // Ctrl+E reads the note, and again to write it.
     if ui.input_mut(|input| input.consume_key(egui::Modifiers::CTRL, egui::Key::E)) {
         app.actions.push(Action::ToggleNoteRead);
@@ -178,7 +178,7 @@ fn body(app: &mut App, ui: &mut egui::Ui, palette: &Palette, column: f32, locale
         // pointer is, and the buttons say what they do.
         toolbar::shortcuts(app, ui);
         toolbar::show(app, ui, palette);
-        ui.add_space(4.0);
+        ui.add_space(theme::SPACE_4);
         egui::ScrollArea::vertical()
             .id_salt("note-body")
             .auto_shrink([false, false])
@@ -341,7 +341,7 @@ fn citations(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
     let note = app.open_note.as_ref().map(|note| note.id).unwrap_or(0);
     let mut jump = None;
     ui.horizontal_wrapped(|ui| {
-        ui.add_space(12.0);
+        ui.add_space(theme::SPACE_12);
         for reference in app.note_links.clone() {
             match reference {
                 NoteRef::Message { chat, message } => {
@@ -418,7 +418,7 @@ fn pick_a_note(ui: &mut egui::Ui, palette: &Palette, locale: Locale) {
         ui.add_space((ui.available_height() * 0.3).max(24.0));
         let (icon, _) = ui.allocate_exact_size(Vec2::splat(40.0), Sense::hover());
         theme::paint_icon(ui, Icon::Notebook, icon, 36.0, palette.dim);
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         ui.label(
             egui::RichText::new(gettext(locale, "Pick a note").as_ref())
                 .size(14.5)

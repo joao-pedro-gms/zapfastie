@@ -32,7 +32,7 @@ pub fn send(app: &mut App, ui: &mut egui::Ui, chat: &str) {
             }
         });
     });
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
     let hint = crate::i18n::gettext(app.locale, "Paste a map link or coordinates");
     ui.add(
         egui::TextEdit::singleline(&mut app.location_draft)
@@ -42,7 +42,7 @@ pub fn send(app: &mut App, ui: &mut egui::Ui, chat: &str) {
             .font(theme::regular(14.0))
             .desired_width(f32::INFINITY),
     );
-    ui.add_space(6.0);
+    ui.add_space(theme::SPACE_6);
     // The spot is read again here and shown before it is sent: a pair read the
     // wrong way round is visible in this dialog, not in someone else's chat.
     let here = geo::spot(&app.location_draft);
@@ -50,7 +50,7 @@ pub fn send(app: &mut App, ui: &mut egui::Ui, chat: &str) {
         Some(here) => {
             theme::text(ui, here.text(), theme::regular(13.0), palette.text);
             let open = crate::i18n::gettext(app.locale, "Open in a map");
-            if theme::link(ui, open.as_ref(), theme::regular(12.5), palette.link).clicked() {
+            if theme::link(ui, open.as_ref(), theme::regular(theme::META), palette.link).clicked() {
                 app.actions.push(Action::OpenUrl(geo::map_url(here)));
             }
         }
@@ -77,7 +77,7 @@ pub fn send(app: &mut App, ui: &mut egui::Ui, chat: &str) {
             );
         }
     }
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
     ui.horizontal(|ui| {
         let cancel = crate::i18n::gettext(app.locale, "Cancel");
         if theme::soft_button(ui, &palette, None, cancel.as_ref(), false).clicked() {

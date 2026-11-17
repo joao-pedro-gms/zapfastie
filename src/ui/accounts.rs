@@ -279,7 +279,7 @@ fn account_row(app: &App, ui: &mut egui::Ui, entry: &Entry) -> Option<RowClick> 
         let name = single_line(
             ui,
             &entry.name,
-            theme::semibold(13.5),
+            theme::semibold(theme::BODY),
             palette.text,
             max_width,
         );
@@ -371,7 +371,7 @@ pub fn login_choices(app: &mut App, ui: &mut egui::Ui) {
         return;
     }
     let palette = app.palette;
-    ui.add_space(6.0);
+    ui.add_space(theme::SPACE_6);
     ui.horizontal(|ui| {
         let back = if app.adding_account {
             gettext(app.locale, "Cancel").into_owned()
@@ -400,7 +400,7 @@ pub fn login_choices(app: &mut App, ui: &mut egui::Ui) {
             }
         }
         if let Some(remove) = remove {
-            ui.add_space(24.0);
+            ui.add_space(theme::SPACE_24);
             if theme::link(ui, remove.as_ref(), theme::medium(13.0), palette.danger).clicked() {
                 let id = app.account().id.clone();
                 app.actions.push(Action::ShowDialog(

@@ -320,7 +320,7 @@ fn empty(app: &mut App, ui: &mut egui::Ui) {
                 crate::i18n::gettext(app.locale, "Ctrl+K to search · ? for keyboard shortcuts")
                     .as_ref(),
             ),
-            theme::regular(12.5),
+            theme::regular(theme::META),
             palette.dim,
         );
     }
@@ -1362,7 +1362,7 @@ fn emoji_suggestions(app: &mut App, ui: &mut egui::Ui, field: egui::Id) {
             let name = widgets::line(
                 ui,
                 candidate.name,
-                theme::regular(12.5),
+                theme::regular(theme::META),
                 palette.secondary,
                 (rect.right() - name_x - 8.0).max(0.0),
                 1,
@@ -1492,7 +1492,7 @@ fn mention_picker(app: &mut App, ui: &mut egui::Ui, chat: &Chat, field: egui::Id
                     let name = widgets::line(
                         ui,
                         label,
-                        theme::medium(13.5),
+                        theme::medium(theme::BODY),
                         palette.text,
                         rect.width() - detail.size().x - 62.0,
                         1,
@@ -1581,7 +1581,7 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                     widgets::raised(ui, &palette, composer_pill(&palette), |ui| recording_strip(app, ui));
                 }
                 ui.vertical_centered(|ui| {
-                    theme::text(ui, crate::i18n::gettext(app.locale, "You blocked this contact"), theme::regular(13.5), palette.secondary);
+                    theme::text(ui, crate::i18n::gettext(app.locale, "You blocked this contact"), theme::regular(theme::BODY), palette.secondary);
                     super::blocking::button(app, ui, &chat.id, Stop::Composer);
                 });
                 return;
@@ -1601,14 +1601,14 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                                 )
                             }
                             .as_ref(),
-                            theme::regular(13.5),
+                            theme::regular(theme::BODY),
                             palette.secondary,
                         );
                     });
                     return;
                 }
                 ui.vertical_centered(|ui| {
-                    ui.add_space(8.0);
+                    ui.add_space(theme::SPACE_8);
                     // A group we left says so instead of blaming the admins:
                     // either we left it here, or the phone says we are no
                     // longer a member.
@@ -1621,24 +1621,24 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                         theme::text(
                             ui,
                             crate::i18n::gettext(app.locale, "You left this group"),
-                            theme::regular(13.5),
+                            theme::regular(theme::BODY),
                             palette.secondary,
                         );
                     } else {
                         ui.horizontal(|ui| {
                             let width = 230.0;
                             ui.add_space((ui.available_width() - width).max(0.0) / 2.0);
-                            theme::text(ui, "Only", theme::regular(13.5), palette.secondary);
-                            theme::text(ui, "admins", theme::semibold(13.5), palette.accent);
+                            theme::text(ui, "Only", theme::regular(theme::BODY), palette.secondary);
+                            theme::text(ui, "admins", theme::semibold(theme::BODY), palette.accent);
                             theme::text(
                                 ui,
                                 "can send messages",
-                                theme::regular(13.5),
+                                theme::regular(theme::BODY),
                                 palette.secondary,
                             );
                         });
                     }
-                    ui.add_space(8.0);
+                    ui.add_space(theme::SPACE_8);
                 });
                 return;
             }
@@ -1672,7 +1672,7 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                                     widgets::rich_text(
                                         ui,
                                         &crate::i18n::gettext(app.locale, "Original group message unavailable"),
-                                        theme::regular(12.5),
+                                        theme::regular(theme::META),
                                         palette.secondary,
                                     );
                                 });
@@ -2222,7 +2222,7 @@ fn composer(app: &mut App, ui: &mut egui::Ui, chat: &Chat, review_send: Option<b
                     crate::i18n::gettext(app.locale, "Ctrl+Enter sends · *bold* _italic_ ~strike~ · Ctrl+V pastes a picture")
                 };
                 let hint = super::keys::label(hint_text.as_ref());
-                ui.add_space(2.0);
+                ui.add_space(theme::SPACE_2);
                 ui.horizontal(|ui| {
                     if theme::icon_button(
                         ui,
@@ -2483,7 +2483,7 @@ fn unsent_voice_strip(app: &mut App, ui: &mut egui::Ui, samples: usize) {
         ui.set_width(ui.available_width());
         ui.horizontal(|ui| {
             theme::icon(ui, Icon::Mic, 16.0, palette.danger);
-            theme::text(ui, &label, theme::semibold(12.5), palette.danger);
+            theme::text(ui, &label, theme::semibold(theme::META), palette.danger);
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                 let button = theme::icon_button(
                     ui,
@@ -2558,7 +2558,7 @@ fn upload_strips(app: &mut App, ui: &mut egui::Ui, chat: &str) {
                         palette.secondary,
                     );
                     ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                        theme::text(ui, &label, theme::semibold(12.5), palette.text);
+                        theme::text(ui, &label, theme::semibold(theme::META), palette.text);
                     });
                 });
             });
@@ -2586,7 +2586,7 @@ fn edit_strip(app: &mut App, ui: &mut egui::Ui) {
             theme::text(
                 ui,
                 crate::i18n::gettext(app.locale, "Editing message"),
-                theme::semibold(12.5),
+                theme::semibold(theme::META),
                 palette.accent,
             );
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
@@ -2627,10 +2627,10 @@ fn reply_strip(app: &mut App, ui: &mut egui::Ui, quoted: &Message) {
                 widgets::rich_text(
                     ui,
                     &crate::i18n::gettext(app.locale, "Replying to {who}").replace("{who}", &who),
-                    theme::semibold(12.5),
+                    theme::semibold(theme::META),
                     palette.accent,
                 );
-                widgets::rich_text(ui, &summary, theme::regular(12.5), palette.secondary);
+                widgets::rich_text(ui, &summary, theme::regular(theme::META), palette.secondary);
             });
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                 if theme::icon_button(
@@ -2671,7 +2671,7 @@ fn link_preview_strip(app: &mut App, ui: &mut egui::Ui) {
                 ui.horizontal(|ui| {
                     let (bar, _) = ui.allocate_exact_size(vec2(3.0, 18.0), Sense::hover());
                     ui.painter().rect_filled(bar, 2.0, palette.accent);
-                    theme::text(ui, loading, theme::regular(12.5), palette.secondary);
+                    theme::text(ui, loading, theme::regular(theme::META), palette.secondary);
                 });
             })
         }
@@ -3799,7 +3799,7 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
                             if hidden { builder.invisible() } else { builder },
                             |ui| {
                                 if new_day {
-                                    ui.add_space(8.0);
+                                    ui.add_space(theme::SPACE_8);
                                     ui.vertical_centered(|ui| {
                                         widgets::chip(
                                             ui,
@@ -3807,7 +3807,7 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
                                             &crate::util::day_label(app.locale, message.timestamp),
                                         );
                                     });
-                                    ui.add_space(4.0);
+                                    ui.add_space(theme::SPACE_4);
                                 }
                                 for _ in 0..here {
                                     let Some(notice) = notices.get(placed) else {
@@ -3819,7 +3819,7 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
                                 if let Some((id, count, placed)) = &divider
                                     && row_contains(id)
                                 {
-                                    ui.add_space(6.0);
+                                    ui.add_space(theme::SPACE_6);
                                     let label = crate::i18n::ngettext(
                                         app.locale,
                                         "{} unread message",
@@ -3838,7 +3838,7 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
                                         );
                                         divider_placed = true;
                                     }
-                                    ui.add_space(4.0);
+                                    ui.add_space(theme::SPACE_4);
                                 }
                                 let show_sender = shows_sender_pictures(chat)
                                     && !message.from_me
@@ -4328,7 +4328,7 @@ fn messages(app: &mut App, ui: &mut egui::Ui, chat: &Chat, under: f32) {
                     if !typing.is_empty() {
                         typing_bubble(ui, &view, &typing);
                     }
-                    ui.add_space(4.0);
+                    ui.add_space(theme::SPACE_4);
                     // An explicit jump (Ctrl+End, or the return-to-bottom
                     // button) wins over a message bubble's retained keyboard
                     // focus; other triggers still defer to it, so an
@@ -4625,7 +4625,7 @@ fn top_of_history(
             if conversation.loading_older {
                 theme::spinner(ui, 18.0, palette.accent);
             } else {
-                ui.add_space(18.0);
+                ui.add_space(theme::SPACE_18);
             }
         } else if conversation.fetching_phone {
             ui.horizontal(|ui| {
@@ -4635,19 +4635,19 @@ fn top_of_history(
                 theme::text(
                     ui,
                     "Loading older messages from your phone…",
-                    theme::regular(12.5),
+                    theme::regular(theme::META),
                     palette.secondary,
                 );
             });
         } else if conversation.messages.is_empty() {
-            ui.add_space(24.0);
+            ui.add_space(theme::SPACE_24);
             if conversation.fetching_phone {
                 widgets::chip(ui, palette, "Loading messages from your phone…");
             } else {
                 widgets::chip(ui, palette, "No messages here yet");
             }
         } else {
-            ui.add_space(6.0);
+            ui.add_space(theme::SPACE_6);
         }
     });
 }
@@ -4685,7 +4685,7 @@ fn typing_bubble(ui: &mut egui::Ui, view: &View<'_>, typers: &[(String, String, 
                     );
                 }
             }
-            ui.add_space(2.0);
+            ui.add_space(theme::SPACE_2);
         }
         let backdrop = ui.painter().add(egui::Shape::Noop);
         let rect = Frame::new()
@@ -5163,7 +5163,7 @@ fn bubble(
                         reactions(ui, view, member, actions);
                     }
                 });
-                ui.add_space(2.0);
+                ui.add_space(theme::SPACE_2);
             }
         },
     );
@@ -5629,7 +5629,7 @@ fn speed_menu_row(
         Layout::left_to_right(Align::Center),
         |ui| {
             ui.spacing_mut().item_spacing.x = 4.0;
-            ui.add_space(6.0);
+            ui.add_space(theme::SPACE_6);
             for option in crate::audio::SPEEDS {
                 let selected = option == speed;
                 let response = speed_pill(
@@ -6391,8 +6391,8 @@ fn quote_block(
                 |ui| {
                     ui.set_width(inner_width);
                     ui.spacing_mut().item_spacing.y = 1.0;
-                    widgets::rich_text(ui, &who, theme::semibold(12.5), colours.name);
-                    widgets::rich_text(ui, &summary, theme::regular(12.5), colours.text);
+                    widgets::rich_text(ui, &who, theme::semibold(theme::META), colours.name);
+                    widgets::rich_text(ui, &summary, theme::regular(theme::META), colours.text);
                 },
             );
         })
@@ -6459,8 +6459,11 @@ fn call_entry(
         ui.painter()
             .layout_no_wrap(title.clone(), theme::medium(14.0), palette.text);
     let detail_galley = detail.as_ref().map(|detail| {
-        ui.painter()
-            .layout_no_wrap(detail.clone(), theme::regular(12.5), palette.secondary)
+        ui.painter().layout_no_wrap(
+            detail.clone(),
+            theme::regular(theme::META),
+            palette.secondary,
+        )
     });
     let detail_width = detail_galley.as_ref().map_or(0.0, |galley| galley.size().x);
     // The time follows the detail on its line, 8 points after it as after a
@@ -6575,7 +6578,7 @@ fn forwarded_label(
         &word,
         0.0,
         egui::TextFormat {
-            font_id: theme::regular(12.5),
+            font_id: theme::regular(theme::META),
             color: palette.dim,
             italics: true,
             ..Default::default()
@@ -8375,7 +8378,7 @@ fn content(
             }
             if let Some(image) = &card.image {
                 picture(ui, view, message, image, width, None, actions);
-                ui.add_space(4.0);
+                ui.add_space(theme::SPACE_4);
                 if card.body.is_empty() {
                     return None;
                 }
@@ -8682,7 +8685,7 @@ fn content(
                             theme::text(
                                 ui,
                                 &contact.number,
-                                theme::regular(12.5),
+                                theme::regular(theme::META),
                                 palette.secondary,
                             );
                         }
@@ -8713,14 +8716,14 @@ fn content(
                     } else {
                         format!("{publisher} · {stickers}")
                     };
-                    widgets::rich_text(ui, &detail, theme::regular(12.5), palette.secondary);
+                    widgets::rich_text(ui, &detail, theme::regular(theme::META), palette.secondary);
                     if let Some(caption) = caption {
-                        widgets::rich_text(ui, caption, theme::regular(13.5), palette.text);
+                        widgets::rich_text(ui, caption, theme::regular(theme::BODY), palette.text);
                     }
                     if theme::link(
                         ui,
                         crate::i18n::gettext(view.locale, "View stickers"),
-                        theme::regular(12.5),
+                        theme::regular(theme::META),
                         palette.link,
                     )
                     .clicked()
@@ -8778,7 +8781,7 @@ fn content(
                     theme::text(
                         ui,
                         "This message was deleted",
-                        theme::regular(13.5),
+                        theme::regular(theme::BODY),
                         palette.secondary,
                     );
                 },
@@ -8810,7 +8813,7 @@ fn content(
                                 view.locale,
                                 "Open WhatsApp on your phone to follow it.",
                             ),
-                            theme::regular(12.5),
+                            theme::regular(theme::META),
                             palette.secondary,
                         );
                     });
@@ -8853,7 +8856,7 @@ fn content(
                     theme::icon(ui, Icon::Smartphone, 14.0, palette.dim);
                 },
                 |ui| {
-                    theme::text(ui, text, theme::regular(13.5), palette.secondary);
+                    theme::text(ui, text, theme::regular(theme::BODY), palette.secondary);
                 },
             );
             None
@@ -8869,7 +8872,7 @@ fn content(
                     theme::text(
                         ui,
                         format!("Unsupported: {what}"),
-                        theme::regular(13.5),
+                        theme::regular(theme::BODY),
                         palette.secondary,
                     );
                 },
@@ -8905,7 +8908,7 @@ fn carousel(
             Some(width),
             actions,
         );
-        ui.add_space(4.0);
+        ui.add_space(theme::SPACE_4);
     }
     // Reserve a glimpse of the next card only when there is another card.
     let inset = if card.carousel.len() > 1 { 36.0 } else { 20.0 };
@@ -9816,7 +9819,7 @@ fn interactive_buttons(
         }
     }
     if card.needs_phone {
-        ui.add_space(6.0);
+        ui.add_space(theme::SPACE_6);
         widgets::rich_text(
             ui,
             "More content in WhatsApp Web or on your phone",
@@ -10183,13 +10186,13 @@ fn preview_layout(
             ui.spacing_mut().item_spacing.y = 2.0;
             ui.set_width(column);
             if let Some(title) = &preview.title {
-                widgets::rich_text(ui, title, theme::semibold(13.5), palette.text);
+                widgets::rich_text(ui, title, theme::semibold(theme::BODY), palette.text);
             }
             if let Some(description) = &preview.description {
                 let line = widgets::line(
                     ui,
                     description,
-                    theme::regular(12.5),
+                    theme::regular(theme::META),
                     palette.secondary,
                     ui.available_width(),
                     2,
@@ -10254,22 +10257,22 @@ fn location_card(
                     .fit_to_exact_size(Vec2::new(card, height))
                     .corner_radius(8.0),
             );
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
         }
         ui.horizontal(|ui| {
             theme::icon(ui, Icon::MapPin, 16.0, palette.accent);
             widgets::rich_text(ui, title, theme::medium(14.0), palette.text);
         });
         if let Some(detail) = detail {
-            widgets::rich_text(ui, &detail, theme::regular(12.5), palette.secondary);
+            widgets::rich_text(ui, &detail, theme::regular(theme::META), palette.secondary);
         }
         if let Some(note) = note {
-            widgets::rich_text(ui, &note, theme::regular(12.5), palette.secondary);
+            widgets::rich_text(ui, &note, theme::regular(theme::META), palette.secondary);
         }
         if theme::link(
             ui,
             crate::i18n::gettext(view.locale, "Open in a map").as_ref(),
-            theme::regular(12.5),
+            theme::regular(theme::META),
             palette.link,
         )
         .clicked()

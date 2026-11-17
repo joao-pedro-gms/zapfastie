@@ -133,7 +133,7 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
                 } else {
                     gettext(locale, "No stickers match your search.")
                 };
-                ui.add_space(24.0);
+                ui.add_space(theme::SPACE_24);
                 ui.vertical_centered(|ui| {
                     ui.label(
                         egui::RichText::new(text.as_ref())

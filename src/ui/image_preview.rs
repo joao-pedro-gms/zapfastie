@@ -325,7 +325,7 @@ fn header(
             // Zoom is for a picture: a clip fills the stage at its own shape,
             // so the controls are left out while one is on screen.
             if !clip {
-                ui.add_space(8.0);
+                ui.add_space(theme::SPACE_8);
                 // Right to left: zoom in, the current scale, zoom out.
                 if theme::icon_button(
                     ui,
@@ -376,7 +376,7 @@ fn header(
             // What the message itself can do, when the viewer knows which one
             // it is. A picture opened on its own has nothing to act on.
             if has_message {
-                ui.add_space(8.0);
+                ui.add_space(theme::SPACE_8);
                 if theme::icon_button(
                     ui,
                     Icon::Reply,
@@ -490,7 +490,7 @@ fn header(
                     actions.push(Action::CloseImagePreview);
                     actions.push(Action::ScrollTo(message.clone()));
                 }
-                ui.add_space(8.0);
+                ui.add_space(theme::SPACE_8);
             }
             // Last, so it takes what the actions left, scrolling if it needs
             // more rather than drawn under them.
@@ -797,7 +797,7 @@ fn pending(
             pos2(stage.center().x, disc.bottom() + 12.0),
             egui::Align2::CENTER_CENTER,
             error,
-            theme::regular(12.5),
+            theme::regular(theme::META),
             palette.danger,
         );
     }
@@ -813,7 +813,7 @@ fn pending(
         button.center(),
         egui::Align2::CENTER_CENTER,
         crate::i18n::gettext(app.locale, "Download"),
-        theme::regular(13.5),
+        theme::regular(theme::BODY),
         palette.text,
     );
     response.widget_info(|| {
@@ -970,7 +970,7 @@ fn video(
                 pos2(media.center().x, media.bottom() - 18.0),
                 egui::Align2::CENTER_CENTER,
                 error,
-                theme::regular(12.5),
+                theme::regular(theme::META),
                 palette.danger,
             );
         }
@@ -1484,7 +1484,7 @@ pub fn show_sticker(app: &mut App, ctx: &egui::Context) {
                 {
                     app.actions.push(Action::CloseStickerPreview);
                 }
-                ui.add_space(16.0);
+                ui.add_space(theme::SPACE_16);
                 // Favorites sync still assumes WebP media. Never advertise
                 // it for native .was stickers until that protocol path exists.
                 if preview

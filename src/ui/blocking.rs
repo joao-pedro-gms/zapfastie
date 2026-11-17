@@ -118,7 +118,7 @@ pub(super) fn list(app: &mut App, ui: &mut egui::Ui) {
                 app.locale,
                 "Connect to WhatsApp to block or unblock contacts.",
             ),
-            theme::regular(13.5),
+            theme::regular(theme::BODY),
             palette.secondary,
         );
     }
@@ -126,7 +126,7 @@ pub(super) fn list(app: &mut App, ui: &mut egui::Ui) {
         theme::paragraph(
             ui,
             gettext(app.locale, "Could not load blocked contacts."),
-            theme::regular(13.5),
+            theme::regular(theme::BODY),
             palette.secondary,
         );
         if ui
@@ -145,7 +145,7 @@ pub(super) fn list(app: &mut App, ui: &mut egui::Ui) {
         theme::paragraph(
             ui,
             gettext(app.locale, "No blocked contacts"),
-            theme::regular(13.5),
+            theme::regular(theme::BODY),
             palette.secondary,
         );
     }

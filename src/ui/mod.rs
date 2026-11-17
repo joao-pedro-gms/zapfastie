@@ -739,7 +739,7 @@ fn toasts(app: &mut App, ctx: &egui::Context) {
                     .shadow(palette.float_shadow())
                     .show(ui, |ui| {
                         // Size to the message up to a readable maximum.
-                        let font = theme::medium(13.5);
+                        let font = theme::medium(theme::BODY);
                         let laid = ui.painter().layout(
                             toast.message.clone(),
                             font.clone(),

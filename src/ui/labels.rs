@@ -98,12 +98,12 @@ pub fn chip_row(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
     if app.labels.is_empty() {
         return;
     }
-    ui.add_space(2.0);
+    ui.add_space(theme::SPACE_2);
     let row = widgets::chip_scroll_row(ui, "label-chips", |ui| {
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing = vec2(4.0, 6.0);
             label_chips(app, ui, palette);
-            ui.add_space(4.0);
+            ui.add_space(theme::SPACE_4);
         });
     });
     let hidden = row.content_size.x - row.state.offset.x - row.inner_rect.width();
@@ -245,10 +245,10 @@ pub fn manager(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
             locale,
             "Labels stay on this computer. They do not reach your phone or anyone you chat with.",
         ),
-        theme::regular(12.5),
+        theme::regular(theme::META),
         palette.dim,
     );
-    ui.add_space(14.0);
+    ui.add_space(theme::SPACE_14);
 
     let full = app.labels.len() >= crate::archive::LABEL_LIMIT;
     if full {
@@ -256,7 +256,7 @@ pub fn manager(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
             ui,
             gettext(locale, "You have {limit} labels, the most ZapFastie keeps.")
                 .replace("{limit}", &crate::archive::LABEL_LIMIT.to_string()),
-            theme::regular(12.5),
+            theme::regular(theme::META),
             palette.warning,
         );
     } else {
@@ -288,9 +288,9 @@ pub fn manager(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
         });
     }
 
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
     ui.separator();
-    ui.add_space(6.0);
+    ui.add_space(theme::SPACE_6);
     let wearing: Vec<(Label, usize)> = app
         .labels
         .iter()
@@ -334,7 +334,7 @@ pub fn manager(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
                 egui::TextEdit::singleline(&mut draft.1)
                     .id(rename_field_id(&label.id))
                     .char_limit(crate::archive::NAME_LIMIT)
-                    .font(theme::regular(13.5)),
+                    .font(theme::regular(theme::BODY)),
             );
             let swatch_rect =
                 Rect::from_min_size(rect.left_center() + vec2(190.0, -9.0), vec2(18.0, 18.0));
@@ -381,7 +381,7 @@ pub fn manager(app: &mut App, ui: &mut egui::Ui, palette: &Palette) {
         let name = widgets::line(
             ui,
             &label.name,
-            theme::medium(13.5),
+            theme::medium(theme::BODY),
             palette.text,
             (rect.width() - 140.0).max(40.0),
             1,

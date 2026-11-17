@@ -62,7 +62,7 @@ fn header(app: &mut App, ui: &mut egui::Ui, label: &str) {
             }
         });
     });
-    ui.add_space(4.0);
+    ui.add_space(theme::SPACE_4);
 }
 
 fn choosing(app: &mut App, ui: &mut egui::Ui) {
@@ -85,7 +85,7 @@ fn choosing(app: &mut App, ui: &mut egui::Ui) {
         .unwrap_or_default();
     if !members.is_empty() {
         chips(app, ui, &members);
-        ui.add_space(2.0);
+        ui.add_space(theme::SPACE_2);
     }
     let width = ui.available_width();
     let hint = crate::i18n::gettext(app.locale, "Search contacts");
@@ -100,7 +100,7 @@ fn choosing(app: &mut App, ui: &mut egui::Ui) {
     if ui.memory(|memory| memory.focused().is_none()) {
         search.request_focus();
     }
-    ui.add_space(4.0);
+    ui.add_space(theme::SPACE_4);
     let needle = crate::util::search_key(app.new_chat_search.trim());
     let mut contacts = super::dialogs::contact_choices(app, &needle);
     if let Some(draft) = app.new_group.as_ref() {
@@ -119,7 +119,7 @@ fn choosing(app: &mut App, ui: &mut egui::Ui) {
             }
         });
     if contacts.is_empty() {
-        ui.add_space(8.0);
+        ui.add_space(theme::SPACE_8);
         theme::text(
             ui,
             crate::i18n::gettext(app.locale, "No matching contacts"),
@@ -127,7 +127,7 @@ fn choosing(app: &mut App, ui: &mut egui::Ui) {
             palette.secondary,
         );
     }
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
     let ready = app.new_group.as_ref().is_some_and(|draft| {
         if adding {
             draft.can_add()
@@ -148,7 +148,7 @@ fn choosing(app: &mut App, ui: &mut egui::Ui) {
                 members.len() as u32,
             )
             .replace("{count}", &members.len().to_string()),
-            theme::regular(13.5),
+            theme::regular(theme::BODY),
             palette.secondary,
         );
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
@@ -265,8 +265,14 @@ fn member_row(app: &mut App, ui: &mut egui::Ui, id: &str, picked: bool) {
         let line = super::widgets::line(ui, &name, theme::medium(14.5), palette.text, width, 1);
         match detail.filter(|phone| *phone != name) {
             Some(phone) => {
-                let phone =
-                    super::widgets::line(ui, &phone, theme::regular(12.5), palette.dim, width, 1);
+                let phone = super::widgets::line(
+                    ui,
+                    &phone,
+                    theme::regular(theme::META),
+                    palette.dim,
+                    width,
+                    1,
+                );
                 line.paint(ui, pos2(left, rect.top() + 8.0), palette.text);
                 phone.paint(ui, pos2(left, rect.top() + 29.0), palette.dim);
             }
@@ -294,7 +300,7 @@ fn naming(app: &mut App, ui: &mut egui::Ui) {
     let Some(draft) = app.new_group.clone() else {
         return;
     };
-    ui.add_space(4.0);
+    ui.add_space(theme::SPACE_4);
     // The photo, optional: the group dialog's picking and cropping.
     ui.vertical_centered(|ui| {
         super::widgets::avatar(
@@ -306,7 +312,7 @@ fn naming(app: &mut App, ui: &mut egui::Ui) {
             draft.picture.as_deref(),
         );
     });
-    ui.add_space(2.0);
+    ui.add_space(theme::SPACE_2);
     let add = crate::i18n::gettext(app.locale, "Add group photo");
     let change = crate::i18n::gettext(app.locale, "Change photo");
     let remove = crate::i18n::gettext(app.locale, "Remove photo");
@@ -336,7 +342,7 @@ fn naming(app: &mut App, ui: &mut egui::Ui) {
             }
         });
     });
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
 
     let hint = crate::i18n::gettext(app.locale, "Group name (required)");
     let format = egui::TextFormat::simple(theme::regular(16.0), palette.text);
@@ -402,7 +408,7 @@ fn naming(app: &mut App, ui: &mut egui::Ui) {
     if let Some(edited) = app.new_group.as_mut() {
         edited.name = name;
     }
-    ui.add_space(8.0);
+    ui.add_space(theme::SPACE_8);
 
     let names: Vec<String> = draft
         .members
@@ -418,7 +424,7 @@ fn naming(app: &mut App, ui: &mut egui::Ui) {
             names.len() as u32,
         )
         .replace("{count}", &names.len().to_string()),
-        theme::medium(13.5),
+        theme::medium(theme::BODY),
         palette.text,
     );
     let list = super::widgets::line(
@@ -431,7 +437,7 @@ fn naming(app: &mut App, ui: &mut egui::Ui) {
     );
     let (spot, _) = ui.allocate_exact_size(list.size(), Sense::hover());
     list.paint(ui, spot.min, palette.secondary);
-    ui.add_space(12.0);
+    ui.add_space(theme::SPACE_12);
 
     let ready = app
         .new_group
@@ -443,7 +449,7 @@ fn naming(app: &mut App, ui: &mut egui::Ui) {
             theme::text(
                 ui,
                 crate::i18n::gettext(app.locale, "Creating the group…"),
-                theme::regular(12.5),
+                theme::regular(theme::META),
                 palette.secondary,
             );
         }

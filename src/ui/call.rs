@@ -199,9 +199,9 @@ fn live(
             } else {
                 widgets::avatar(ui, palette, peer, &call.chat, size, picture);
             }
-            ui.add_space(18.0);
+            ui.add_space(theme::SPACE_18);
             theme::text(ui, peer, theme::bold(26.0), palette.text);
-            ui.add_space(6.0);
+            ui.add_space(theme::SPACE_6);
             theme::text(
                 ui,
                 status(locale, call),
@@ -210,23 +210,23 @@ fn live(
             );
             if call.video_requested {
                 // The camera button below answers it.
-                ui.add_space(4.0);
+                ui.add_space(theme::SPACE_4);
                 theme::text(
                     ui,
                     gettext(
                         locale,
                         "Wants to switch to video: turn on your camera to answer",
                     ),
-                    theme::medium(12.5),
+                    theme::medium(theme::META),
                     palette.accent,
                 );
             }
             if call.video && call.phase == CallPhase::Active && !call.remote_video {
-                ui.add_space(4.0);
+                ui.add_space(theme::SPACE_4);
                 theme::text(
                     ui,
                     gettext(locale, "Their camera is off"),
-                    theme::medium(12.5),
+                    theme::medium(theme::META),
                     palette.secondary,
                 );
             }
@@ -428,7 +428,7 @@ fn status_color(call: &CallUpdate, palette: &Palette) -> Color32 {
 /// not arriving, said rather than swallowed.
 fn notes(ui: &mut egui::Ui, locale: Locale, call: &CallUpdate, palette: &Palette) {
     for lost in &call.lost_devices {
-        ui.add_space(4.0);
+        ui.add_space(theme::SPACE_4);
         let template = match lost.kind {
             crate::calls::DeviceKind::Microphone => gettext(
                 locale,
@@ -443,16 +443,16 @@ fn notes(ui: &mut egui::Ui, locale: Locale, call: &CallUpdate, palette: &Palette
         theme::text(
             ui,
             template.replace("{name}", &lost.name),
-            theme::medium(12.5),
+            theme::medium(theme::META),
             palette.warning,
         );
     }
     if let Some(audio) = call.peer_audio {
-        ui.add_space(4.0);
+        ui.add_space(theme::SPACE_4);
         theme::text(
             ui,
             peer_audio_text(locale, audio),
-            theme::medium(12.5),
+            theme::medium(theme::META),
             palette.warning,
         );
     }
@@ -628,7 +628,7 @@ fn devices(ui: &mut egui::Ui, app: &mut App, call: &CallUpdate, palette: &Palett
             palette,
         }
         .show(ui, &mut actions, Action::SetCallMicrophone);
-        ui.add_space(16.0);
+        ui.add_space(theme::SPACE_16);
         Picker {
             salt: "call-speaker",
             icon: Icon::Volume2,
@@ -640,7 +640,7 @@ fn devices(ui: &mut egui::Ui, app: &mut App, call: &CallUpdate, palette: &Palett
         }
         .show(ui, &mut actions, Action::SetCallSpeaker);
         if call.video {
-            ui.add_space(16.0);
+            ui.add_space(theme::SPACE_16);
             Picker {
                 salt: "call-camera",
                 icon: Icon::Video,
@@ -761,9 +761,9 @@ fn ringing(
         ui.add_space(area.height() * 0.18);
         let size = (area.height() * 0.24).clamp(96.0, 160.0);
         widgets::avatar(ui, palette, who.peer, &call.chat, size, who.picture);
-        ui.add_space(18.0);
+        ui.add_space(theme::SPACE_18);
         theme::text(ui, who.peer, theme::bold(26.0), palette.text);
-        ui.add_space(6.0);
+        ui.add_space(theme::SPACE_6);
         theme::text(
             ui,
             incoming_text(locale, call, who.caller),
@@ -773,7 +773,7 @@ fn ringing(
         // Who is on the group call already, by their pictures.
         let joined: Vec<&CallPerson> = who.people.iter().filter(|person| person.joined).collect();
         if !joined.is_empty() {
-            ui.add_space(16.0);
+            ui.add_space(theme::SPACE_16);
             faces(ui, palette, &joined);
         }
     });
@@ -946,11 +946,11 @@ fn group_live(
     ui.scope_builder(egui::UiBuilder::new().max_rect(header), |ui| {
         ui.vertical_centered(|ui| {
             theme::text(ui, who.peer, theme::bold(19.0), palette.text);
-            ui.add_space(2.0);
+            ui.add_space(theme::SPACE_2);
             theme::text(
                 ui,
                 status(locale, call),
-                theme::medium(13.5),
+                theme::medium(theme::BODY),
                 status_color(call, palette),
             );
         });
